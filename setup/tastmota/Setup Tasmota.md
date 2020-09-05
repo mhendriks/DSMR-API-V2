@@ -82,7 +82,7 @@ then
 	if ( res != NULL && res !== null && res != "") { 
 		P1_tijd.postUpdate(res) 
 		} 
-end   ```` 
+end   ``` 
 
 In het .items bestand voeg je de waardes toe die je wilt zien. Hieronder een voorbeeld.
 ```
