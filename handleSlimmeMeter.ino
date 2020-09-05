@@ -41,15 +41,15 @@ void processSlimmemeterRaw()
   }
 
   slimmeMeter.enable(true);
-  swSer1.setTimeout(5000);  // 5 seconds must be enough ..
+  Serial.setTimeout(5000);  // 5 seconds must be enough ..
   memset(tlgrm, 0, sizeof(tlgrm));
   int l = 0;
   // The terminator character is discarded from the serial buffer.
-  l = swSer1.readBytesUntil('/', tlgrm, sizeof(tlgrm));
+  l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
   // now read from '/' to '!'
   // The terminator character is discarded from the serial buffer.
-  l = swSer1.readBytesUntil('!', tlgrm, sizeof(tlgrm));
-  swSer1.setTimeout(1000);  // seems to be the default ..
+  l = Serial.readBytesUntil('!', tlgrm, sizeof(tlgrm));
+  Serial.setTimeout(1000);  // seems to be the default ..
 //  DebugTf("read [%d] bytes\r\n", l);
   if (l == 0) 
   {
@@ -62,7 +62,7 @@ void processSlimmemeterRaw()
   // next 6 bytes are "<CRC>\r\n"
   for (int i=0; ( i<6 && (i<(sizeof(tlgrm)-7)) ); i++)
   {
-    tlgrm[l++] = (char)swSer1.read();
+    tlgrm[l++] = (char)Serial.read();
   }
 #else
   tlgrm[l++]    = '\r';
@@ -101,7 +101,7 @@ void processSlimmemeter()
         ESP.reset();
         delay(1000);
       }
-      digitalWrite(LED_BUILTIN, LED_OFF);
+      //digitalWrite(LED_BUILTIN, LED_OFF);
       if (DSMRdata.identification_present)
       {
         //--- this is a hack! The identification can have a backslash in it

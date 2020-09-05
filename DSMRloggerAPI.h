@@ -43,19 +43,24 @@
 #define SETTINGS_FILE      "/DSMRsettings.json"
   
 #ifdef USE_REQUEST_PIN
-    #define DTR_ENABLE  12
+    #define DTR_ENABLE  14
 #endif  // is_esp12
 
 //use gpio as serial port
 //TasmotaSerial is performing best
 
-#include <TasmotaSerial.h>
-TasmotaSerial swSer1(14,15);
-P1Reader    slimmeMeter(&swSer1, DTR_ENABLE);
+//#include <TasmotaSerial.h>
+//TasmotaSerial swSer1(13,15);
+//P1Reader    slimmeMeter(&swSer1, DTR_ENABLE);
 
+#ifdef DTR_ENABLE
+  P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
+#else
+  P1Reader    slimmeMeter(&Serial, 0);
+#endif
 
-#define LED_ON            LOW
-#define LED_OFF          HIGH
+//#define LED_ON            LOW
+//#define LED_OFF          HIGH
 #define FLASH_BUTTON        0
 #define MAXCOLORNAME       15
 #define JSON_BUFF_MAX     255
@@ -162,6 +167,8 @@ const PROGMEM char *flashMode[]    { "QIO", "QOUT", "DIO", "DOUT", "Unknown" };
 //===========================prototype's=======================================
 int strcicmp(const char *a, const char *b);
 void delayms(unsigned long);
+
+
 
 //===========================GLOBAL VAR'S======================================
   WiFiClient  wifiClient;

@@ -192,7 +192,7 @@ void handleKeyInput()
       case 'i':
       case 'I':     for(int I=0; I<10; I++) 
                     {
-                      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+                      //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
                       delay(1000);
                     }
                     break;
@@ -265,7 +265,7 @@ void handleKeyInput()
                   #if defined(HAS_NO_SLIMMEMETER)
                     Debugln(F("  *F - Force build RING files\r"));
                   #endif
-                    Debugf ("   I - Identify by blinking LED on GPIO[%02d]\r\n", LED_BUILTIN);
+                    //Debugf ("   I - Identify by blinking LED on GPIO[%02d]\r\n", LED_BUILTIN);
                     if (showRaw) 
                     {
                       Debugln(F("   P - Start Parsing again\r"));
