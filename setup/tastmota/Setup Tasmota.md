@@ -1,7 +1,7 @@
 # Er zijn een aantal stappen nodig om Tasmota op de p1 adapter te laten draaien.
-Stap 1: tasmota flashen (of zo geleverd krijgen)
-Stap 2: tasmota configuratie instellen
-Stap 3: instellen van je domotica oplossing (bv. OpenHAB, HomeAssistant, ...)
+- Stap 1: tasmota flashen (of zo geleverd krijgen)
+- Stap 2: tasmota configuratie instellen
+- Stap 3: instellen van je domotica oplossing (bv. OpenHAB, HomeAssistant, ...)
 
 ## 1
 Flash de P1-adapter met Tasmota. Dit kan op verschillende manieren. 
@@ -34,7 +34,7 @@ Heb je al een bridge gedefineerd voeg dan onderstaande toe aan dit bestand
     }
     
 in de rules folder maak je een nieuw bestand aan p1-dsmr.rules met onderstaande code
-rule "P2 P"
+```rule "P2 P"
 when
     Item P2 received update
 then
@@ -82,10 +82,10 @@ then
 	if ( res != NULL && res !== null && res != "") { 
 		P1_tijd.postUpdate(res) 
 		} 
-end    
+end   ```` 
 
 In het .items bestand voeg je de waardes toe die je wilt zien. Hieronder een voorbeeld.
-
+```
 Number P1_P "Actueel vermogen [%s]"	 {channel="mqtt:topic:mosquitto:slimmemeter:P" } 
 Number P1_GAS "Gasmeter: [%.1f]"	 {channel="mqtt:topic:mosquitto:slimmemeter:G" }
 Number P1_T1 "kWh Teller 1: [%s]"	 {channel="mqtt:topic:mosquitto:slimmemeter:T1" } 
@@ -96,9 +96,9 @@ String P1_time "tijd: [%s]" 					{channel="mqtt:topic:mosquitto:slimmemeter:time
 String P1_tijd "tijd: [%s]"
 
 String P2 "test [%s]"					(GRP_energy)		{channel="mqtt:topic:mosquitto:slimmemeter_tas:p1" } 
-
+```
 In het .sitemap bestand laat je de waardes uit .items terugkomen
-
+```
 Frame label="Slimmemeter" {
     Text item=P1_T1 label="kWh Teller Dal: [%.1f kWh]"
     Text item=P1_T2 label="kWh Teller Normaal: [%.1f kWh]"
@@ -108,6 +108,6 @@ Frame label="Slimmemeter" {
     Text item=P1_GAS label="Gasmeter: [%.1f m3]"
    	Text item=P1_tijd label="Laatste P1 update: [%s]"
    	Text item=P1_time label="Laatste P1 update: [%s]" //zou je ook weg kunnen laten dit is de ruwe tijd
-   	}
+   	}```
 
 
