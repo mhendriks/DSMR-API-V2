@@ -82,7 +82,8 @@ then
 	if ( res != NULL && res !== null && res != "") { 
 		P1_tijd.postUpdate(res) 
 		} 
-end   ``` 
+end   
+``` 
 
 In het .items bestand voeg je de waardes toe die je wilt zien. Hieronder een voorbeeld.
 ```
@@ -108,6 +109,7 @@ Frame label="Slimmemeter" {
     Text item=P1_GAS label="Gasmeter: [%.1f m3]"
    	Text item=P1_tijd label="Laatste P1 update: [%s]"
    	Text item=P1_time label="Laatste P1 update: [%s]" //zou je ook weg kunnen laten dit is de ruwe tijd
-   	}```
+   	}
+```
 
 
