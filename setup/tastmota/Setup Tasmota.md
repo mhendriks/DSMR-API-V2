@@ -1,10 +1,11 @@
-# Er zijn een aantal stappen nodig om Tasmota op de p1 adapter te laten draaien.
-- Stap 1: tasmota flashen (of zo geleverd krijgen)
-- Stap 2: tasmota configuratie instellen
-- Stap 3: instellen van je domotica oplossing (bv. OpenHAB, HomeAssistant, ...)
+# Setup Tasmota voor de P1 interface
+Er zijn een aantal stappen nodig om Tasmota op de p1 adapter te laten draaien.
+- Stap 1: Tasmota flashen (of zo geleverd krijgen)
+- Stap 2: Tasmota configuratie instellen
+- Stap 3: domotica oplossing instellen (bv. OpenHAB, HomeAssistant, ...)
 
-## 1
-Flash de P1-adapter met Tasmota. Dit kan op verschillende manieren. 
+## 1 Tasmota flashen
+Dit kan op verschillende manieren. 
 Met de Tasmota 8.4.0 versie is het nog niet mogelijk om out of the box de firmware te gebruiken.
 Een aanpassing is aangevraagd en zal in een nieuwe versie van tasmota komen te zitten 8.4.1 en hoger.
 
@@ -14,11 +15,11 @@ Prik de P1 adapter hierna in de slimme meter en wacht totdat je de tasmota-... a
 Klik op dit netwerk en wacht totdat je het instellingenscherm van tasmota ziet om de adapter aan het netwerk te koppelen.
 Zoek de P1 module in het netwerk op.
 
-## 2
+## 2 Tasmota configuratie instellen
 In de configuratie van Tasmota geef geef je aan dat je de configuratie wilt terugzetten (Restore).
 Gebruik het Config_tasmota_C3C439_1081_8.4.0.3.dmp bestand in deze folder.
 
-## 3
+## 3 domotica oplossing instellen 
 Stel de mqtt host in op de adapter.
 Daarna dien je in je domotica oplossing het ontvangen van de berichten in te richten. Hieronder de voorbeelden voor OpenHAB en HomeAssistant.
 
@@ -85,18 +86,18 @@ then
 end   
 ``` 
 
-In het .items bestand voeg je de waardes toe die je wilt zien. Hieronder een voorbeeld.
+In het .items bestand voeg je de waardes toe die je wilt zien. Hieronder een voorbeeld (dit voorbeeld is voor tasmota + standalone implementatie geschikt).
 ```
 Number P1_P "Actueel vermogen [%s]"	 {channel="mqtt:topic:mosquitto:slimmemeter:P" } 
 Number P1_GAS "Gasmeter: [%.1f]"	 {channel="mqtt:topic:mosquitto:slimmemeter:G" }
 Number P1_T1 "kWh Teller 1: [%s]"	 {channel="mqtt:topic:mosquitto:slimmemeter:T1" } 
 Number P1_T2 "kWh Teller 1: [%s]"	 {channel="mqtt:topic:mosquitto:slimmemeter:T2" } 
 Number P1_I "Stroom: [%s]"			 {channel="mqtt:topic:mosquitto:slimmemeter:I" }
-Number P1_U "Spanning: [%s]"		 			{channel="mqtt:topic:mosquitto:slimmemeter:U" } 
-String P1_time "tijd: [%s]" 					{channel="mqtt:topic:mosquitto:slimmemeter:time" } //dit is de systeemtijd uit de slimmemeter
+Number P1_U "Spanning: [%s]"		 {channel="mqtt:topic:mosquitto:slimmemeter:U" } 
+String P1_time "tijd: [%s]" 		 {channel="mqtt:topic:mosquitto:slimmemeter:time" } //dit is de systeemtijd uit de slimmemeter
 String P1_tijd "tijd: [%s]"
 
-String P2 "test [%s]"					(GRP_energy)		{channel="mqtt:topic:mosquitto:slimmemeter_tas:p1" } 
+String P2 "test [%s]"				 {channel="mqtt:topic:mosquitto:slimmemeter_tas:p1" } 
 ```
 In het .sitemap bestand laat je de waardes uit .items terugkomen
 ```
@@ -111,5 +112,7 @@ Frame label="Slimmemeter" {
    	Text item=P1_time label="Laatste P1 update: [%s]" //zou je ook weg kunnen laten dit is de ruwe tijd
    	}
 ```
+### HomeAssistant
+Work in progress
 
 
