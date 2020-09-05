@@ -2,7 +2,7 @@
 Er zijn een aantal stappen nodig om Tasmota op de p1 adapter te laten draaien.
 - Stap 1: Tasmota flashen (of zo geleverd krijgen)
 - Stap 2: Tasmota configuratie instellen
-- Stap 3: domotica oplossing instellen (bv. OpenHAB, HomeAssistant, ...)
+- Stap 3: Domotica oplossing instellen (bv. OpenHAB, HomeAssistant, ...)
 
 ## 1 Tasmota flashen
 Dit kan op verschillende manieren. 
@@ -19,7 +19,7 @@ Zoek de P1 module in het netwerk op.
 In de configuratie van Tasmota geef geef je aan dat je de configuratie wilt terugzetten (Restore).
 Gebruik het Config_tasmota_C3C439_1081_8.4.0.3.dmp bestand in deze folder.
 
-## 3 domotica oplossing instellen 
+## 3 Domotica oplossing instellen 
 Stel de mqtt host in op de adapter.
 Daarna dien je in je domotica oplossing het ontvangen van de berichten in te richten. Hieronder de voorbeelden voor OpenHAB en HomeAssistant.
 
