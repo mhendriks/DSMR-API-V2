@@ -19,4 +19,4 @@ Stel de mqtt host in op de adapter.
 Daarna dien je in je domotica oplossing het ontvangen van de berichten in te richten. Hieronder de voorbeelden voor OpenHAB en HomeAssistant.
 
 ### Klaar
-Nu is de adapter voorzien van Tasmota firmware en is mqtt geconfigureerd. Volgende stap is de domotica integratie inrichten. In de folder [integratie](../integratie) tref je een voorbeeld aan van een [OpenHab](../integratie/openhab/README.md) en [Home Assistant](../integratie/home_assistant/README.md) integratie.
+Nu is de adapter voorzien van Tasmota firmware en is mqtt geconfigureerd. Volgende stap is de domotica integratie inrichten. In de folder [integratie](../integratie) tref je een voorbeeld aan van een [OpenHab](../../integratie/openhab/README.md) en [Home Assistant](../../integratie/home_assistant/README.md) integratie.
