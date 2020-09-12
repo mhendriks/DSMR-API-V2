@@ -33,7 +33,7 @@ Er is veel software online te vinden. Keuze voor de gebruiker vind ik belangrijk
 - Specifieke firmware : Json API, MQTT + web user interface (op basis van de Willem AandeWiel oplossing)
 
 ### Tasmota
-Zelf ben ik een groot fan van de Tasmota software voor de ESP8266 familie. Deze is dan ook als eerste gebruikt om de oplossing werkend te krijgen. Tasmota kan out of the box op de module geflasht worden (vanaf versie 8.5.0). Instructie is te vinden in de [setup/tasmota](setup/tastmota/Setup%20Tasmota.md) folder.
+Zelf ben ik een groot fan van de Tasmota software voor de ESP8266 familie. Deze is dan ook als eerste gebruikt om de oplossing werkend te krijgen. Tasmota kan out of the box op de module geflasht worden (vanaf versie 8.5.0). Instructie is te vinden in de [setup/tasmota](setup/tastmota/README.md) folder.
 
 ### REST-API DSMR Logger van Willem AandeWiel
 Veel dank aan Willem AandeWiel voor zijn oplossing. Deze oplossing is als basis genomen en diverse veranderingen aan doorgevoerd. Oplossing van Willem is gemaakt voor een 4MB esp module en de M2 heeft er maar 1. Meer dan genoeg als alle extra functionaliteit verwijderd wordt en de overige compacter wordt gemaakt.
