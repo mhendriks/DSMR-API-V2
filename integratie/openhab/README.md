@@ -1,5 +1,6 @@
 # OpenHAB integratie
 Hieronder twee voorbeelden voor de integratie vanuit Tasmota en DSMR adapter.
+Files tref je in deze folder aan.
 
 ## Tasmota
 in file mqtt.things 
