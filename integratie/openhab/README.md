@@ -1,22 +1,35 @@
 # OpenHAB integratie
-Hieronder twee voorbeelden voor de integratie vanuit Tasmota en DSMR Api.
+Hieronder twee voorbeelden voor de integratie met Tasmota en DSMR Api oplossing.
 Files tref je in deze folder aan.
 
-## Tasmota
-in file mqtt.things 
-Voeg  onderstaande toe aan je mqtt bridge
+## Onderstaande voorbeelden zijn voor beide integraties
+In file mqtt.things voeg je onderstaande toe aan je mqtt bridge.
 
+```
+	// P1 - slimmemeter P1 API implementatie
+     Thing topic slimmemeter "Slimmemeter" @ "Hal" {
+    Channels:
+		Type string : time	"update tijd"	[ stateTopic="DSMR-API/timestamp", transformationPattern="JSONPATH:$.timestamp.[0].value" ]	
+        Type number : T1     "kWh Teller 1" [ stateTopic="DSMR-API/energy_delivered_tariff1", transformationPattern="JSONPATH:$.energy_delivered_tariff1.[0].value" ]
+        Type number : T2     "kWh Teller 2" [ stateTopic="DSMR-API/energy_delivered_tariff2", transformationPattern="JSONPATH:$.energy_delivered_tariff2.[0].value" ]
+        Type number : P     "W"             [ stateTopic="DSMR-API/power_delivered", transformationPattern="JSONPATH:$.power_delivered.[0].value" ]   
+        Type number : U     "V"        		[ stateTopic="DSMR-API/voltage_l1", transformationPattern="JSONPATH:$.voltage_l1.[0].value" ]
+        Type number : I     "A"        		[ stateTopic="DSMR-API/current_l1", transformationPattern="JSONPATH:$.current_l1.[0].value" ]
+        Type number : G     "m3"            [ stateTopic="DSMR-API/gas_delivered", transformationPattern="JSONPATH:$.gas_delivered.[0].value" ]     
+    }
+    
 // P1 - slimmemeter Tasmota implementatie
-```     
-	Thing topic slimmemeter_tas "Slimmemeter" @ "Hal" {
+     Thing topic slimmemeter_tas "Slimmemeter" @ "Hal" {
     Channels:
 		Type string : p1	"receive data"	[ stateTopic="tele/tasmota_C3C439/RESULT", transformationPattern="JSONPATH:SSerialReceived" ]	
     }
-```
-   
+  
+``` 
     
-in de rules folder maak je een nieuw bestand aan p1-dsmr.rules met onderstaande code
-```rule "P2 P"
+in de rules folder maak je een nieuw bestand aan p1-dsmr.rules met onderstaande code. 
+```
+// Alleen nodig voor de Tasmota
+rule "P2 P"
 when
     Item P2 received update
 then
@@ -54,6 +67,7 @@ then
 		} 
 end
 
+//Voor Tasmota en API 
 rule "P1 last update" //convert time to normal readable time
 when
     Item P1_time received update
@@ -78,8 +92,9 @@ Number P1_U "Spanning: [%s]"		 {channel="mqtt:topic:mosquitto:slimmemeter:U" }
 String P1_time "tijd: [%s]" 		 {channel="mqtt:topic:mosquitto:slimmemeter:time" } //dit is de systeemtijd uit de slimmemeter
 String P1_tijd "tijd: [%s]"
 
-String P2 "temp [%s]"				 {channel="mqtt:topic:mosquitto:slimmemeter_tas:p1" } 
+String P2 "tasmota only [%s]"				 {channel="mqtt:topic:mosquitto:slimmemeter_tas:p1" } 
 ```
+
 In het .sitemap bestand laat je de waardes uit .items terugkomen
 ```
 Frame label="Slimmemeter" {
@@ -90,10 +105,8 @@ Frame label="Slimmemeter" {
     Text item=P1_U label="Actuele Spanning: [%.1f V]"
     Text item=P1_GAS label="Gasmeter: [%.1f m3]"
    	Text item=P1_tijd label="Laatste P1 update: [%s]"
-   	Text item=P1_time label="Laatste P1 update: [%s]" //zou je ook weg kunnen laten dit is de ruwe tijd
+   	Text item=P1_time label="Laatste P1 update: [%s]" 
    	}
 ```
-## DSMR API
-Work in progress
 
 
