@@ -12,6 +12,7 @@ Voeg  onderstaande toe aan je mqtt bridge
 		Type string : p1	"receive data"	[ stateTopic="tele/tasmota_C3C439/RESULT", transformationPattern="JSONPATH:SSerialReceived" ]	
     }
 ```
+   
     
 in de rules folder maak je een nieuw bestand aan p1-dsmr.rules met onderstaande code
 ```rule "P2 P"
