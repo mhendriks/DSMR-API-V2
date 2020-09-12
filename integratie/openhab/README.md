@@ -1,5 +1,5 @@
 # OpenHAB integratie
-Hieronder twee voorbeelden voor de integratie vanuit Tasmota en DSMR adapter.
+Hieronder twee voorbeelden voor de integratie vanuit Tasmota en DSMR Api.
 Files tref je in deze folder aan.
 
 ## Tasmota
@@ -93,7 +93,7 @@ Frame label="Slimmemeter" {
    	Text item=P1_time label="Laatste P1 update: [%s]" //zou je ook weg kunnen laten dit is de ruwe tijd
    	}
 ```
-## Stand-a-lone
+## DSMR API
 Work in progress
 
 
