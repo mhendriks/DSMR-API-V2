@@ -46,3 +46,6 @@ Aanpassingen zijn:
 - opmaak is zo veel als mogelijk uit de html / js files gehaald en in de css gestopt
 - voor de extra input (deurbel) is functionele uitbreiding nodig (work in progress)
 Instructie is te vinden in de [setup/dsmr-api](setup/dsmr-api/README.md) folder.
+
+### Hardware aanschaffen
+Je kan je eigenhardware maken of deze los / compleet aanschaffen. Wil je deze aanschaffen dan kan je mij altijd een DM sturen.
