@@ -47,5 +47,5 @@ Aanpassingen zijn:
 - voor de extra input (deurbel) is functionele uitbreiding nodig (work in progress)
 Instructie is te vinden in de [setup/dsmr-api](setup/dsmr-api/README.md) folder.
 
-### Hardware aanschaffen
-Je kan je eigenhardware maken of deze los / compleet aanschaffen. Wil je deze aanschaffen dan kan je mij altijd een DM sturen.
+# Hardware maken of aanschaffen
+Je kan je eigenhardware maken of deze los / compleet aanschaffen. Wil je deze aanschaffen dan kan je mij altijd een DM sturen. De oplossing is ook Plug-and-play te koop met Tasmota of DSMR-API firmware.
