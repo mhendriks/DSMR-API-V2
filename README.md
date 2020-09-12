@@ -9,13 +9,14 @@ Gebaseerd op versie 1 met een aantal verbeteringen en aanvullingen
 ## SCHEMA
 Gekozen voor iets compactere ESP-M2 (ESP8285) vooral omdat de secundaire seriele interface van de ESP bereikbaar is op de M2 en niet op de M3. 
 Op het printje zitten de volgende modules:
-- signaal inverter om het P1 signaal te inverteren
-- optocoupler voor het aansturen van de P1 (data request)
+- signaal inverter om het P1 signaal te inverteren (level shifter)
+- optocoupler voor het aansturen van de P1 (DTR : data request)
 - optocoupler voor extra input; bv. een deurbel die vaak in de buurt van de slimme meter zit
 - spanningsregulator voor het naar 3.3Volt brengen van de P1 spanning.
 - de ESP-M2 natuurlijk
+- I2C aansluiting mogelijk (experimenteel)
 
-Alle modules samen zie je hieronder.
+Alle modules samen zie je in het onderstaande schema.
 ![Kicad schema](hardware/v2-kicad-schema.png) 
 
 In het schema is rekening gehouden met het aansluiten van een deurbel van 12 of 8 Volt AC. De weerstanden zorgen dan voor een juiste werking van de optocoupler. Er kan ook een andere digitale of analoge bron worden aangesloten. Zorg dan even voor de juiste weerstanden. De diode in de optocoupler heeft 1.2V en 20mA typical nodig.
@@ -29,8 +30,8 @@ Afmeting van de print is 19 x 35mm (iets compacter dan de v1)
 
 ## SOFTWARE
 Er is veel software online te vinden. Keuze voor de gebruiker vind ik belangrijk daarom gekozen voor twee mogelijkheden, namelijk:
-- Tasmota : Out of the box (MQTT)
-- Specifieke firmware : Json API, MQTT + web user interface (op basis van de Willem AandeWiel oplossing)
+- Tasmota : Out of the box (MQTT) [setup/tasmota](setup/tastmota/README.md)
+- DSMR API firmware : Json API, MQTT + web user interface (op basis van de Willem AandeWiel oplossing) [setup/dsmr-api](setup/dsmr-api/README.md)
 
 ### Tasmota
 Zelf ben ik een groot fan van de Tasmota software voor de ESP8266 familie. Deze is dan ook als eerste gebruikt om de oplossing werkend te krijgen. Tasmota kan out of the box op de module geflasht worden (vanaf versie 8.5.0). Instructie is te vinden in de [setup/tasmota](setup/tastmota/README.md) folder.
@@ -44,3 +45,4 @@ Aanpassingen zijn:
 - json API communicatie is ook gewijzigd (compacter en als een burst ipv gesegmenteerd)
 - opmaak is zo veel als mogelijk uit de html / js files gehaald en in de css gestopt
 - voor de extra input (deurbel) is functionele uitbreiding nodig (work in progress)
+Instructie is te vinden in de [setup/dsmr-api](setup/dsmr-api/README.md) folder.
