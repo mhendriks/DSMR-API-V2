@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Filename  : safeTimers.h
 **
-**  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      

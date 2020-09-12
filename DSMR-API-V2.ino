@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.0.1 (04-07-2020)"
+#define _FW_VERSION "v2.1.0 (05-09-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -13,7 +13,7 @@
 *      - v1/dev/settings .js file (opslaan settings)
 *      Backlog
 *      - ringfile : fout bestaande file - oude renamen en nieuwe maken
-*      - api: laatste 10 errors/excepties
+*      - api: laatste 10 errors/excepties bekijken incl timestamp
 *      - telegram message bij drempelwaardes
 *      - telegram verbruiksrapport einde dag/week/maand
 *      - telegram bot gebruiken als UI
@@ -44,6 +44,7 @@
 */
 /******************** compiler options  ********************************************/
 #define USE_REQUEST_PIN           // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
+#define USE_AUX                     // define if the aux port should be used
 //#define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
@@ -334,6 +335,12 @@ void setup()
   
 
 //================ Start Slimme Meter ===============================
+  DebugTln(F("Enable Aux interrupt..\r"));
+#ifdef USE_AUX
+  //enable AUX input 
+  pinMode(2, INPUT);                   // set pin 2 as input
+  attachInterrupt(digitalPinToInterrupt(2), isrAux, CHANGE);       // interrupt program when signal to pin 2 detected call ISR function when happens
+#endif
 
   DebugTln(F("Enable slimmeMeter..\r"));
 
@@ -458,9 +465,13 @@ void loop ()
     }
   }
 #endif                                                              //USE_NTP
-  
+
   yield();
   
+#ifdef USE_AUX
+  if DUE(AuxTimer) handleAux(); //manage Aux interupt
+#endif
+
 } // loop()
 
 

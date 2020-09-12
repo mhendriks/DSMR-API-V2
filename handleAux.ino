@@ -1,52 +1,40 @@
-/* 
+/*
 ***************************************************************************  
-**  Program  : processTelegram, part of DSMRloggerAPI
+**  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
 **  Version  : v2.1.0
 **
-**  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
+**  Copyright (c) 2020 Martijn Hendriks
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
-*/
-//==================================================================================
-void processTelegram()
+*/  
+
+#ifdef USE_AUX
+ICACHE_RAM_ATTR void isrAux() //isr routine 
+{ 
+  isrAux_cnt++;
+}
+
+void handleAux()
 {
-  DebugTf("Telegram[%d]=>DSMRdata.timestamp[%s]\r\n", telegramCount
-                                                    , DSMRdata.timestamp.c_str());  
-                                                    
-  strcpy(newTimestamp, DSMRdata.timestamp.c_str()); 
-
-  newT = epoch(newTimestamp, strlen(newTimestamp), true); // update system time
-  actT = epoch(actTimestamp, strlen(actTimestamp), false);
-  
-  // Skip first 3 telegrams .. just to settle down a bit ;-)
-  
-  if ((int32_t)(telegramCount - telegramErrors) < 3) 
+  if (isrAux_cnt > 2) // don't trigger on single pulse
   {
-    return;
-  }
-  
-  strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);  // maar nog NIET actT!!!
-  DebugTf("actHour[%02d] -- newHour[%02d]\r\n", hour(actT), hour(newT));
-  
-  // has the hour changed (or the day or month)  
-  // in production testing on hour only would
-  // suffice, but in testing I need all three
-  if (     (hour(actT) != hour(newT)  ) 
-       ||   (day(actT) != day(newT)   ) 
-       || (month(actT) != month(newT) ) )
-  {
-    writeToSysLog("Update RING-files");
-    writeRingFiles();
-    writeLastStatus();
-  }
+    char topicId[30];
+    
+    isrAux_cnt = 0;
+    if (settingMQTTtopTopic[strlen(settingMQTTtopTopic)-1] == '/')
+              snprintf(topicId, sizeof(topicId), "%s",  settingMQTTtopTopic);
+    else  snprintf(topicId, sizeof(topicId), "%s/", settingMQTTtopTopic);
+    strConcat(topicId, sizeof(topicId), "Aux");
+        
+    if (!MQTTclient.publish(topicId, "Signal") ) DebugTf("Error publish(%s) \r\n", topicId );
+    else DebugT(F("Aux signal send\r\n"));    
+    CHANGE_INTERVAL_MS(AuxTimer,  3000); //longer waiting time to prevent pushing out a lot of events
+  }  else CHANGE_INTERVAL_MS(AuxTimer,  500); //normal waiting time
+  RESTART_TIMER(AuxTimer);
+}
 
-  if ( DUE(publishMQTTtimer) )
-  {
-    sendMQTTData();      
-  }    
-
-} // processTelegram()
+#endif
 
 
 /***************************************************************************

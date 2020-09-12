@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v2.1.0
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -46,12 +46,8 @@
     #define DTR_ENABLE  14
 #endif  // is_esp12
 
-//use gpio as serial port
-//TasmotaSerial is performing best
+uint32_t    isrAux_cnt = 0;
 
-//#include <TasmotaSerial.h>
-//TasmotaSerial swSer1(13,15);
-//P1Reader    slimmeMeter(&swSer1, DTR_ENABLE);
 
 #ifdef DTR_ENABLE
   P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
@@ -221,7 +217,6 @@ String    pTimestamp;
 //===========================================================================================
 // setup timers 
 DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
-DECLARE_TIMER_SEC(updateDisplay,       5);
 DECLARE_TIMER_MIN(reconnectWiFi,      30);
 DECLARE_TIMER_SEC(synchrNTP,          30);
 DECLARE_TIMER_SEC(nextTelegram,       10);
@@ -229,6 +224,7 @@ DECLARE_TIMER_MIN(reconnectMQTTtimer,  2); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(minderGasTimer,     10, CATCH_UP_MISSED_TICKS); 
 DECLARE_TIMER_SEC(antiWearTimer,      61);
+DECLARE_TIMER_MS(AuxTimer,           500);
 
 /***************************************************************************
 *

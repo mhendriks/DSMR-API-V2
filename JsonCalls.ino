@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : JsonCalls, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v2.1.0
 **
 **  Copyright (c) 2020 Martijn Hendriks
 **
