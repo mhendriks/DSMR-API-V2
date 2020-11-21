@@ -1672,7 +1672,7 @@
   function readGitHubVersion()
   {
     if (GitHubVersion != 0) return;
-    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API@master/edge/DSMRversion.dat")
+    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@v2.1.0/edge/DSMRversion.dat")
       .then(response => {
         if (response.ok) {
           return response.text();
