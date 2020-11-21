@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : JsonCalls, part of DSMRloggerAPI
-**  Version  : v2.1.0
+**  Version  : v2.1.1
 **
 **  Copyright (c) 2020 Martijn Hendriks
 **
@@ -13,12 +13,11 @@
 uint32_t  antiWearTimer = 0;
 bool onlyIfPresent  = false;
 
-char fieldsArray[50][35] = {{0}}; // to lookup fields 
+char fieldsArray[25][25] = {{0}}; // to lookup fields 
 int  fieldsElements      = 0;
 
-
 #define ACTUALELEMENTS  20
-const PROGMEM char  actualArray[][35] = { "timestamp"
+const PROGMEM char  actualArray[][25] = { "timestamp"
                           ,"energy_delivered_tariff1","energy_delivered_tariff2"
                           ,"energy_returned_tariff1","energy_returned_tariff2"
                           ,"power_delivered","power_returned"
@@ -29,7 +28,7 @@ const PROGMEM char  actualArray[][35] = { "timestamp"
                           ,"gas_delivered"
                           ,"\0"};
 #define INFOELEMENTS  7
-const PROGMEM char  infoArray[][35]   = { "identification","p1_version","equipment_id","electricity_tariff","gas_device_type","gas_equipment_id", "\0" };
+const PROGMEM char  infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","gas_device_type","gas_equipment_id", "\0" };
 
 char OneRecord[2300]= "";
 
@@ -102,7 +101,7 @@ template <typename TSource>
 void sendJson(const TSource &doc) 
 {
   String JsonOutput;
-  
+  JsonOutput.reserve(measureJson(doc));
   if (Verbose1) serializeJsonPretty(doc, JsonOutput); 
   else serializeJson(doc, JsonOutput);
   
@@ -118,7 +117,7 @@ void sendDeviceTime()
 {
   // Allocate a temporary JsonDocument
   // Use arduinojson.org/v6/assistant to compute the capacity.
-  DynamicJsonDocument doc(110);
+  StaticJsonDocument<110> doc;
   
   doc["timestamp"] = actTimestamp;
   doc["time"] = buildDateTimeString(actTimestamp, sizeof(actTimestamp));
@@ -130,36 +129,7 @@ void sendDeviceTime()
 
 void sendDeviceInfo() 
 {
-  char compileOptions[200] = "";
   DynamicJsonDocument doc(1500);
-
-#ifdef USE_REQUEST_PIN
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_REQUEST_PIN]");
-#endif
-#if defined( USE_PRE40_PROTOCOL )
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_PRE40_PROTOCOL]");
-#elif defined( USE_BELGIUM_PROTOCOL )
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_BELGIUM_PROTOCOL]");
-#else
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_DUTCH_PROTOCOL]");
-#endif
-#ifdef USE_UPDATE_SERVER
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_UPDATE_SERVER]");
-#endif
-#ifdef USE_MQTT
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_MQTT]");
-#endif
-#ifdef USE_MINDERGAS
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_MINDERGAS]");
-#endif
-#ifdef USE_SYSLOGGER
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_SYSLOGGER]");
-#endif
-#ifdef USE_NTP_TIME
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_NTP_TIME]");
-#endif
-
-  //doc["author"] = F("Willem Aandewiel / Martijn Hendriks (www.aandewiel.nl)");
   doc["fwversion"] = _FW_VERSION;
   snprintf(cMsg, sizeof(cMsg), "%s %s", __DATE__, __TIME__);
   doc["compiled"] = cMsg;
@@ -199,7 +169,7 @@ void sendDeviceInfo()
   FlashMode_t ideMode = ESP.getFlashChipMode();
   doc["flashchipmode"] = flashMode[ideMode];
   doc["boardtype"] = ARDUINO_BOARD;
-  doc["compileoptions"] = compileOptions;
+  doc["compileoptions"] = ALL_OPTIONS;
   doc["ssid"] = WiFi.SSID();
 
 #ifdef SHOW_PASSWRDS
@@ -334,7 +304,7 @@ void sendApiNotFound(const char *URI)
 {
   DebugTln(F("sending device settings ...\r"));
   char JsonOutput[200];
-  DynamicJsonDocument doc(200);
+  StaticJsonDocument<200> doc;
   
   doc["error"]["url"] = URI;
   doc["error"]["message"] = "not valid url";
@@ -454,10 +424,6 @@ struct buildJsonApi {
     void apply(Item &i) {
       skip = false;
       String Name = Item::name;
-      //-- for dsmr30 -----------------------------------------------
-#if defined( USE_PRE40_PROTOCOL )
-      if (Name.indexOf("gas_delivered2") == 0) Name = "gas_delivered";
-#endif
       if (!isInFieldsArray(Name.c_str(), fieldsElements))
       {
         skip = true;
@@ -563,16 +529,8 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     }
 
     tlgrm[l++] = '!';
-#if !defined( USE_PRE40_PROTOCOL )
-    // next 6 bytes are "<CRC>\r\n"
-    for (int i=0; ( i<6 && (i<(sizeof(tlgrm)-7)) ); i++)
-    {
-      tlgrm[l++] = (char)Serial.read();
-    }
-#else
     tlgrm[l++]    = '\r';
     tlgrm[l++]    = '\n';
-#endif
     tlgrm[(l +1)] = '\0';
     // shift telegram 1 char to the right (make room at pos [0] for '/')
     for (int i=strlen(tlgrm); i>=0; i--) { tlgrm[i+1] = tlgrm[i]; yield(); }
@@ -740,7 +698,7 @@ bool isInFieldsArray(const char* lookUp, int elemts)
 } // isInFieldsArray()
 
 
-void copyToFieldsArray(const char inArray[][35], int elemts)
+void copyToFieldsArray(const char inArray[][25], int elemts)
 {
   int i = 0;
   memset(fieldsArray,0,sizeof(fieldsArray));
@@ -748,7 +706,7 @@ void copyToFieldsArray(const char inArray[][35], int elemts)
   
   for ( i=0; i<elemts; i++)
   {
-    strncpy(fieldsArray[i], inArray[i], 34);
+    strncpy(fieldsArray[i], inArray[i], 24);
     //if (Verbose1) DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]); 
 
   }
@@ -757,9 +715,9 @@ void copyToFieldsArray(const char inArray[][35], int elemts)
 } // copyToFieldsArray()
 
 
-bool listFieldsArray(char inArray[][35])
+bool listFieldsArray(char inArray[][25])
 {
-  int i = 0;
+  uint8_t i = 0;
 
   for ( i=0; strlen(inArray[i]) == 0; i++)
   {

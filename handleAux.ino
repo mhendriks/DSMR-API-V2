@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
-**  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.1.0
+**  Program  : handleAux - definitions for handling aux input
+**  Version  : v2.1.1
 **
 **  Copyright (c) 2020 Martijn Hendriks
 **
@@ -10,6 +10,8 @@
 */  
 
 #ifdef USE_AUX
+uint32_t    isrAux_cnt = 0;
+
 ICACHE_RAM_ATTR void isrAux() //isr routine 
 { 
   isrAux_cnt++;

@@ -1,31 +1,29 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v1.2.2
+**  Version  : v2.1.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2020 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-//development//  const APIGW='http://192.168.2.229/api/';
 	const APIGW='http://'+window.location.host+'/api/';
 
   "use strict";
 
-  let needBootsTrapMain     = true;
-  let needBootsTrapSettings = true;
-  let activePage            = "mainPage";
-  let activeTab             = "none";
+  let activeTab             = "bActualTab";
   let presentationType      = "TAB";
   let tabTimer              = 0;
   let actualTimer           = 0;
   let timeTimer             = 0;
   var GitHubVersion         = 0;
   var GitHubVersion_dspl    = "-";
+  var devVersion			= 0;
   var firmwareVersion       = 0;
   var firmwareVersion_dspl  = "-";
   var newVersionMsg         = "";
+  let MainNav				= true;
   
   var tlgrmInterval         = 10;
   var ed_tariff1            = 0;
@@ -39,13 +37,16 @@
   var data       = [];
                   
   let monthType        = "ED";
-  let settingBgColor   = 'deepskyblue';
   let settingFontColor = 'white'
                     
   var monthNames = [ "indxNul","Januari","Februari","Maart","April","Mei","Juni"
                     ,"Juli","Augustus","September","Oktober","November","December"
                     ,"\0"
                    ];
+                   
+  var FS_no_delete = [ "FSexplorer.html", "DSMRindex.html","DSMRsettings.json","DSMRindexEDGE.html","\0"];
+  const spinner = document.getElementById("loader");
+
   
   window.onload=bootsTrapMain;
   /*
@@ -59,212 +60,267 @@
   //============================================================================  
   function bootsTrapMain() {
     console.log("bootsTrapMain()");
-    needBootsTrapMain = false;
-    
-    document.getElementById('bActualTab').addEventListener('click',function()
-                                                {openTab('ActualTab');});
-    document.getElementById('bHoursTab').addEventListener('click',function() 
-                                                {openTab('HoursTab');});
-    document.getElementById('bDaysTab').addEventListener('click',function() 
-                                                {openTab('DaysTab');});
-    document.getElementById('bMonthsTab').addEventListener('click',function() 
-                                                {openTab('MonthsTab');});
-    document.getElementById('bFieldsTab').addEventListener('click',function() 
-                                                {openTab('FieldsTab');});
-    document.getElementById('bTelegramTab').addEventListener('click',function() 
-                                                {openTab('TelegramTab');});
-    document.getElementById('bSysInfoTab').addEventListener('click',function() 
-                                                {openTab('SysInfoTab');});
-    document.getElementById('bAPIdocTab').addEventListener('click',function() 
-                                                {openTab('APIdocTab');});
-    document.getElementById('FSexplorer').addEventListener('click',function() 
-                                                { console.log("newTab: goFSexplorer");
-                                                  location.href = "/FSexplorer";
-                                                });
-    document.getElementById('Settings').addEventListener('click',function() 
-                                                {openPage('settingsPage');});
-    
-    document.getElementById('mCOST').checked = false;
-    setMonthTableType();
+	console.log("hash:"+ location.hash);
+
+   //handle Clickevents - main-menu
+	var btns = document.getElementsByClassName("nav-item");
+	for (let i = 0; i < btns.length; i++) {
+  		btns[i].addEventListener("click", function() {
+			activeTab = this.id;
+			var current = document.getElementsByClassName("nav-item active");
+			if (current.length > 0) { current[0].className = current[0].className.replace(" active", ""); }
+			//console.log("ActiveID - " + activeTab );
+			this.className += " active";
+			MainNav = true;
+			openTab();  		
+  		});
+	}
+	//handle Clickevents - sub-menu's
+	var btns = document.getElementsByClassName("subnav-item");
+	for (let i = 0; i < btns.length; i++) {
+  		btns[i].addEventListener("click", function() {
+			activeTab = this.id;
+			var current = document.getElementsByClassName("subnav-item active");
+			for (let i = current.length;i > 0;i--) { current[i-1].className = current[i-1].className.replace(" active", ""); }
+			//console.log("Subnav ActiveID - " + activeTab );
+			this.className += " active";
+			MainNav = false;	
+			openTab();  	
+  		});
+	}
+ 
     refreshDevTime();
-    getDevSettings();
-    refreshDevInfo();
-    
     clearInterval(timeTimer);  
     timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
 
-    openPage("mainPage");
-    openTab("ActualTab");
+    setMonthTableType();
+	getDevSettings();
+    refreshDevInfo();
+    openTab();
     initActualGraph();
     setPresentationType('TAB');
-    readGitHubVersion();
-      
+	//after loading ... flow the #target url just for FSExplorer
+	console.log("location-hash: " + location.hash );
+	console.log("location-pathname: " + location.pathname );
+	console.log("location-msg: " + location.hash.split('msg=')[1]);
+	console.log("location-hash-split: " + location.hash.split('#')[1].split('?')[0]);
+	//goto tab after reload 
+	if (location.hash == "#FileExplorer") { document.getElementById('bFSexplorer').click(); }
+	if (location.hash.split('#')[1].split('?')[0] == "Redirect") { handleRedirect(); }
+
+	//reselect Actual when Home icon has been clicked
+ 	document.getElementById('Home').addEventListener("click", function() { document.getElementById('bActualTab').click(); });
   } // bootsTrapMain()
   
-    
-  function bootsTrapSettings() {
-    console.log("bootsTrapSettings()");
-    needBootsTrapSettings = false;
-    
-    document.getElementById('bTerug').addEventListener('click',function()
-                                                {openPage('mainPage');});
-    document.getElementById('bEditMonths').addEventListener('click',function()
-                                                {openTab('tabEditMonths');});
-    document.getElementById('bEditSettings').addEventListener('click',function()
-                                                {openTab('tabEditSettings');});
-    document.getElementById('bUndo').addEventListener('click',function() 
-                                                {undoReload();});
-    document.getElementById('bSave').addEventListener('click',function() 
-                                                {saveData();});
-    refreshDevTime();
-    refreshDevInfo();
-    
-    openPage("settingsPage");
-
-    //openTab("tabEditSettings");
-    
-    //---- update buttons in navigation bar ---
-    let x = document.getElementsByClassName("editButton");
-    for (var i = 0; i < x.length; i++) {
-      x[i].style.background     = settingBgColor;
-      x[i].style.border         = 'none';
-      x[i].style.textDecoration = 'none';  
-      x[i].style.outline        = 'none';  
-      x[i].style.boxShadow      = 'none';
+  //============================================================================  
+  function handleRedirect(){
+	console.log("location-handle: " + location.hash.split('msg=')[1]);
+	//close all sections
+   	var elements = document.getElementsByClassName("tabName");
+    for (var i = 0; i < elements.length; i++){
+        elements[i].style.display = "none";
     }
+    //open only redirect section
+	document.getElementById("Redirect").style.display = "block";
+   	
+   	if (location.hash.split('msg=')[1] == "RebootOnly"){  document.getElementById("RedirectMessage").innerHTML = "Systeem opnieuw opstarten...";}
+   	else if (location.hash.split('msg=')[1] == "RebootResetWifi"){  document.getElementById("RedirectMessage").innerHTML = "Systeem opnieuw opstarten... Stel hierna het wifi netwerk opnieuw in. zie handleiding.";}   	
+   	else if (location.hash.split('msg=')[1] == "NoUpdateServer"){  document.getElementById("RedirectMessage").innerHTML = "Systeem opnieuw opstarten... Er is geen update mogelijkheid beschikbaar";} 
+   	else if (location.hash.split('msg=')[1] == "Update"){  document.getElementById("RedirectMessage").innerHTML = "Systeem updaten en daarna opnieuw opstarten";} 
 
-  } // bootsTrapSettings()
+	setInterval(function() {
+		var div = document.querySelector('#counter');
+		var count = div.textContent * 1 - 1;
+		div.textContent = count;
+		if (count <= 0) {
+			window.location.replace("/");
+		}
+	}, 1000);
+  	
+  }
   
+  //============================================================================  
+
+  function showSpinner() {
+	document.getElementById("loader").removeAttribute('hidden');
+	setTimeout(() => { document.getElementById("loader").setAttribute('hidden', '');}, 5000);
+  }
+  //============================================================================  
+
+ function hideSpinner() {
+  document.getElementById("loader").setAttribute('hidden', '');
+ }
 
   //============================================================================  
-  function openTab(tabName) {
-        
-    activeTab = tabName;
 
+  function update_nav(){
+  	//hide all submenu's
+	if (MainNav) { 
+		document.getElementById("nav-settings").style.display = "none";
+		document.getElementById("nav-info").style.display = "none";
+		//reset subnav active
+		var current = document.getElementsByClassName("subnav-item active");
+		for (let i = current.length;i > 0;i--) { current[i-1].className = current[i-1].className.replace(" active", ""); }
+	}
+	//activate submenu when applicable
+	if (activeTab == "bSettings" ) {
+		document.getElementById("nav-settings").style.display = "flex";  
+		document.getElementById("bEditSettings").className += " active"
+	}
+	if (activeTab == "bSysInfoTab") {
+		document.getElementById("nav-info").style.display = "flex";  
+		document.getElementById("bInfo_SysInfo").className += " active"
+	}
+  } // update_nav()
+
+  //============================================================================  
+  function openTab() {
+    console.log("openTab : " + activeTab );
+  	update_nav();
     clearInterval(tabTimer);  
     clearInterval(actualTimer);  
-    
-    let bID = "b" + tabName;
-    let i;
-    //---- update buttons in navigation bar ---
-    let x = document.getElementsByClassName("tabButton");
-    for (i = 0; i < x.length; i++) {
-      x[i].style.background     = 'deepskyblue';
-      x[i].style.border         = 'none';
-      x[i].style.textDecoration = 'none';  
-      x[i].style.outline        = 'none';  
-      x[i].style.boxShadow      = 'none';
-    }
-    //--- hide canvas -------
+	
+	//--- hide canvas -------
     document.getElementById("dataChart").style.display = "none";
     document.getElementById("gasChart").style.display  = "none";
-    //--- hide all tab's -------
-    x = document.getElementsByClassName("tabName");
-    for (i = 0; i < x.length; i++) {
-      x[i].style.display    = "none";  
-    }
-    //--- and set active tab to 'block'
-    console.log("now set ["+bID+"] to block ..");
-    //document.getElementById(bID).style.background='lightgray';
-    document.getElementById(tabName).style.display = "block";  
-    if (tabName != "ActualTab") {
-      clearInterval(actualTimer);
+    
+    if (activeTab != "bActualTab") {
+      //clearInterval(actualTimer);
       actualTimer = setInterval(refreshSmActual, 60 * 1000);                  // repeat every 60s
     }
-    
-    if (tabName == "ActualTab") {
-      console.log("newTab: ActualTab");
+    if (activeTab == "bActualTab") {
+      readGitHubVersion();
       refreshSmActual();
-      clearInterval(actualTimer);
+      //clearInterval(actualTimer);   
       if (tlgrmInterval < 10)
             actualTimer = setInterval(refreshSmActual, 10 * 1000);            // repeat every 10s
       else  actualTimer = setInterval(refreshSmActual, tlgrmInterval * 1000); // repeat every tlgrmInterval seconds
 
-    } else if (tabName == "HoursTab") {
-      console.log("newTab: HoursTab");
+    } else if (activeTab == "bHoursTab") {
       refreshHours();
       clearInterval(tabTimer);
       tabTimer = setInterval(refreshHours, 58 * 1000); // repeat every 58s
 
-    } else if (tabName == "DaysTab") {
-      console.log("newTab: DaysTab");
+    } else if (activeTab == "bDaysTab") {
       refreshDays();
       clearInterval(tabTimer);
       tabTimer = setInterval(refreshDays, 58 * 1000); // repeat every 58s
 
-    } else if (tabName == "MonthsTab") {
-      console.log("newTab: MonthsTab");
+    } else if (activeTab == "bMonthsTab") {
       refreshMonths();
       clearInterval(tabTimer);
       tabTimer = setInterval(refreshMonths, 118 * 1000); // repeat every 118s
     
-    } else if (tabName == "SysInfoTab") {
-      console.log("newTab: SysInfoTab");
+    } else if (activeTab == "bInfo_SysInfo") {
       refreshDevInfo();
       clearInterval(tabTimer);
       tabTimer = setInterval(refreshDevInfo, 58 * 1000); // repeat every 58s
 
-    } else if (tabName == "FieldsTab") {
-      console.log("newTab: FieldsTab");
+    } else if (activeTab == "bInfo_Fields") {
       refreshSmFields();
       clearInterval(tabTimer);
       tabTimer = setInterval(refreshSmFields, 58 * 1000); // repeat every 58s
 
-    } else if (tabName == "TelegramTab") {
-      console.log("newTab: TelegramTab");
+    } else if (activeTab == "bInfo_Telegram") {
       refreshSmTelegram();
       clearInterval(tabTimer); // do not repeat!
 
-    } else if (tabName == "APIdocTab") {
-      console.log("newTab: APIdocTab");
-      showAPIdoc();
-      
-    } else if (tabName == "tabEditMonths") {
-      console.log("newTab: tabEditMonths");
-      document.getElementById('tabMaanden').style.display = 'block';
+    } else if (activeTab == "bInfo_APIdoc") {
+      //do nothing = static html
+    } else if (activeTab == "bFSexplorer") {
+      FSExplorer();
+    } else if (activeTab == "bEditMonths") {
+      document.getElementById('tabEditMonths').style.display = "block";
+      document.getElementById('tabEditSettings').style.display = "none";
       getMonths();
 
-    } else if (tabName == "tabEditSettings") {
-      console.log("newTab: tabEditSettings");
+    } else if (activeTab == "bSettings" || activeTab == "bEditSettings") {
+	  refreshDevTime();
+	  //refreshDevInfo();
+	  data = {};
       document.getElementById('tabEditSettings').style.display = 'block';
+      document.getElementById('tabEditMonths').style.display = "none";
       refreshSettings();
-    
-    }
-
+      getDevSettings();
+      activeTab = "bEditSettings";
+    } 
   } // openTab()
   
-  
-  //============================================================================  
-  function openPage(pageName) {
-        
-    console.log("openPage("+pageName+")");
-    activePage = pageName;
-    if (pageName == "mainPage") {
-      document.getElementById("settingsPage").style.display = "none";
-      data = {};
-      needBootsTrapSettings = true;
-      openTab("ActualTab");
-      if (needBootsTrapMain)       bootsTrapMain();
-    }
-    else if (pageName == "settingsPage") {
-      document.getElementById("mainPage").style.display = "none";  
-      data = {};
-      needBootsTrapMain = true;
-      openTab('tabEditSettings');
-      if (needBootsTrapSettings)   bootsTrapSettings();
-    }
-    document.getElementById(pageName).style.display = "block";  
+    //============================================================================  
 
-  } // openPage()
-    
+  function FSExplorer() {
+	 let span = document.querySelector('span');
+	 let main = document.querySelector('main');
+	 let fileSize = document.querySelector('fileSize');
+	showSpinner();
+
+	 fetch('api/listfiles').then(function (response) {
+		 return response.json();
+	 }).then(function (json) {
+	
+	//clear previous content	 
+	 var list = document.getElementById("FSmain");
+	 while (list.hasChildNodes()) {  
+	   list.removeChild(list.firstChild);
+	 }
+
+	   let dir = '<table id="FSTable" width=90%>';
+	   for (var i = 0; i < json.length - 1; i++) {
+		 dir += "<tr>";
+		 dir += `<td width=250px nowrap><a href ="${json[i].name}" target="_blank">${json[i].name}</a></td>`;
+		 dir += `<td width=100px nowrap><small>${json[i].size}</small></td>`;
+		 dir += `<td width=100px nowrap><a href ="${json[i].name}"download="${json[i].name}"> Download </a></td>`;
+		 if (  FS_no_delete.indexOf(json[i].name) < 0 ) {
+		   dir += `<td width=100px nowrap><a href ="${json[i].name}?delete=/${json[i].name}"> Delete </a></td>`;
+		   if (json[i].name == '!format') 
+		   {
+			 document.getElementById('FormatSPIFFS').disabled = false;
+		   }
+		 } else {
+		   dir += `<td width=100px nowrap> </td>`;
+		 }                 	 
+		 dir += "</tr>";
+	   }	// for ..
+	   main.insertAdjacentHTML('beforeend', dir);
+	   document.querySelectorAll('[href*=delete]').forEach((node) => {
+			 node.addEventListener('click', () => {
+					 if (!confirm('Weet je zeker dat je dit bestand wilt verwijderen?!')) event.preventDefault();  
+			 });
+	   });
+	   main.insertAdjacentHTML('beforeend', '</table>');
+	   main.insertAdjacentHTML('beforeend', `<p id="FSFree"><b>SPIFFS</b> gebruikt ${json[i].usedBytes} van ${json[i].totalBytes}`);
+	   free = json[i].freeBytes;
+	   fileSize.innerHTML = "<b> &nbsp; </b><p>";    // spacer                
+	   hideSpinner();
+	 });	// function(json)
+	 
+	 document.getElementById('Ifile').addEventListener('change', () => {
+		 let nBytes = document.getElementById('Ifile').files[0].size, output = `${nBytes} Byte`;
+		 for (var aMultiples = [
+			 ' KB',
+			 ' MB'
+			], i = 0, nApprox = nBytes / 1024; nApprox > 1; nApprox /= 1024, i++) {
+			  output = nApprox.toFixed(2) + aMultiples[i];
+			}
+			if (nBytes > free) {
+			  fileSize.innerHTML = `<p><small> Bestand Grootte: ${output}</small><strong style="color: red;"> niet genoeg ruimte! </strong><p>`;
+			  document.getElementById('Iupload').setAttribute('disabled', 'disabled');
+			} 
+			else {
+			  fileSize.innerHTML = `<b>Bestand grootte:</b> ${output}<p>`;
+			  document.getElementById('Iupload').removeAttribute('disabled');
+			}
+	 });	
+  }
   
   //============================================================================  
   function refreshDevInfo()
-  {
+  { showSpinner();
     fetch(APIGW+"v2/dev/info")
       .then(response => response.json())
       .then(json => {
         //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
+		hideSpinner();
         obj = json;
         var tableRef = document.getElementById('tb_info');
         //clear table
@@ -284,15 +340,20 @@
             } else { 
             	MyCell2.innerHTML=obj[k]; 
             };
+           if (k == "fwversion"){
+			   console.log("fwversion: " + obj[k] );
+			   devVersion = obj[k];
+           }
+           
         } //for loop
       
 	  //new fwversion detection
-	  document.getElementById('devVersion').innerHTML = obj.fwversion;
-	  var tmpFW = obj.fwversion;
+  	  document.getElementById('devVersion').innerHTML = obj.fwversion;
+	  var tmpFW = devVersion;
 	  firmwareVersion_dspl = tmpFW;
 	  tmpX = tmpFW.substring(1, tmpFW.indexOf(' '));
 	  tmpN = tmpX.split(".");
-	  firmwareVersion = tmpN[0]*10000 + tmpN[1]*1;
+	  firmwareVersion = tmpN[0]*10000+tmpN[1]*100+tmpN[2]*1;
 	  console.log("firmwareVersion["+firmwareVersion+"] >= GitHubVersion["+GitHubVersion+"]");
 	  if (GitHubVersion == 0 || firmwareVersion >= GitHubVersion)
 			newVersionMsg = "";
@@ -301,14 +362,15 @@
 	  console.log(newVersionMsg);
 
 	  tlgrmInterval = obj.telegraminterval;
-  
+      if (firmwareVersion > 20000) document.getElementById("resetWifi").removeAttribute('hidden');
+
       })
       .catch(function(error) {
         var p = document.createElement('p');
         p.appendChild(
           document.createTextNode('Error: ' + error.message)
         );
-      });     
+      });
   } // refreshDevInfo()
 
 
@@ -322,6 +384,9 @@
       .then(json => {
               document.getElementById('theTime').innerHTML = json.time;
               //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
+
+	  //after reboot checks of the server is up and running and redirects to home
+      if ((document.querySelector('#counter').textContent < 40) && (document.querySelector('#counter').textContent > 0)) window.location.replace("/");
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -337,17 +402,18 @@
   
   //============================================================================  
   function refreshSmActual()
-  {
-    fetch(APIGW+"v2/sm/actual")
+  { showSpinner();
+    fetch(APIGW+"v2/sm/actual", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
-          //console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
+          console.log("actual parsed .., fields is ["+ JSON.stringify(json)+"]");
           data = json;
           copyActualToChart(data);
           if (presentationType == "TAB")
                 showActualTable(data);
           else  showActualGraph(data);
-          //console.log("-->done..");
+        //console.log("-->done..");
+         hideSpinner();
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -360,7 +426,7 @@
   
   //============================================================================  
   function refreshSmFields()
-  {
+  { showSpinner();
     fetch(APIGW+"v2/sm/fields")
       .then(response => response.json())
       .then(json => {
@@ -415,6 +481,8 @@
             }
           }
           //console.log("-->done..");
+        hideSpinner();
+
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -433,7 +501,7 @@
     var slotbefore;
     	
     //--- first check op volgordelijkheid ------    
-    if (activeTab == "HoursTab") {  
+    if (activeTab == "bHoursTab") {  
     
     }
     for (let x=data.data.length + data.actSlot; x > data.actSlot; x--)
@@ -487,7 +555,7 @@
   
   //============================================================================  
   function refreshHours()
-  {
+  { showSpinner();
     console.log("fetch("+APIGW+"v2/hist/hours)");
 
     fetch(APIGW+"v2/hist/hours", {"setTimeout": 2000})
@@ -499,6 +567,8 @@
         if (presentationType == "TAB")
               showHistTable(data, "Hours");
         else  showHistGraph(data, "Hours");
+	 hideSpinner();
+
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -512,6 +582,7 @@
   //============================================================================  
   function refreshDays()
   {
+  	showSpinner();
     console.log("fetch("+APIGW+"v2/hist/days)");
     fetch(APIGW+"v2/hist/days", {"setTimeout": 2000})
       .then(response => response.json())
@@ -521,6 +592,8 @@
         if (presentationType == "TAB")
               showHistTable(data, "Days");
         else  showHistGraph(data, "Days");
+	    hideSpinner();
+
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -534,6 +607,7 @@
   //============================================================================  
   function refreshMonths()
   {
+  	showSpinner();
     console.log("fetch("+APIGW+"v2/hist/months)");
     fetch(APIGW+"v2/hist/months", {"setTimeout": 2000})
       .then(response => response.json())
@@ -548,6 +622,7 @@
           else  showMonthsHist(data);
         }
         else  showMonthsGraph(data);
+        hideSpinner();
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -560,7 +635,7 @@
     
   //============================================================================  
   function refreshSmTelegram()
-  {
+  { showSpinner();
     fetch(APIGW+"v2/sm/telegram")
       .then(response => response.text())
       .then(response => {
@@ -578,6 +653,7 @@
         }
         preT = document.getElementById("TelData");
         preT.textContent = response;
+        hideSpinner();
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -590,7 +666,7 @@
   //============================================================================  
   function showActualTable(data)
   { 
-    if (activeTab != "ActualTab") return;
+    if (activeTab != "bActualTab") return;
 
     console.log("showActual()");
 
@@ -914,7 +990,7 @@
   
   //============================================================================  
   function getDevSettings()
-  {
+  { showSpinner();
     fetch(APIGW+"v2/dev/settings")
       .then(response => response.json())
       .then(json => {
@@ -928,13 +1004,14 @@
         electr_netw_costs = json.electr_netw_costs.value;
         gas_netw_costs = json.gas_netw_costs.value;
         hostName = json.hostName.value;
+        hideSpinner();
       })
       .catch(function(error) {
         var p = document.createElement('p');
         p.appendChild(
           document.createTextNode('Error: ' + error.message)
         );
-      });     
+      });   
   } // getDevSettings()
   
     
@@ -974,12 +1051,12 @@
       presentationType = "TAB";
     }
 
-    document.getElementById("APIdocTab").style.display = "none";
+//    document.getElementById("APIdocTab").style.display = "none";
 
-    if (activeTab == "ActualTab")  refreshSmActual();
-    if (activeTab == "HoursTab")   refreshHours();
-    if (activeTab == "DaysTab")    refreshDays();
-    if (activeTab == "MonthsTab")  refreshMonths();
+    if (activeTab == "bActualTab")  refreshSmActual();
+    if (activeTab == "bHoursTab")   refreshHours();
+    if (activeTab == "bDaysTab")    refreshDays();
+    if (activeTab == "bMonthsTab")  refreshMonths();
 
   } // setPresenationType()
   
@@ -1006,80 +1083,12 @@
     refreshMonths();
       
   } // setMonthTableType()
-
-    
-  //============================================================================  
-  function showAPIdoc() {
-    console.log("Show API doc ..@["+location.host+"]");
-    document.getElementById("APIdocTab").style.display = "block";
-    addAPIdoc("v2/dev/info",      "Device info in JSON format", true);
-    addAPIdoc("v2/dev/time",      "Device time (epoch) in JSON format", true);
-    addAPIdoc("v2/dev/settings",  "Device settings in JSON format", true);
-    addAPIdoc("v2/dev/settings{jsonObj}", "[POST] update Device settings in JSON format\
-        <br>test with:\
-        <pre>curl -X POST -H \"Content-Type: application/json\" --data '{\"name\":\"mqtt_broker\",\"value\":\"hassio.local\"}' \
-http://DSMR-API.local/api/v2/dev/settings</pre>", false);
-    
-    addAPIdoc("v2/sm/info",       "Smart Meter info in JSON format", true);
-    addAPIdoc("v2/sm/actual",     "Smart Meter Actual data in JSON format", true);
-    addAPIdoc("v2/sm/fields",     "Smart Meter all fields data in JSON format\
-        <br>JSON format: {\"name\":[{\"value\":&lt;value&gt;,\"unit\":\"&lt;unit&gt;\"}]} ", true);
-    addAPIdoc("v2/sm/fields/{fieldName}", "Smart Meter one field data in JSON format", false);
-
-    addAPIdoc("v2/sm/telegram",   "raw telegram as send by the Smart Meter including all \"\\r\\n\" line endings", false);
-
-    addAPIdoc("v2/hist/hours",    "History data per hour in JSON format", true);
-    addAPIdoc("v2/hist/days",     "History data per day in JSON format", true);
-    addAPIdoc("v2/hist/months",   "History data per month in JSON format", true);
-
-  } // showAPIdoc()
-
-    
-  //============================================================================  
-  function addAPIdoc(restAPI, description, linkURL) {
-    if (document.getElementById(restAPI) == null)
-    {
-      var topDiv = document.getElementById("APIdocTab");
-      var br = document.createElement("BR"); 
-      br.setAttribute("id", restAPI, 0);
-      br.setAttribute("style", "clear: left;");
-      
-      var div1 = document.createElement("DIV"); 
-      div1.setAttribute("class", "div1", 0);
-      var aTag = document.createElement('a');
-      if (linkURL)
-      {
-        aTag.setAttribute('href',APIGW +restAPI);
-        aTag.target = '_blank';
-      }
-      else
-      {
-        aTag.setAttribute('href',"#");
-      }
-      aTag.innerText = "/api/"+restAPI;
-      aTag.style.fontWeight = 'bold';
-      div1.appendChild(aTag);
-
-      // <div class='div2'>Device time (epoch) in JSON format</div>
-      var div2 = document.createElement("DIV"); 
-      div2.setAttribute("class", "div2", 0);
-      //var t2 = document.createTextNode(description);                   // Create a text node
-      var t2 = document.createElement("p");
-      t2.innerHTML = description;                   // Create a text node
-      div2.appendChild(t2);     
-
-      topDiv.appendChild(br);    // Append <br> to <div> with id="myDIV"
-      topDiv.appendChild(div1);  // Append <div1> to <topDiv> with id="myDIV"
-      topDiv.appendChild(div2);  // Append <div2> to <topDiviv> with id="myDIV"
-    }
-    
-    
-  } // addAPIdoc()
     
   //============================================================================  
   function refreshSettings()
   {
     console.log("refreshSettings() ..");
+    showSpinner();
     data = {};
     fetch(APIGW+"v2/dev/settings")
       .then(response => response.json())
@@ -1089,7 +1098,7 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
         for( let i in data )
         {
           console.log("["+i+"]=>["+data[i].value+"]");
-          var settings = document.getElementById('settings');
+          var settings = document.getElementById('settings_table');
           if( ( document.getElementById("settingR_"+i)) == null )
           {
             var rowDiv = document.createElement("div");
@@ -1142,6 +1151,8 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
           }
         }
         //console.log("-->done..");
+         hideSpinner();
+
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -1151,13 +1162,12 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
       });     
 
       document.getElementById('message').innerHTML = newVersionMsg;
-
   } // refreshSettings()
   
   
   //============================================================================  
   function getMonths()
-  {
+  {	showSpinner();
     console.log("fetch("+APIGW+"v2/hist/months)");
     fetch(APIGW+"v2/hist/months", {"setTimeout": 2000})
       .then(response => response.json())
@@ -1166,6 +1176,7 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
         data = json;
         expandDataSettings(data);
         showMonths(data, monthType);
+        hideSpinner();
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -1175,7 +1186,6 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
       });
 
       document.getElementById('message').innerHTML = newVersionMsg;
-      
   } // getMonths()
 
   
@@ -1206,42 +1216,38 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
         var div1 = document.createElement("div");
             div1.setAttribute("class", "settingDiv");
             div1.setAttribute("id", "em_R"+i);
-            div1.style.borderTop = "thick solid lightblue";
             if (i == (data.data.length -1))  // last row
             {
-              div1.style.borderBottom = "thick solid lightblue";
             }
             var span2 = document.createElement("span");
-            span2.style.borderTop = "thick solid lightblue";
               //--- create input for EEYY
               var sInput = document.createElement("INPUT");
               sInput.setAttribute("id", "em_YY_"+i);
+              sInput.setAttribute("class", "tab_editMonth");
               sInput.setAttribute("type", "number");
               sInput.setAttribute("min", 2000);
               sInput.setAttribute("max", 2099);
               sInput.size              = 5;
-              sInput.style.marginLeft  = '10px';
-              sInput.style.marginRight = '20px';
               sInput.addEventListener('change',
                       function() { setNewValue(i, "EEYY", "em_YY_"+i); }, false);
               span2.appendChild(sInput);
               //--- create input for months
               var sInput = document.createElement("INPUT");
               sInput.setAttribute("id", "em_MM_"+i);
+              sInput.setAttribute("class", "tab_editMonth");
               sInput.setAttribute("type", "number");
               sInput.setAttribute("min", 1);
               sInput.setAttribute("max", 12);
               sInput.size              = 3;
-              sInput.style.marginRight = '20px';
               sInput.addEventListener('change',
                       function() { setNewValue(i, "MM", "em_MM_"+i); }, false);
               span2.appendChild(sInput);
               //--- create input for data column 1
               sInput = document.createElement("INPUT");
               sInput.setAttribute("id", "em_in1_"+i);
+              sInput.setAttribute("class", "tab_editMonth");
               sInput.setAttribute("type", "number");
               sInput.setAttribute("step", 0.001);
-              sInput.style.marginRight = '20px';
               
               if (type == "ED")
               {
@@ -1266,9 +1272,9 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
                 //console.log("add input for edt2..");
                 var sInput = document.createElement("INPUT");
                 sInput.setAttribute("id", "em_in2_"+i);
+                sInput.setAttribute("class", "tab_editMonth");        
                 sInput.setAttribute("type", "number");
                 sInput.setAttribute("step", 0.001);
-                sInput.style.marginRight = '20px';
                 sInput.addEventListener('change',
                       function() { setNewValue(i, "edt2", "em_in2_"+i); }, false);
                 span2.appendChild(sInput);
@@ -1278,9 +1284,9 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
                 //console.log("add input for ert2..");
                 var sInput = document.createElement("INPUT");
                 sInput.setAttribute("id", "em_in2_"+i);
+              sInput.setAttribute("class", "tab_editMonth");
                 sInput.setAttribute("type", "number");
                 sInput.setAttribute("step", 0.001);
-                sInput.style.marginRight = '20px';
                 sInput.addEventListener('change',
                       function() { setNewValue(i, "ert2", "em_in2_"+i); }, false);
                 span2.appendChild(sInput);
@@ -1375,10 +1381,10 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
   //============================================================================  
   function undoReload()
   {
-    if (activeTab == "tabEditMonths") {
+    if (activeTab == "bEditMonths") {
       console.log("getMonths");
       getMonths();
-    } else if (activeTab == "tabEditSettings") {
+    } else if (activeTab == "bEditSettings") {
       console.log("undoReload(): reload Settings..");
       data = {};
       refreshSettings();
@@ -1395,11 +1401,11 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
   {
     document.getElementById('message').innerHTML = "Gegevens worden opgeslagen ..";
 
-    if (activeTab == "tabEditSettings")
+    if (activeTab == "bEditSettings")
     {
       saveSettings();
     } 
-    else if (activeTab == "tabEditMonths")
+    else if (activeTab == "bEditMonths")
     {
       saveMeterReadings();
     }
@@ -1485,7 +1491,7 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
   function sendPostSetting(field, value) 
   {
     const jsonString = {"name" : field, "value" : value};
-    //console.log("send JSON:["+JSON.stringify(jsonString)+"]");
+    console.log("send JSON:["+JSON.stringify(jsonString)+"]");
     const other_params = {
         headers : { "content-type" : "application/json; charset=UTF-8"},
         body : JSON.stringify(jsonString),
@@ -1493,7 +1499,7 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
         //aangepast cors -> no-cors
         mode : "no-cors"
     };
-
+	showSpinner();
     fetch(APIGW+"v2/dev/settings", other_params)
       .then(function(response) {
             //console.log(response.status );    //=> number 100–599
@@ -1502,10 +1508,10 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
             //console.log(response.url);        //=> String
             //console.log(response.text());
             //return response.text()
+            hideSpinner();
       }, function(error) {
         console.log("Error["+error.message+"]"); //=> String
-      });
-      
+      });      
   } // sendPostSetting()
 
     
@@ -1644,20 +1650,20 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
     
     const jsonString = {"recid": recId, "edt1": row[i].values[0], "edt2": row[i].values[1],
                          "ert1": row[i].values[2],  "ert2": row[i].values[3], "gdt":  row[i].values[4] };
-//	console.log ("JsonString: "+JSON.stringify(jsonString));
+	console.log ("JsonString: "+JSON.stringify(jsonString));
     const other_params = {
         headers : { "content-type" : "application/json; charset=UTF-8"},
         body : JSON.stringify(jsonString),
         method : "POST",
         mode : "cors"
     };
-    
+    showSpinner();
     fetch(APIGW+"v2/hist/months", other_params)
       .then(function(response) {
+      hideSpinner();
       }, function(error) {
         console.log("Error["+error.message+"]"); //=> String
       });
-
       
   } // sendPostReading()
 
@@ -1666,7 +1672,6 @@ http://DSMR-API.local/api/v2/dev/settings</pre>", false);
   function readGitHubVersion()
   {
     if (GitHubVersion != 0) return;
-    
     fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API@master/edge/DSMRversion.dat")
       .then(response => {
         if (response.ok) {

@@ -1,94 +1,53 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex.html.inc, part of DSMRloggerAPI
-**  Version  : v1.2.2
+**  Version  : v2.1.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
-**  Update : MHendriks : png's loaded from the cdn too
+**  Copyright (c) 2020 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 -->
-    <font face="Arial">
-    <!-- <div class="dev-header"> -->
-    <div class="header">
-      <h1>
-        <span id="sysName">DSMR-logger(API)</span> &nbsp; &nbsp; &nbsp;
-		<div class="nav-item nav-clock">
-		<span id="theTime" style="display: block">n/a</span>
-		<span id="devVersion" style="display: block">[version]</span>
-		</div>
-        <!--span id="devVersion" style='font-size: small;right: 10px;'>[version]</span>
-        <span id="devName"    style='font-size: small;'>-</span> &nbsp;
-        <span id="source"     style='font-size: small;'> &nbsp; &nbsp; [-]</span>
-        <span id='theTime' class='nav-item nav-clock'>00:00</span-->
-      </h1>
-   </div>
-<!--  <div style="clear:both"></div> -->
-  </font>
-  
-  <span id="mainPage" style="display:block">
-  
-  <!-- <div class="clock" id="theTime">1234567890</div> -->
-  <!-- START Tabbladen -->
+<!-- <div class="dev-header"> -->
+<div class="header">
   <div class="nav-container">
-    <div class='nav-left'>
-      <a id='bActualTab'    class='nav-item tabButton'>Actueel</a>
-      <a id='bHoursTab'     class='nav-item tabButton'>per Uur</a>
-      <a id='bDaysTab'      class='nav-item tabButton'>per Dag</a>
-      <a id='bMonthsTab'    class='nav-item tabButton'>per Maand</a>
-      <a id='bTelegramTab'  class='nav-item tabButton'>Telegram</a>
-      <a id='bFieldsTab'    class='nav-item tabButton'>all Fields</a>
-      <a id='bSysInfoTab'   class='nav-item tabButton'>Systeem Info</a>
-      <a id='bAPIdocTab'    class='nav-item tabButton'>API Docs</a>
-      <a id='FSexplorer'    class='nav-img'><span class="mdi mdi-folder-outline" style="font-size: x-large;color: white;"></span></a>
-      <a id='Settings'      class='nav-img'><span class="mdi mdi-cog" style="font-size: x-large;color: white;"></span></a>
+  	<div class="inner-nav">
+    <nav id='nav-main'>
+      <a id='Home'   		class='nav-item nav-img' href="#ActualTab"><span class="mdi mdi-chart-box-outline"></span></a>
+      <a id='bActualTab'    class='nav-item tabButton active' href="#ActualTab">Actueel</a>
+      <a id='bHoursTab'     class='nav-item tabButton' href="#HoursTab">Uur</a>
+      <a id='bDaysTab'      class='nav-item tabButton' href="#DaysTab">Dag</a>
+      <a id='bMonthsTab'    class='nav-item tabButton' href="#MonthsTab">Maand</a>
+	  <a id='bSysInfoTab'   class='nav-item nav-img' href="#SysInfoTab"><span class="mdi mdi-information-outline"></span></a>
+      <a id='bFSexplorer'    class='nav-item nav-img' href="#FileExplorer"><span class="mdi mdi-folder-outline"></span></a>
+      <a id='bSettings'      class='nav-item nav-img' href="#Settings"><span class="mdi mdi-cog"></span></a>
+   </nav> <!-- end nav-main -->  
+   </div> <!-- innner nav -->
+  </div> <!-- end main-nav container-->
+  <div id="nav-settings" class="subnav">
+	<div class="subnav-container">
+      <a id='bEditSettings' class='subnav-item tabButton' href="#Settings">Settings</a>
+      <a id='bEditMonths'   class='subnav-item tabButton' href="#Settings">Meterstanden</a>
     </div>
-  </div>
-  <!-- END Tabbladen -->
-  
-  <br>
-  
-  <!-- START ActualTab Tab -->
-  <div id="ActualTab" class="tabName" style="display:block">
-    <!-- START actueelTab Dummy -->
-    <div>
-        <span style="font-size: 30px;">Actueel &nbsp; </span>
-        <span style="font-size: 15px;">(/api/v2/sm/actual) &nbsp; &nbsp; &nbsp; </span>
-        <label for="pType"><b>Presentatie: </b></label>
-        Tabel
-        <input type="radio" id="aTAB" onchange="setPresentationType('TAB')" checked/>
-        &nbsp;&nbsp;
-        Grafisch
-        <input type="radio" id="aGRAPH" onchange="setPresentationType('GRAPH')"/>
-        &nbsp;&nbsp;
+  </div>  <!-- END subnav-container -->
+  <div id="nav-info"  class="subnav">
+	<div class="subnav-container">
+      <a id='bInfo_SysInfo'   class='subnav-item tabButton' href="#SysInfoTab">Systeeminformatie</a>
+      <a id='bInfo_Telegram'  class='subnav-item tabButton' href="#TelegramTab">Telegram</a>
+      <a id='bInfo_Fields'    class='subnav-item tabButton' href="#FieldsTab">Alle Velden</a>
+      <a id='bInfo_APIdoc'    class='subnav-item tabButton' href="#APIdocTab">API Docs</a>
     </div>
-    <div id="actual" >
-      <table id="actualTable">
-      <thead>
-        <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th style="text-align: center;">Unit</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-      <tfoot>
-        <tr>
-            <td colspan=3>Data uit de Slimme Meter</td>
-        </tr>
-      <tfoot>
-      </table>
-    </div>
-  
-  </div>  <!-- END ActualTab Tab -->
+  </div>  <!-- END subnav-container -->
+   <div class="nav-clock topcorner">
+	  <span id="theTime">n/a</span>
+	</div> <!-- end date/time -->
+</div> <!-- end header -->    
 
-  <!-- START HoursTab -->
-  <div id="HoursTab" class="tabName">
-    <div>
-        <span style="font-size: 30px;">Afgelopen Uren &nbsp; </span>
-        <span style="font-size: 15px;">(/api/v2/hist/hours) &nbsp; &nbsp; &nbsp; </span>
+<div id="mainPage" style="display:block">
+    <!-- START HoursTab -->
+  <section id="HoursTab" class="tabName">
+    <h2>Afgelopen Uren</h2>
+	<div>
       <label for="pType"><b>Presentatie: </b></label>
       Tabel
       <input type="radio" id="hTAB" onchange="setPresentationType('TAB')" checked/>
@@ -112,14 +71,12 @@
         </tbody>
       </table>
     </div>
-    
-  </div> <!-- END HoursTab -->
+  </section> <!-- END HoursTab -->
 
   <!-- START DaysTab -->
-  <div id="DaysTab" class="tabName">
+  <section id="DaysTab" class="tabName">
+    <h2>Afgelopen Dagen</h2>
     <div>
-        <span style="font-size: 30px;">Afgelopen Dagen &nbsp; </span>
-        <span style="font-size: 15px;">(/api/v2/hist/days) &nbsp; &nbsp; &nbsp; </span>
       <label for="pType"><b>Presentatie: </b></label>
       Tabel
       <input type="radio" id="dTAB" onchange="setPresentationType('TAB')" checked/>
@@ -143,13 +100,12 @@
       </tbody>
       </table>
     </div>
-  </div> <!-- END DaysTab -->
+  </section> <!-- END DaysTab -->
 
   <!-- START MonthsTab -->
-  <div id="MonthsTab" class="tabName">
-    <div>
-        <span style="font-size: 30px;">Afgelopen Maanden &nbsp; </span>
-        <span style="font-size: 15px;">(/api/v2/hist/months) &nbsp; &nbsp; &nbsp; </span>
+  <section id="MonthsTab" class="tabName">
+	<h2>Afgelopen Maanden</h2>
+	<div>
       <label for="pType"><b>Presentatie: </b></label>
       Tabel
       <input type="radio" id="mTAB" onchange="setPresentationType('TAB')" checked/>
@@ -189,7 +145,7 @@
         </tr>
       </thead>
       <tbody>
-              </tbody>
+	  </tbody>
       </table>
       
       <table id="lastMonthsTableCosts" style="display:none">
@@ -213,14 +169,11 @@
       </tbody>
       </table>
     </div>
-  </div> <!-- END MonthsTab -->
+  </section> <!-- END MonthsTab -->
 
   <!-- START SysInfo Tab -->
-  <div id="SysInfoTab" class="tabName">
-    <div>
-        <span style="font-size: 30px;">Device Info &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v2/dev/info</span>
-    </div>
+  <section id="SysInfoTab" class="tabName">
+    <h2>Systeeminformatie</h2>
     <div id='devInfo'>
       <table id="devInfoTable">
       <thead>
@@ -240,26 +193,20 @@
       </table>
     </div>
   
-  </div>  <!-- END SysInfo Tab -->
+  </section>  <!-- END SysInfo Tab -->
 
   <!-- START TelegramTab -->
-  <div id="TelegramTab" class="tabName">
-    <div>
-        <span style="font-size: 30px;">raw Telegram &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v2/sm/telegram</span>
-    </div>
+  <section id="TelegramTab" class="tabName">
+    <h2>Ruwe Telegram data</h2>
     <div id="rawTelegram">
     </div>
     
-  </div> <!-- END TelegramTab -->
+  </section> <!-- END TelegramTab -->
 
   <!-- START Fields Tab -->
-  <div id="FieldsTab" class="tabName">
+  <section id="FieldsTab" class="tabName">
     <!-- START fieldsTab Dummy -->
-    <div>
-        <span style="font-size: 30px;">All Fields &nbsp; </span>
-        <span style="font-size: 15px;">(/api/v2/sm/fields) &nbsp; &nbsp; &nbsp; </span>
-    </div>
+    <h2>Alle Velden</h2>
     <div id='fields'>
       <table id="fieldsTable">
       <thead>
@@ -280,78 +227,180 @@
       </table>
     </div>
   
-  </div>  <!-- END fields Tab -->
+  </section>  <!-- END fields Tab -->
 
   <!-- START Api Docs Tab -->
-  <div id="APIdocTab" class="tabName">
+  <section id="APIdocTab" class="tabName">
     <!-- START APIdocTab Dummy -->
-    <div>
-        <span style="font-size: 30px;">API documentie &nbsp; </span>
-    </div>
-  
-  </div>  <!-- END API docs Tab -->
-
-  <!-- REST -->
-
-  <div style="margin: 30px;">
-    <canvas id="dataChart" style="display: none;" width="900" height="300"></canvas>
-    <canvas id="gasChart"  style="display: none;" width="900" height="125"></canvas>
-  </div>
-  </span>
-<!--------------------------------------------------------------------------------------->
-<!--------------------------------------------------------------------------------------->
-<!--------------------------------------------------------------------------------------->
-<!--------------------------------------------------------------------------------------->
-  <span id="settingsPage" style="display:none">
-
-  <div class="nav-container">
-    <div class='nav-left'>
-      <a id='bTerug'        class='nav-item tabButton'>Terug</a>
-      <a id='bEditMonths'   class='nav-item tabButton'>Meterstanden</a>
-      <a id='bEditSettings' class='nav-item tabButton'>Settings</a>
-      <a id='bUndo'         class='nav-item tabButton'>Herstel</a>
-      <a id='bSave'         class='nav-item tabButton'>Opslaan</a>
-    </div>
-  </div>  <!-- END nav-container -->
-
-  <!-- START Tabbladen -->
+    <h2>API documentatie</h2>
+    <table id=ApiDocTable>
+  <tr>
+    <th>url</th>
+    <th>omchrijving</th>
+  </tr>
+  <tr>
+    <td><a href="api/v2/dev/info" target="_blank">api/v2/dev/info</a></td>
+    <td>Device info in JSON format</td>
+  </tr>
+  <tr>
+    <td><a href="api/v2/dev/time" target="_blank">api/v2/dev/time</a></td>
+    <td>Device time (epoch) in JSON format</td>
+  </tr>
+  <tr>
+    <td><a href="api/v2/dev/settings" target="_blank">api/v2/dev/settings</a></td>
+    <td>Device settings in JSON format</td>
+  </tr>
+  <tr>
+    <td><a href="api/v2/dev/settings" target="_blank">api/v2/dev/settings{jsonObj}</a></td>
+    <td>[POST] update Device settings in JSON format. </br>Test with:
+        curl -X POST -H \"Content-Type: application/json\" --data '{\"name\":\"mqtt_broker\",\"value\":\"hassio.local\"}'</td>
+  </tr>
+  <tr>
+    <td><a href="api/v2/sm/info" target="_blank">api/v2/sm/info</a></td>
+    <td>Smart Meter info in JSON format</td>
+  </tr>
+  <tr>
+    <td><a href="api/v2/sm/actual" target="_blank">api/v2/sm/actual</a></td>
+    <td>Smart Meter Actual data in JSON format</td>
+  </tr>
+  <tr>
+    <td><a href="api/v2/sm/fields" target="_blank">api/v2/sm/fields</a></td>
+    <td>Smart Meter all fields data in JSON format<br>JSON format: {\"name\":[{\"value\":&lt;value&gt;,\"unit\":\"&lt;unit&gt;\"}]}</td>
+  </tr>
+    <tr>
+    <td><a href="api/v2/sm/fields/{fieldName}" target="_blank">api/v2/sm/fields/{fieldName}</a></td>
+    <td>Smart Meter one field data in JSON format</td>
+  </tr>
+  </tr>
+    <tr>
+    <td><a href="api/v2/sm/telegram" target="_blank">api/v2/sm/telegram</a></td>
+    <td>raw telegram as send by the Smart Meter including all \"\\r\\n\" line endings</td>
+  </tr>
+  </tr>
+    <tr>
+    <td><a href="api/v2/hist/hours" target="_blank">api/v2/hist/hours</a></td>
+    <td>History data per hour in JSON format</td>
+  </tr>
+    <tr>
+    <td><a href="api/v2/hist/days" target="_blank">api/v2/hist/days</a></td>
+    <td>History data per day in JSON format</td>
+  </tr>
+  <tr>
+    <td><a href="api/v2/hist/months" target="_blank">api/v2/hist/months</a></td>
+    <td>History data per month in JSON format</td>
+  </tr>  
+</table>
+  </section>  <!-- END API docs Tab -->
+    
+  <section id="Settings" class="tabName">
+      <!-- START Tabbladen -->
+  <h2>Instellingen</h2>
   <div id="tabEditMonths" class="tabName">
     <label for="Period"><b>Meterstand: </b></label>
       Energy Delivered
       <input type="radio" name="editType" id="MED" onchange="setEditType('ED')" checked/>
-      &nbsp;&nbsp;
       Energy Returned
       <input type="radio" name="editType" id="MER" onchange="setEditType('ER')"/>
-      &nbsp;&nbsp;
       Gas Delivered
-      <input type="radio" name="editType" id="MGD" onchange="setEditType('GD')"/>
-      &nbsp;&nbsp;
-  
-  <div id="tabMaanden" class="tabName outer-div" style="display:none">
-    <!-- START edit tabMonths -->
-    <br>
-      <div id="editMonths" class="inner-div">
-      </div> 
-  </div>  <!-- END tabMonthss -->
-
+      <input type="radio" name="editType" id="MGD" onchange="setEditType('GD')"/>  
+	  <div id="tabMaanden" class="outer-div">
+		<!-- START edit tabMonths -->
+		  <div id="editMonths" class="inner-div"></div> 
+	  </div>  <!-- END tabMonthss -->
   </div> <!-- tabMonths -->
-  
-  
-  <div id="tabEditSettings" class="tabName outer-div" style="display:none">
+  <div id="tabEditSettings" class="outer-div"">
     <!-- START settingsTab Settings -->
-    <br>
-      <div id="settings" class="inner-div" style="width: 500px;">
-      </div> 
+      <div id="settings_table" class="inner-div"></div>          
   </div>  <!-- END tabSettings -->
+  <div id="settings_btns">
+      <a id='bUndo'   class='btn' onclick="undoReload()">Undo</a>
+      <a id='bSave'   class='btn' onclick="saveData()">Opslaan</a>
+      </div>
+  </section> <!-- end Settings Page -->
   
-  <!-- END Tabbladen -->
+  <!-- START FileExplorer Tab -->
+  <section id="FileExplorer" class="tabName"><h2>Bestandsbeheer</h2>
+      <div>
+         <main id="FSmain"></main>
+      </div>
+		<form action="/upload" method="POST" enctype="multipart/form-data">
+		  <input id="Ifile" type="file" name="upload">
+          <input id="Iupload" type="submit" value="Upload" disabled />
+      </form>
 
-  </span> <!-- end Settings Page -->
+      <span></span>
+      <fileSize></fileSize>
+      <hr>
+      <!--div style='width: 40%'>
+        <span>
+        <form style='float: left;' action='/update' method='GET'>
+          <input type='submit' class='button' name='SUBMIT' value='Update Firmware' ENABLED/>
+        </form>
+        </span>
+      </div-->
+      <div style='width: 40%'>
+        <span>
+        <form style='float: left;' action='/ReBoot'>
+          <input type='submit' class='button' name='SUBMIT' value='ReBoot'>
+        </form>
+      </div>  
+      <div style='width: 40%'>
+        <span>
+        <form style='float: left; margin-left:15px;' action='/ResetWifi' >
+          <input id="resetWifi" type='submit' class='button' name='SUBMIT' value='Reset Wifi' hidden/>
+        </form>
+      </div>  
+  </section>
+	<section id="Redirect" class="tabName">
+	<h2>Opnieuw opstarten</h2>
+	<h3><div id="RedirectMessage"></div></h3>
+	<div><b>Redirect over <span id='counter'>45</span> seconden.</b>
+	<hr>Indien de pagina niet automatisch getoond wordt klik dan op <a href='/'>Home pagina</a></div>
+    </section>  
+<!-- START ActualTab Tab -->
+  <section id="ActualTab" class="tabName default">
+    <!-- START actueelTab Dummy -->
+        <h2>Actueel</h2>
+    <div>
+        <label for="pType"><b>Presentatie: </b></label>
+        Tabel
+        <input type="radio" id="aTAB" onchange="setPresentationType('TAB')" checked/>
+        &nbsp;&nbsp;
+        Grafisch
+        <input type="radio" id="aGRAPH" onchange="setPresentationType('GRAPH')"/>
+        &nbsp;&nbsp;
+    </div>
+    <div id="actual" >
+      <table id="actualTable">
+      <thead>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th style="text-align: center;">Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
+        <tr>
+            <td colspan=3>Data uit de Slimme Meter</td>
+        </tr>
+      <tfoot>
+      </table>
+    </div>
   
-  <!--
-  <script src="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API@master/edge/DSMRedge.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API@master/edge/DSMRgraphics.min.js"></script>
-  -->
+  </section>  <!-- END ActualTab Tab -->
+  <div hidden id="loader"></div>
+  <!-- REST -->
+  <div style="margin: 30px;">
+    <canvas id="dataChart" style="display: none;" width="900" height="300"></canvas>
+    <canvas id="gasChart"  style="display: none;" width="900" height="125"></canvas>
+  </div>
+<!-- Pin to bottom right corner -->
+    <div class="bottom right-0"><span id="devVersion">[version]</span>  |  2020 &copy; Martijn Hendriks</div>
+    <!-- Pin to bottom left corner -->
+    <div id="message" class="bottom left-0">-</div>    
+</div> <!-- main page-->
 
 <!--
 ***************************************************************************

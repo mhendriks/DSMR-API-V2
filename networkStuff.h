@@ -1,14 +1,13 @@
 /*
 ***************************************************************************  
 **  Program  : networkStuff.h, part of DSMRloggerAPI
-**  Version  : v2.1.0
+**  Version  : v2.1.1
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-
 
 #include <ESP8266WiFi.h>        //ESP8266 Core WiFi Library         
 #include <ESP8266WebServer.h>   // Version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
@@ -24,7 +23,6 @@
 // included in main program: #include <TelnetStream.h>       // Version 0.0.1 - https://github.com/jandrassy/TelnetStream
 //#include <Hash.h>
 #include <FS.h>                 // part of ESP8266 Core https://github.com/esp8266/Arduino
-
 
 ESP8266WebServer        httpServer (80);
 #ifdef USE_UPDATE_SERVER
@@ -96,7 +94,6 @@ void startWiFi(const char* hostname, int timeOut)
   DebugTf(" took [%d] seconds => OK!\r\n", (millis() - lTime) / 1000);
   
 } // startWiFi()
-
 
 //===========================================================================================
 void startTelnet() 

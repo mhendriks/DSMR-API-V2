@@ -21,7 +21,6 @@ void handleMindergas()
 
 } // handleMindergas()
 
-
 #ifdef USE_MINDERGAS
 
 enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_NEXT_DAY

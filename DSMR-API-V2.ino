@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.1.0 (05-09-2020)"
+#define _FW_VERSION "v2.1.1 (21-11-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -11,9 +11,11 @@
 *      
 *      TODO
 *      - v1/dev/settings .js file (opslaan settings)
+*      - merge writeRingFile ipv per veld
+*      - uploadserver
+*      
 *      Backlog
 *      - ringfile : fout bestaande file - oude renamen en nieuwe maken
-*      - api: laatste 10 errors/excepties bekijken incl timestamp
 *      - telegram message bij drempelwaardes
 *      - telegram verbruiksrapport einde dag/week/maand
 *      - telegram bot gebruiken als UI
@@ -30,24 +32,17 @@
     - Crystal Frequency: "26 MHz" 
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
-    - CPU Frequency: "80 MHz"
-    - Buildin Led: "2"  // GPIO02 
+    - CPU Frequency: "80 MHz of 160MHz"
+    - Buildin Led: 2 
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
-*/
-/*
-**  You can find more info in the following links (all in Dutch): 
-**   https://willem.aandewiel.nl/index.php/2020/02/28/restapis-zijn-hip-nieuwe-firmware-voor-de-dsmr-logger/
-**   https://mrwheel-docs.gitbook.io/dsmrloggerapi/
-**   https://mrwheel.github.io/DSMRloggerWS/
 */
 /******************** compiler options  ********************************************/
 #define USE_REQUEST_PIN           // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
 #define USE_AUX                     // define if the aux port should be used
 //#define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
-//  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
@@ -55,6 +50,8 @@
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 /******************** don't change anything below this comment **********************/
+#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_AUX][USE_MQTT][USE_DUTCH_PROTOCOL]" //change by hand
+//possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
 
 #include "DSMRloggerAPI.h"
 
@@ -95,7 +92,7 @@ void openSysLog(bool empty)
   sysLog.setOutput(&TelnetStream);
   sysLog.status();
   sysLog.write("\r\n");
-  for (int q=0;q<3;q++)
+  for (uint8_t q=0;q<3;q++)
   {
     sysLog.write("******************************************************************************************************");
   }
@@ -112,33 +109,19 @@ void openSysLog(bool empty)
 //===========================================================================================
 void setup() 
 {
-#ifdef USE_PRE40_PROTOCOL                                                         //PRE40
-  Serial.begin(9600, SERIAL_7E1);                                                 //PRE40
-#else   // not use_dsmr_30                                                        //PRE40
-  Serial.begin(115200, SERIAL_8N1);
-#endif  // use_dsmr_30
+ Serial.begin(115200, SERIAL_8N1);
   pinMode(2, INPUT); //optocoopler input
   pinMode(FLASH_BUTTON, INPUT);
-  //swSer1.begin(115200);
 #ifdef DTR_ENABLE
   pinMode(DTR_ENABLE, OUTPUT);
 #endif
-
-  
   //--- setup randomseed the right way
   //--- This is 8266 HWRNG used to seed the Random PRNG
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
   randomSeed(RANDOM_REG32); 
   snprintf(settingHostname, sizeof(settingHostname), "%s", _DEFAULT_HOSTNAME);
   Serial.printf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
-
-    for(int I=0; I<8; I++) 
-    {
-      //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-      delay(500);
-    }
-  
-  //digitalWrite(LED_BUILTIN, LED_OFF);  // HIGH is OFF
+  delay(500);
   lastReset     = ESP.getResetReason();
 
   startTelnet();
@@ -171,9 +154,7 @@ void setup()
   
 //=============start Networkstuff==================================
   
-  //digitalWrite(LED_BUILTIN, LED_ON);
   startWiFi(settingHostname, 240);  // timeout 4 minuten
-  //digitalWrite(LED_BUILTIN, LED_OFF);
   
   Debugln();
   Debug (F("Connected to " )); Debugln (WiFi.SSID());
@@ -181,12 +162,7 @@ void setup()
   Debug (F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
   Debugln();
 
-  //for (int L=0; L < 10; L++) {
-    //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    //delay(200);
-  //}
-  //digitalWrite(LED_BUILTIN, LED_OFF);
-  delay(1500);
+  delay(1000);
 //-----------------------------------------------------------------
 #ifdef USE_SYSLOGGER
   openSysLog(false);
@@ -225,30 +201,12 @@ void setup()
   Serial.print (WiFi.localIP());
   Serial.println(F("' voor verdere debugging\r\n"));
 
-//=============now test if SPIFFS is correct populated!============
-  if (DSMRfileExist(settingIndexPage, false) )
+//============= now test if SPIFFS is correct populated!============
+  if (!DSMRfileExist(settingIndexPage, false) )
   {
-    if (strcmp(settingIndexPage, "DSMRindexEDGE.html") != 0)
-    {
-      if (settingIndexPage[0] != '/')
-      {
-        char tempPage[50] = "/";
-        strConcat(tempPage, 49, settingIndexPage);
-        strCopy(settingIndexPage, sizeof(settingIndexPage), tempPage);
-      }
-      hasAlternativeIndex        = true;
-    }
-    else  hasAlternativeIndex    = false;
+    spiffsNotPopulated = true;   
   }
-  if (!hasAlternativeIndex && !DSMRfileExist("/DSMRindexEDGE.html", false) )
-  {
-    spiffsNotPopulated = true;
-  }
-  if (!DSMRfileExist("/FSexplorer.html", true))
-  {
-    spiffsNotPopulated = true;
-  }
-  
+    
 //=============end SPIFFS =========================================
 #ifdef USE_SYSLOGGER
   if (spiffsNotPopulated)
@@ -274,48 +232,29 @@ void setup()
 #endif                                                          //USE_MQTT
 
 //================ End of Start MQTT  ===============================
-
-
 //================ Start HTTP Server ================================
 
   if (!spiffsNotPopulated) {
     DebugTln(F("SPIFFS correct populated -> normal operation!\r"));
-    if (hasAlternativeIndex)
-    {
-      httpServer.serveStatic("/",                 SPIFFS, settingIndexPage);
-      httpServer.serveStatic("/index",            SPIFFS, settingIndexPage);
-      httpServer.serveStatic("/index.html",       SPIFFS, settingIndexPage);
-      httpServer.serveStatic("/DSMRindex.html",   SPIFFS, settingIndexPage);
-    }
-    else
-    {
-      httpServer.serveStatic("/",                 SPIFFS, "/DSMRindexEDGE.html");
-      httpServer.serveStatic("/DSMRindex.html",   SPIFFS, "/DSMRindexEDGE.html");
-      httpServer.serveStatic("/index",            SPIFFS, "/DSMRindexEDGE.html");
-      httpServer.serveStatic("/index.html",       SPIFFS, "/DSMRindexEDGE.html");
-    }
+    httpServer.serveStatic("/",                 SPIFFS, "/DSMRindexEDGE.html");
+    httpServer.serveStatic("/DSMRindex.html",   SPIFFS, "/DSMRindexEDGE.html");
+    httpServer.serveStatic("/index",            SPIFFS, "/DSMRindexEDGE.html");
+    httpServer.serveStatic("/index.html",       SPIFFS, "/DSMRindexEDGE.html");
   } else {
     DebugTln(F("Oeps! not all files found on SPIFFS -> present FSexplorer!\r"));
     spiffsNotPopulated = true;
   }
-
+  
+  httpServer.serveStatic("/FSexplorer",      SPIFFS, "/FSexplorer.html"); //for version 2.0.0 firmware
+  
   setupFSexplorer();
-  httpServer.serveStatic("/FSexplorer.png",   SPIFFS, "/FSexplorer.png");
-
-  httpServer.on("/api", HTTP_GET, processAPI);
-  // all other api calls are catched in FSexplorer onNotFounD!
-
+  httpServer.on("/api", HTTP_GET, processAPI); // all other api calls are catched in FSexplorer onNotFounD!
   httpServer.begin();
   DebugTln( F("HTTP server gestart\r") );
   
-  for (int i = 0; i< 10; i++) 
-  {
-    //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    delay(250);
-  }
+  delay(2000);
+  
 //================ Start HTTP Server ================================
-
-  //test(); monthTabel
   
 #ifdef USE_MINDERGAS
     handleMindergas();
@@ -325,14 +264,10 @@ void setup()
   writeToSysLog("Startup complete! actTimestamp[%s]", actTimestamp);  
 
 //================ End of Slimmer Meter ============================
-
-
 //================ The final part of the Setup =====================
 
   snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTln(cMsg);
-
-  
 
 //================ Start Slimme Meter ===============================
   DebugTln(F("Enable Aux interrupt..\r"));
@@ -351,7 +286,7 @@ void setup()
 #endif // is_esp12
   delay(100);
   slimmeMeter.enable(true);
-
+  Rebootlog(); // write reboot status to file
 } // setup()
 
 

@@ -510,7 +510,7 @@ var myGasChart;
   //============================================================================  
   function showActualGraph()
   {
-    if (activeTab != "ActualTab") return;
+    if (activeTab != "bActualTab") return;
 
     //console.log("Now in showActualGraph()..");
 

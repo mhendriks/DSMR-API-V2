@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.1.0
+**  Version  : v2.1.1
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -13,7 +13,6 @@
 #include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream/commit/1294a9ee5cc9b1f7e51005091e351d60c8cddecf
 #include "safeTimers.h"
 #include <ArduinoJson.h>
-
 
 #ifdef USE_SYSLOGGER
   #include "ESP_SysLogger.h"      // https://github.com/mrWheel/ESP_SysLogger
@@ -27,10 +26,7 @@
   #define writeToSysLog(...)  // nothing
 #endif
 
-#if defined( USE_PRE40_PROTOCOL )                               //PRE40
-  //  https://github.com/mrWheel/arduino-dsmr30.git             //PRE40
-  #include <dsmr30.h>                                           //PRE40
-#elif defined( USE_BELGIUM_PROTOCOL )                           //Belgium
+#if defined( USE_BELGIUM_PROTOCOL )                           //Belgium
   //  https://github.com/mrWheel/arduino-dsmr-be.git            //Belgium
   #include <dsmr-be.h>                                          //Belgium
 #else                                                           //else
@@ -44,10 +40,7 @@
   
 #ifdef USE_REQUEST_PIN
     #define DTR_ENABLE  14
-#endif  // is_esp12
-
-uint32_t    isrAux_cnt = 0;
-
+#endif
 
 #ifdef DTR_ENABLE
   P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
@@ -55,18 +48,15 @@ uint32_t    isrAux_cnt = 0;
   P1Reader    slimmeMeter(&Serial, 0);
 #endif
 
-//#define LED_ON            LOW
-//#define LED_OFF          HIGH
 #define FLASH_BUTTON        0
-#define MAXCOLORNAME       15
 #define JSON_BUFF_MAX     255
 #define MQTT_BUFF_MAX     200
 
 //-------------------------.........1....1....2....2....3....3....4....4....5....5....6....6....7....7
 //-------------------------1...5....0....5....0....5....0....5....0....5....0....5....0....5....0....5
-#define DATA_FORMAT       "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;\n"
-#define DATA_CSV_HEADER   "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;"
-#define DATA_RECLEN       75
+//#define DATA_FORMAT       "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;\n"
+//#define DATA_CSV_HEADER   "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;"
+//#define DATA_RECLEN       75
 
 enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 
@@ -78,11 +68,10 @@ typedef struct {
     unsigned int seconds;
   } S_ringfile;
 
-//+1 voor de vergeleiding, laatste wordt in de UI niet getoond namelijk
+//+1 voor de vergelijking, laatste record wordt niet getoond 
 //onderstaande struct kan niet in PROGMEM opgenomen worden. gaat stuk bij SPIFF.open functie
 
 const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RINGdays.json",14+1,SECS_PER_DAY},{"/RINGmonths.json",24+1,0}}; 
-
 
 #include "Debug.h"
 #include "networkStuff.h"
@@ -135,9 +124,6 @@ using MyData = ParsedData<
   /* String */        ,gas_equipment_id
   /* uint8_t */       ,gas_valve_position
   /* TimestampedFixedValue */ ,gas_delivered
-#ifdef USE_PRE40_PROTOCOL                          //PRE40
-  /* TimestampedFixedValue */ ,gas_delivered2      //PRE40
-#endif                                             //PRE40
   /* uint16_t */      ,thermal_device_type
   /* String */        ,thermal_equipment_id
   /* uint8_t */       ,thermal_valve_position
@@ -164,8 +150,6 @@ const PROGMEM char *flashMode[]    { "QIO", "QOUT", "DIO", "DOUT", "Unknown" };
 int strcicmp(const char *a, const char *b);
 void delayms(unsigned long);
 
-
-
 //===========================GLOBAL VAR'S======================================
   WiFiClient  wifiClient;
   MyData      DSMRdata;
@@ -180,10 +164,8 @@ void delayms(unsigned long);
   bool        showRaw = false;
   int8_t      showRawCount = 0;
 
-
 #ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
-  
   static PubSubClient MQTTclient(wifiClient);
 #endif
 
@@ -194,10 +176,9 @@ void delayms(unsigned long);
   static char      timeLastResponse[16]      = "";  
 #endif
 
-char      cMsg[150], fChar[10];
+char      cMsg[150];
 String    lastReset           = "";
 bool      spiffsNotPopulated  = false;
-bool      hasAlternativeIndex = false;
 bool      mqttIsConnected     = false;
 bool      doLog = false, Verbose1 = false, Verbose2 = false;
 int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;

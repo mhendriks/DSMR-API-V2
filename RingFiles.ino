@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : JsonCalls, part of DSMRloggerAPI
-**  Version  : v2.1.0
+**  Version  : v2.1.1
 **
 **  Copyright (c) 2020 Martijn Hendriks
 **
@@ -17,10 +17,11 @@ void createRingFile(E_ringfiletype ringfiletype)
     return;
   }
   
-  //fill file with default values
-  DynamicJsonDocument doc(7500);
+  //fill file with 0 values
+  const size_t capacity = 49*JSON_ARRAY_SIZE(5) + JSON_ARRAY_SIZE(49) + 50*JSON_OBJECT_SIZE(2) + 520;
+  DynamicJsonDocument doc(capacity); //6770 according to assistant
   doc["actSlot"] = 0;
-  for (int slot=0; slot < RingFiles[ringfiletype].slots; slot++ ) 
+  for (uint8_t slot=0; slot < RingFiles[ringfiletype].slots; slot++ ) 
   { 
     doc["data"][slot]["date"] = "00000000";
     doc["data"][slot]["values"][0] = 0;
@@ -101,8 +102,9 @@ void RingFileTo(E_ringfiletype ringfiletype, bool toFile)
 //===========================================================================================
 void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec) 
 {
-  DynamicJsonDocument doc(9500);
-  DynamicJsonDocument rec(140);
+  const size_t capacity = 49*JSON_ARRAY_SIZE(5) + JSON_ARRAY_SIZE(49) + 50*JSON_OBJECT_SIZE(2) + 520;
+  DynamicJsonDocument doc(capacity);
+  StaticJsonDocument<140> rec;
   char key[10] = "";
   uint8_t slot = 0;
   uint8_t actSlot = CalcSlot(ringfiletype, actTimestamp);
@@ -170,11 +172,7 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
     doc["data"][actSlot]["values"][1] = (float)DSMRdata.energy_delivered_tariff2;
     doc["data"][actSlot]["values"][2] = (float)DSMRdata.energy_returned_tariff1;
     doc["data"][actSlot]["values"][3] = (float)DSMRdata.energy_returned_tariff2;
-    #ifdef USE_PRE40_PROTOCOL
-        doc["data"][actSlot]["values"][4] = (float)DSMRdata.gas_delivered2;
-    #else
-      doc["data"][actSlot]["values"][4] = (float)DSMRdata.gas_delivered;
-    #endif
+    doc["data"][actSlot]["values"][4] = (float)DSMRdata.gas_delivered;
   }
    
   DebugT(F("RingFile output >"));serializeJson(doc, Serial); Debugln("");

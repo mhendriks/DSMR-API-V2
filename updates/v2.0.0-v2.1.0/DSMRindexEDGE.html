@@ -2,18 +2,20 @@
 <html lang=nl>
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Slimme Meter DSMR-API</title>
- 	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRindex.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">  
+ 	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API@master/edge/DSMRindex.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/favicon/favicon-32x32.png" sizes="32x32" />
-    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/favicon/apple-icon-180x180.png">
-	<meta name="msapplication-TileImage" content="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/favicon/ms-icon-310x310.png">
+    <title>Slimme Meter DSMR-API</title>
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API@master/edge/favicon-32x32.png" sizes="32x32" />
   </head>
   <body>
-    <script src="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRgraphics.min.js"></script>
-   	<script src="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRindex.min.js"></script>
+     <!-- Pin to bottom right corner -->
+    <div class="bottom right-0">2020 &copy; Willem Aandewiel</div>
+    <!-- Pin to bottom left corner -->
+    <div id="message" class="bottom left-0">-</div>
+    <script src="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API@master/edge/DSMRgraphics.min.js"></script>
+   	<script src="https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API@master/edge/DSMRindex.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/7.0.0/math.min.js" type="text/javascript"></script>
 
   <script>
@@ -22,11 +24,12 @@
         console.log("window.onload .. ");
         readPageBody();
       }
+      
   //============================================================================  
   function readPageBody()
   {
     console.log("readPageBody() ..");
-    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRindex.html.inc")
+    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API@master/edge/DSMRindex.html.inc")
       .then(response => {
         if (response.ok) {
           return response.text();

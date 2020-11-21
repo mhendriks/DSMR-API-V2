@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settings_status_files, part of DSMRloggerAPI
-**  Version  : v2.1.0
+**  Version  : v2.1.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -332,6 +332,40 @@ void updateSetting(const char *field, const char *newValue)
   
 } // updateSetting()
 
+//=======================================================================
+void Rebootlog(){
+  File RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
+  if (!RebootFile) {
+    DebugTln(F("open RebootLog file FAILED!!!--> Bailout\r\n"));
+    return;
+  }
+  
+  DebugT("RebootLog filesize: ");Debugln(RebootFile.size());
+  if (RebootFile.size() > 1500){ 
+    SPIFFS.remove("/Rebootlog.old");     //remove .old if existing 
+    //rename file
+    DebugTln(F("RebootLog: rename file"));
+    RebootFile.close(); 
+    SPIFFS.rename("/Reboot.log", "/Rebootlog.old");
+    RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
+    }
+  
+  //make one record
+  const size_t capacity = JSON_OBJECT_SIZE(3) + 80;
+  StaticJsonDocument<capacity> doc;
+  doc["time"] = buildDateTimeString(actTimestamp, sizeof(actTimestamp));
+  doc["reason"] = lastReset;
+  doc["reboots"] = (int)nrReboots;
+  
+  //write record to file
+  if (serializeJson(doc, RebootFile) == 0) DebugTln(F("write(): Failed to write to json file"));  
+  else DebugTln(F("write(): json file writen"));
+  
+  //closing the file
+  RebootFile.println(); //adds \n at the at of the record
+  RebootFile.flush();
+  RebootFile.close(); 
+}
 
 /***************************************************************************
 *

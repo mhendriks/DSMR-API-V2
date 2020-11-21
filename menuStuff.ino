@@ -1,15 +1,13 @@
 /* 
 ***************************************************************************  
 **  Program  : menuStuff, part of DSMRloggerAPI
-**  Version  : v2.1.0
+**  Version  : v2.1.1
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-
-
 //===========================================================================================
 void displayHoursHist(bool Telnet=true) 
 {
@@ -38,42 +36,13 @@ void displayMonthsHist(bool Telnet=true)
 void displayBoardInfo() 
 {
   Debugln(F("\r\n==================================================================\r"));
-  Debug(F(" \r\n            (c)2019 by [Willem Aandewiel / Martijn Hendriks"));
+  Debug(F(" \r\n            (c)2020 by [Willem Aandewiel"));
   Debug(F("]\r\n      Firmware Version ["));  Debug( _FW_VERSION );
   Debug(F("]\r\n              Compiled ["));  Debug( __DATE__ ); 
                                                Debug( "  " );
                                                Debug( __TIME__ );
-#ifdef USE_PRE40_PROTOCOL
-  Debug(F("]\r\n         compiled with [dsmr30.h] [USE_PRE40_PROTOCOL"));
-#else
   Debug(F("]\r\n         compiled with [dsmr.h"));
-#endif
-  Debug(F("]\r\n              #defines "));
-#ifdef USE_REQUEST_PIN
-  Debug(F("[USE_REQUEST_PIN]"));
-#endif
-#ifdef USE_UPDATE_SERVER
-  Debug(F("[USE_UPDATE_SERVER]"));
-#endif
-#ifdef USE_MQTT
-  Debug(F("[USE_MQTT]"));
-#endif
-#ifdef USE_MINDERGAS
-  Debug(F("[USE_MINDERGAS]"));
-#endif
-#ifdef USE_SYSLOGGER
-  Debug(F("[USE_SYSLOGGER]"));
-#endif
-#ifdef USE_NTP_TIME
-  Debug(F("[USE_NTP_TIME]"));
-#endif
-#ifdef USE_BELGIUM_PROTOCOL
-  Debug(F("[USE_BELGIUM_PROTOCOL]"));
-#endif
-#ifdef SHOW_PASSWRDS
-  Debug(F("[SHOW_PASSWRDS]"));
-#endif
-
+  Debug(F("]\r\n              #defines ")); Debug(F(ALL_OPTIONS));
   Debug(F(" \r\n   Telegrams Processed ["));  Debug( telegramCount );
   Debug(F("]\r\n           With Errors ["));  Debug( telegramErrors );
   Debug(F("]\r\n              FreeHeap ["));  Debug( ESP.getFreeHeap() );
@@ -145,8 +114,6 @@ void displayBoardInfo()
 
 } // displayBoardInfo()
 
-
-
 //===========================================================================================
 void handleKeyInput() 
 {
@@ -188,13 +155,6 @@ void handleKeyInput()
                     delay(2000);
                     ESP.reset();
                     delay(2000);
-                    break;
-      case 'i':
-      case 'I':     for(int I=0; I<10; I++) 
-                    {
-                      //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-                      delay(1000);
-                    }
                     break;
 #ifdef USE_MINDERGAS
       case 't':
@@ -265,7 +225,6 @@ void handleKeyInput()
                   #if defined(HAS_NO_SLIMMEMETER)
                     Debugln(F("  *F - Force build RING files\r"));
                   #endif
-                    //Debugf ("   I - Identify by blinking LED on GPIO[%02d]\r\n", LED_BUILTIN);
                     if (showRaw) 
                     {
                       Debugln(F("   P - Start Parsing again\r"));

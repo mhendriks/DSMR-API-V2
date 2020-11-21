@@ -1,7 +1,7 @@
-/* 
+ /* 
 ***************************************************************************  
 **  Program  : FSexplorer, part of DSMRloggerAPI
-**  Version  : v2.1.0
+**  Version  : v2.1.1
 **
 **  Mostly stolen from https://www.arduinoforum.de/User-Fips
 **  For more information visit: https://fipsok.de
@@ -21,42 +21,18 @@
 *******************************************************************
 */
 
-const char Helper[] = R"(
-  <br>You first need to upload these two files:
-  <ul>
-    <li>FSexplorer.html</li>
-    <li>FSexplorer.css</li>
-  </ul>
-  <form method="POST" action="/upload" enctype="multipart/form-data">
-    <input type="file" name="upload">
-    <input type="submit" value="Upload">
-  </form>
-  <br/><b>or</b> you can use the <i>Flash Utility</i> to flash firmware or SPIFFS!
-  <form action='/update' method='GET'>
-    <input type='submit' name='SUBMIT' value='Flash Utility'/>
-  </form>
-)";
-const PROGMEM char Header[] = "HTTP/1.1 303 OK\r\nLocation:FSexplorer.html\r\nCache-Control: no-cache\r\n";
+const PROGMEM char Header[] = "HTTP/1.1 303 OK\r\nLocation:/#FileExplorer\r\nCache-Control: no-cache\r\n";
 
 //=====================================================================================
 void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebunden werden
 {    
   SPIFFS.begin();
-  
-  if (SPIFFS.exists("/FSexplorer.html")) 
-  {
-    httpServer.serveStatic("/FSexplorer.html", SPIFFS, "/FSexplorer.html");
-    httpServer.serveStatic("/FSexplorer",      SPIFFS, "/FSexplorer.html");
-  }
-  else 
-  {
-    httpServer.send(200, "text/html", Helper); //Upload the FSexplorer.html
-  }
   httpServer.on("/api/listfiles", APIlistFiles);
   httpServer.on("/SPIFFSformat", formatSpiffs);
   httpServer.on("/upload", HTTP_POST, []() {}, handleFileUpload);
   httpServer.on("/ReBoot", reBootESP);
   httpServer.on("/update", updateFirmware);
+  httpServer.on("/ResetWifi", resetWifi);
   httpServer.onNotFound([]() 
   {
     if (Verbose2) DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(httpServer.uri()).c_str());
@@ -71,19 +47,17 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
                       , String(httpServer.urlDecode(httpServer.uri())).c_str());
       if (!handleFile(httpServer.urlDecode(httpServer.uri())))
       {
-        httpServer.send(404, "text/plain", "FileNotFound\r\n");
+        httpServer.send(404, "text/plain", F("FileNotFound\r\n"));
       }
     }
   });
   
 } // setupFSexplorer()
 
-
 //=====================================================================================
 void APIlistFiles()             // Senden aller Daten an den Client
 {   
   FSInfo SPIFFSinfo;
-
   typedef struct _fileMeta {
     char    Name[30];     
     int32_t Size;
@@ -136,7 +110,6 @@ void APIlistFiles()             // Senden aller Daten an den Client
   
 } // APIlistFiles()
 
-
 //=====================================================================================
 bool handleFile(String&& path) 
 {
@@ -147,12 +120,11 @@ bool handleFile(String&& path)
     httpServer.sendContent(Header);
     return true;
   }
-  if (!SPIFFS.exists("/FSexplorer.html")) httpServer.send(200, "text/html", Helper); //Upload the FSexplorer.html
+  //if (!SPIFFS.exists("/FSexplorer.html")) httpServer.send(200, "text/html", Helper); //Upload the FSexplorer.html
   if (path.endsWith("/")) path += "index.html";
   return SPIFFS.exists(path) ? ({File f = SPIFFS.open(path, "r"); httpServer.streamFile(f, contentType(path)); f.close(); true;}) : false;
 
 } // handleFile()
-
 
 //=====================================================================================
 void handleFileUpload() 
@@ -183,7 +155,6 @@ void handleFileUpload()
   }
   
 } // handleFileUpload() 
-
 
 //=====================================================================================
 void formatSpiffs() 
@@ -232,66 +203,50 @@ bool freeSpace(uint16_t const& printsize)
   
 } // freeSpace()
 
-
 //=====================================================================================
 void updateFirmware()
 {
 #ifdef USE_UPDATE_SERVER
   DebugTln(F("Redirect to updateIndex .."));
-  doRedirect("wait ... ", 1, "/updateIndex", false);
+  doRedirect("Update", 1, "/updateIndex", false,false);
 #else
-  doRedirect("UpdateServer not implemented", 10, "/", false);
+  doRedirect("NoUpdateServer", 10, "/", false,false);
 #endif
       
 } // updateFirmware()
 
 //=====================================================================================
+void resetWifi()
+{
+  DebugTln(F("ResetWifi .."));
+  doRedirect("RebootResetWifi", 45, "/", true, true);
+}
+//=====================================================================================
 void reBootESP()
 {
   DebugTln(F("Redirect and ReBoot .."));
-  doRedirect("Reboot DSMR-logger ..", 60, "/", true);
-      
+  doRedirect("RebootOnly", 45, "/", true,false);
+
 } // reBootESP()
 
 //=====================================================================================
-void doRedirect(String msg, int wait, const char* URL, bool reboot)
-{
-  String redirectHTML = 
-  "<!DOCTYPE HTML><html lang='en-US'>"
-  "<head>"
-  "<meta charset='UTF-8'>"
-  "<style type='text/css'>"
-  "body {background-color: lightblue;}"
-  "</style>"
-  "<title>Redirect to Main Program</title>"
-  "</head>"
-  "<body><h1>FSexplorer</h1>"
-  "<h3>"+msg+"</h3>"
-  "<br><div style='width: 500px; position: relative; font-size: 25px;'>"
-  "  <div style='float: left;'>Redirect over &nbsp;</div>"
-  "  <div style='float: left;' id='counter'>"+String(wait)+"</div>"
-  "  <div style='float: left;'>&nbsp; seconden ...</div>"
-  "  <div style='float: right;'>&nbsp;</div>"
-  "</div>"
-  "<!-- Note: don't tell people to `click` the link, just tell them that it is a link. -->"
-  "<br><br><hr>If you are not redirected automatically, click this <a href='/'>Main Program</a>."
-  "  <script>"
-  "      setInterval(function() {"
-  "          var div = document.querySelector('#counter');"
-  "          var count = div.textContent * 1 - 1;"
-  "          div.textContent = count;"
-  "          if (count <= 0) {"
-  "              window.location.replace('"+String(URL)+"'); "
-  "          } "
-  "      }, 1000); "
-  "  </script> "
-  "</body></html>\r\n";
-  
+void doRedirect(String msg, int wait, const char* URL, bool reboot, bool resetWifi)
+{ 
   DebugTln(msg);
-  httpServer.send(200, "text/html", redirectHTML);
+  httpServer.sendHeader("Location", "/#Redirect?msg="+msg, true);
+  httpServer.send ( 303, "text/plain", "");
+
   if (reboot) 
   {
-    delay(5000);
+    for( uint8_t i = 0; i < 100;i++) { 
+      //handle redirect requests first before rebooting so client processing can take place
+      delay(50); 
+      httpServer.handleClient();
+    }
+    if (resetWifi) 
+   {   WiFiManager manageWiFi;
+       manageWiFi.resetSettings();
+   }
     ESP.restart();
     delay(5000);
   }
