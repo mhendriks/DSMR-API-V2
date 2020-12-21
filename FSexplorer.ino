@@ -1,7 +1,7 @@
  /* 
 ***************************************************************************  
 **  Program  : FSexplorer, part of DSMRloggerAPI
-**  Version  : v2.1.1
+**  Version  : v2.1.2
 **
 **  Mostly stolen from https://www.arduinoforum.de/User-Fips
 **  For more information visit: https://fipsok.de
@@ -178,16 +178,16 @@ const String &contentType(String& filename)
 {       
   if (filename.endsWith(".htm") || filename.endsWith(".html")) filename = "text/html";
   else if (filename.endsWith(".css")) filename = "text/css";
-  else if (filename.endsWith(".js")) filename = "application/javascript";
-  else if (filename.endsWith(".json")) filename = "application/json";
-  else if (filename.endsWith(".png")) filename = "image/png";
-  else if (filename.endsWith(".gif")) filename = "image/gif";
-  else if (filename.endsWith(".jpg")) filename = "image/jpeg";
-  else if (filename.endsWith(".ico")) filename = "image/x-icon";
-  else if (filename.endsWith(".xml")) filename = "text/xml";
-  else if (filename.endsWith(".pdf")) filename = "application/x-pdf";
-  else if (filename.endsWith(".zip")) filename = "application/x-zip";
-  else if (filename.endsWith(".gz")) filename = "application/x-gzip";
+  else if (filename.endsWith(".js")) filename = F("application/javascript");
+  else if (filename.endsWith(".json")) filename = F("application/json");
+  else if (filename.endsWith(".png")) filename = F("image/png");
+  else if (filename.endsWith(".gif")) filename = F("image/gif");
+  else if (filename.endsWith(".jpg")) filename = F("image/jpeg");
+  else if (filename.endsWith(".ico")) filename = F("image/x-icon");
+  else if (filename.endsWith(".xml")) filename = F("text/xml");
+  else if (filename.endsWith(".pdf")) filename = F("application/x-pdf");
+  else if (filename.endsWith(".zip")) filename = F("application/x-zip");
+  else if (filename.endsWith(".gz")) filename = F("application/x-gzip");
   else filename = "text/plain";
   return filename;
   
@@ -198,7 +198,7 @@ bool freeSpace(uint16_t const& printsize)
 {    
   FSInfo SPIFFSinfo;
   SPIFFS.info(SPIFFSinfo);
-  Debugln(formatBytes(SPIFFSinfo.totalBytes - (SPIFFSinfo.usedBytes * 1.05)) + " im Spiffs frei");
+  Debugln(formatBytes(SPIFFSinfo.totalBytes - (SPIFFSinfo.usedBytes * 1.05)) + " in SPIFF free");
   return (SPIFFSinfo.totalBytes - (SPIFFSinfo.usedBytes * 1.05) > printsize) ? true : false;
   
 } // freeSpace()
@@ -248,7 +248,7 @@ void doRedirect(String msg, int wait, const char* URL, bool reboot, bool resetWi
        manageWiFi.resetSettings();
    }
     ESP.restart();
-    delay(5000);
+    delay(3000);
   }
   
 } // doRedirect()

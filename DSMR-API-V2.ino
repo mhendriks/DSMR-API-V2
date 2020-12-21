@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.1.1 (21-11-2020)"
+#define _FW_VERSION "v2.1.2 (21-11-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -10,21 +10,18 @@
 ***************************************************************************      
 *      
 *      TODO
-*      - v1/dev/settings .js file (opslaan settings)
-*      - merge writeRingFile ipv per veld
-*      - uploadserver
-*      
+*      - update server
+*      - optimize record SMApi
 *      Backlog
-*      - ringfile : fout bestaande file - oude renamen en nieuwe maken
 *      - telegram message bij drempelwaardes
 *      - telegram verbruiksrapport einde dag/week/maand
 *      - telegram bot gebruiken als UI
 
-  Arduino-IDE settings for DSMR-logger Version 1 (ESP-M3):
+  Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
     - Board: "Generic ESP8266 Module"
-    - Flash mode: "DOUT" | "DIO"    // change only after power-off and on again!
-    - Flash size: "1MB (FS: 128KB OAT:~438KB)"  
+    - Flash mode: "DOUT" 
+    - Flash size: "1MB (FS: 32KB OAT:~502KB)"  
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -32,26 +29,29 @@
     - Crystal Frequency: "26 MHz" 
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
-    - CPU Frequency: "80 MHz of 160MHz"
-    - Buildin Led: 2 
+    - CPU Frequency: "160MHz"
+    - Buildin Led: 2        //(n/a)
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
 */
 /******************** compiler options  ********************************************/
-#define USE_REQUEST_PIN           // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
-#define USE_AUX                     // define if the aux port should be used
-//#define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
+#define USE_REQUEST_PIN               // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
+//#define USE_AUX                     // define if the aux port should be used
+//#define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
-#define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
-//#define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
+#define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
+//#define USE_MINDERGAS               // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
+//#define USE_TELEGRAM                // define if Telegram messaging should be enabled
 /******************** don't change anything below this comment **********************/
-#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_AUX][USE_MQTT][USE_DUTCH_PROTOCOL]" //change by hand
+#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_AUX][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual
 //possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
+//#define DEBUG_MODE
+//#define HIST_CONV
 
 #include "DSMRloggerAPI.h"
 
@@ -120,12 +120,12 @@ void setup()
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
   randomSeed(RANDOM_REG32); 
   snprintf(settingHostname, sizeof(settingHostname), "%s", _DEFAULT_HOSTNAME);
-  Serial.printf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
+  Debugf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
   delay(500);
   lastReset     = ESP.getResetReason();
 
   startTelnet();
-  Serial.println("The board name is: " ARDUINO_BOARD);
+  Debugln("The board name is: " ARDUINO_BOARD);
   
 //================ SPIFFS ===========================================
   if (SPIFFS.begin()) 
@@ -147,10 +147,11 @@ void setup()
   readLastStatus(); // place it in actTimestamp
   // set the time to actTimestamp!
   actT = epoch(actTimestamp, strlen(actTimestamp), true);
-  DebugTf("===> actTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n", actTimestamp
-                                                                    , nrReboots++
-                                                                    , slotErrors);                                                                    
+  nrReboots++;
+  DebugTf("===> actTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n", actTimestamp, nrReboots, slotErrors);                                                                    
+  
   readSettings(true);
+  writeLastStatus(); //update reboots
   
 //=============start Networkstuff==================================
   
@@ -196,10 +197,6 @@ void setup()
 
   snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTln(cMsg);
-
-  Serial.print(F("\nGebruik 'telnet "));
-  Serial.print (WiFi.localIP());
-  Serial.println(F("' voor verdere debugging\r\n"));
 
 //============= now test if SPIFFS is correct populated!============
   if (!DSMRfileExist(settingIndexPage, false) )
@@ -270,9 +267,9 @@ void setup()
   DebugTln(cMsg);
 
 //================ Start Slimme Meter ===============================
-  DebugTln(F("Enable Aux interrupt..\r"));
 #ifdef USE_AUX
   //enable AUX input 
+  DebugTln(F("Enable Aux interrupt..\r"));
   pinMode(2, INPUT);                   // set pin 2 as input
   attachInterrupt(digitalPinToInterrupt(2), isrAux, CHANGE);       // interrupt program when signal to pin 2 detected call ISR function when happens
 #endif
@@ -281,12 +278,31 @@ void setup()
 
 #if defined( USE_REQUEST_PIN ) && !defined( HAS_NO_SLIMMEMETER )
     DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
+    Debug(F("\nGebruik 'telnet "));
+    Debug (WiFi.localIP());
+    Debugln(F("' voor verdere debugging"));
     DebugFlush();
-    Serial.swap();
+    delay(100);
 #endif // is_esp12
+
+#ifdef HIST_CONV
+  hist_conv(); 
+#endif
+
+#ifndef DEBUG_MODE
+  Serial.swap(); 
+#endif
+#ifdef DEBUG_MODE
+  Debug(F("\n!!! DEBUG MODE AAN !!!\n\n")); 
+#endif
+
   delay(100);
   slimmeMeter.enable(true);
   Rebootlog(); // write reboot status to file
+  //telegram
+#ifdef USE_TELEGRAM 
+  Bot_setup();
+ #endif
 } // setup()
 
 
@@ -337,8 +353,6 @@ void doSystemTasks()
   httpServer.handleClient();
   MDNS.update();
   handleKeyInput();
-  
-
   yield();
 
 } // doSystemTasks()
@@ -406,7 +420,9 @@ void loop ()
 #ifdef USE_AUX
   if DUE(AuxTimer) handleAux(); //manage Aux interupt
 #endif
-
+#ifdef USE_TELEGRAM
+  Bot_loop();
+#endif
 } // loop()
 
 

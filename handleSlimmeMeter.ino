@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : handleSlimmeMeter - part of DSMRloggerAPI
-**  Version  : v2.1.1
+**  Version  : v2.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -93,7 +93,6 @@ void processSlimmemeter()
         ESP.reset();
         delay(1000);
       }
-      //digitalWrite(LED_BUILTIN, LED_OFF);
       if (DSMRdata.identification_present)
       {
         //--- this is a hack! The identification can have a backslash in it

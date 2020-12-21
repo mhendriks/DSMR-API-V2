@@ -1,41 +1,34 @@
 /* 
 ***************************************************************************  
 **  Program  : JsonCalls, part of DSMRloggerAPI
-**  Version  : v2.1.1
+**  Version  : v2.1.2
 **
 **  Copyright (c) 2020 Martijn Hendriks
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
+
 void createRingFile(E_ringfiletype ringfiletype) 
 {
   File RingFile = SPIFFS.open(RingFiles[ringfiletype].filename, "w"); // open for writing  
-  if (!RingFiles) {
-    DebugT(F("open ring file FAILED!!! --> Bailout\r\n"));
-    Debugln(RingFiles[ringfiletype].filename);
+  if (!RingFile) {
+    DebugT(F("open ring file FAILED!!! --> Bailout\r\n"));Debugln(RingFiles[ringfiletype].filename);
     return;
   }
-  
+  //write json to ring file
+  DebugT(F("createFile: ")); Debugln(RingFiles[ringfiletype].filename);
+    
   //fill file with 0 values
-  const size_t capacity = 49*JSON_ARRAY_SIZE(5) + JSON_ARRAY_SIZE(49) + 50*JSON_OBJECT_SIZE(2) + 520;
-  DynamicJsonDocument doc(capacity); //6770 according to assistant
-  doc["actSlot"] = 0;
+  RingFile.print("{\"actSlot\": 0,\"data\":[\n"); //start the json file 
   for (uint8_t slot=0; slot < RingFiles[ringfiletype].slots; slot++ ) 
   { 
-    doc["data"][slot]["date"] = "00000000";
-    doc["data"][slot]["values"][0] = 0;
-    doc["data"][slot]["values"][1] = 0;
-    doc["data"][slot]["values"][2] = 0;
-    doc["data"][slot]["values"][3] = 0;
-    doc["data"][slot]["values"][4] = 0;
+    RingFile.print("{\"date\":\"20000000\",\"values\":[     0.000,     0.000,     0.000,     0.000,     0.000]}"); // one empty record
+   if (slot < (RingFiles[ringfiletype].slots - 1) ) RingFile.print(",\n");
+
   }
-  //DebugT(F("RingFile output >"));serializeJson(doc, Serial);   Serial.println();
-  
-  //write json to ring file
-  DebugT(F("write(): to ringfile ")); Debugln(RingFiles[ringfiletype].filename);
-  
-  writeToJsonFile(doc, RingFile);
+  RingFile.print("\n]}"); //terminate the json string
+  RingFile.close();
 }
 
 uint8_t CalcSlot(E_ringfiletype ringfiletype, char* Timestamp) 
@@ -73,14 +66,12 @@ void RingFileTo(E_ringfiletype ringfiletype, bool toFile)
 
   if (!SPIFFS.exists(RingFiles[ringfiletype].filename))
   {
-    DebugTln(F("read(): Ringfile doesn't exist: "));
-    Debugln(RingFiles[ringfiletype].filename);
+    DebugT(F("read(): Ringfile doesn't exist: "));Debugln(RingFiles[ringfiletype].filename);
     createRingFile(ringfiletype);
     return;
     }
 
   File RingFile = SPIFFS.open(RingFiles[ringfiletype].filename, "r"); // open for reading
-
 
   if (toFile) {
       DebugTln(F("http: json sent .."));
@@ -102,106 +93,75 @@ void RingFileTo(E_ringfiletype ringfiletype, bool toFile)
 //===========================================================================================
 void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec) 
 {
-  const size_t capacity = 49*JSON_ARRAY_SIZE(5) + JSON_ARRAY_SIZE(49) + 50*JSON_OBJECT_SIZE(2) + 520;
-  DynamicJsonDocument doc(capacity);
-  StaticJsonDocument<140> rec;
-  char key[10] = "";
-  uint8_t slot = 0;
+  char key[9] = "";
+  byte slot = 0;
   uint8_t actSlot = CalcSlot(ringfiletype, actTimestamp);
-  if (actSlot == 99 ) return;  // stop if slot is invalid
+  if (actSlot == 99) return;  // stop if error occured
+  StaticJsonDocument<145> rec;
 
+  char buffer[DATA_RECLEN];
   if (strlen(JsonRec) > 1) {
     DebugTln(JsonRec);
     DeserializationError error = deserializeJson(rec, JsonRec);
     if (error) {
-      DebugT(F("convert:Failed to deserialize RECORD: "));
-      Debugln(error.c_str());
+      DebugT(F("convert:Failed to deserialize RECORD: "));Debugln(error.c_str());
+      httpServer.send(500, "application/json", httpServer.arg(0));
       return;
     } 
   }
-  //DebugT("update timeslot: ");
-  //Debugln(slot);
-  
+
   //json openen
-  DebugT(F("read(): Ring file "));
-  Debugln(RingFiles[ringfiletype].filename);
+  DebugT(F("read(): Ring file ")); Debugln(RingFiles[ringfiletype].filename);
   
-  File RingFile = SPIFFS.open(RingFiles[ringfiletype].filename, "r"); // open for reading  
-  if (!RingFiles) {
+  File RingFile = SPIFFS.open(RingFiles[ringfiletype].filename, "r+"); // open for reading  
+  if (!RingFile) {
     DebugT(F("open ring file FAILED!!! --> Bailout\r\n"));
     Debugln(RingFiles[ringfiletype].filename);
     return;
   }
-  yield();
-  DeserializationError error2 = deserializeJson(doc, RingFile);
-  if (error2) {
-    DebugT(F("read():Failed to deserialize RINGFILE"));
-    Debugln(RingFiles[ringfiletype].filename);
-    return;
-  }
-  
-  DebugT(F("RingFile input <")); serializeJson(doc, Serial);Debugln("");
-  
-  RingFile.close();
-  yield();
-  // add/replace new value to json object
-  doc["actSlot"] = actSlot;
 
+  // add/replace new actslot to json object
+  snprintf(buffer, sizeof(buffer), "{\"actSlot\":%2d,\"data\":[\n", actSlot);
+  RingFile.print(buffer);
+  
   if (strlen(JsonRec) > 1) {
     //write data from onerecord
     strncpy(key, rec["recid"], 8); 
     slot = CalcSlot(ringfiletype, key);
-    DebugTln("slot from rec: "+slot);
-    DebugT(F("update date: "));Debugln(key);
-  
-    doc["data"][slot]["date"] = key;
-    doc["data"][slot]["values"][0] = (float)rec["edt1"];
-    doc["data"][slot]["values"][1] = (float)rec["edt2"];
-    doc["data"][slot]["values"][2] = (float)rec["ert1"];
-    doc["data"][slot]["values"][3] = (float)rec["ert2"];
-    doc["data"][slot]["values"][4] = (float)rec["gdt"];
-    
+//    DebugTln("slot from rec: "+slot);
+//    DebugT(F("update date: "));Debugln(key);
+
+    //create record
+    snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)rec["edt1"], (float)rec["edt2"], (float)rec["ert1"], (float)rec["ert2"], (float)rec["gdt"]);
+    httpServer.send(200, "application/json", httpServer.arg(0));
   } else {
     //write actual data
     strncpy(key, actTimestamp, 8);  
-    DebugTln("actslot: "+slot);
-    DebugT(F("update date: "));Debugln(key);
-    
-    doc["data"][actSlot]["date"] = key;
-    doc["data"][actSlot]["values"][0] = (float)DSMRdata.energy_delivered_tariff1;
-    doc["data"][actSlot]["values"][1] = (float)DSMRdata.energy_delivered_tariff2;
-    doc["data"][actSlot]["values"][2] = (float)DSMRdata.energy_returned_tariff1;
-    doc["data"][actSlot]["values"][3] = (float)DSMRdata.energy_returned_tariff2;
-    doc["data"][actSlot]["values"][4] = (float)DSMRdata.gas_delivered;
+    slot = actSlot;
+//    DebugTln("actslot: "+actSlot);
+//    DebugT(F("update date: "));Debugln(key);
+    //create record
+    snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1, (float)DSMRdata.energy_delivered_tariff2, (float)DSMRdata.energy_returned_tariff1, (float)DSMRdata.energy_returned_tariff2, (float)DSMRdata.gas_delivered);
   }
-   
-  DebugT(F("RingFile output >"));serializeJson(doc, Serial); Debugln("");
-
-  //write json to ring file
-  DebugT(F("write(): to ringfile ")); Debugln(RingFiles[ringfiletype].filename);
+  //DebugT("update timeslot: ");Debugln(slot);
+  //goto writing starting point  
+  uint16_t offset = (slot * DATA_RECLEN) + JSON_HEADER_LEN;
+  RingFile.seek(offset, SeekSet);   
+ 
+  //overwrite record in file
+  int32_t bytesWritten = RingFile.print(buffer);
+  if (bytesWritten != (DATA_RECLEN - 2)) DebugTf("ERROR! slot[%02d]: written [%d] bytes but should have been [%d]\r\n", slot, bytesWritten, DATA_RECLEN);
+  if ( slot < (RingFiles[ringfiletype].slots -1)) RingFile.print(",\n");
+  else RingFile.print("\n"); // no comma at last record
   
-  RingFile = SPIFFS.open(RingFiles[ringfiletype].filename, "w"); // open for writing  
-  if (!RingFiles) {
-    DebugT(F("writing Ringfile FAILED!!! --> Bailout\r\n"));
-    Debugln(RingFiles[ringfiletype].filename);
-    return;
-  }
-
-  yield();
-  writeToJsonFile(doc, RingFile);
-
+  RingFile.close();
 } // writeRingFile()
 
 //===========================================================================================
 void writeRingFiles() 
 {
-  // update HOURS
   writeRingFile(RINGHOURS, "");
-
-  // update DAYS
   writeRingFile(RINGDAYS, "");
-
-  // update MONTHS
   writeRingFile(RINGMONTHS, "");
 
 } // writeRingFiles()

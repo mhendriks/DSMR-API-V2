@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.1.1
+**  Version  : v2.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -52,18 +52,12 @@
 #define JSON_BUFF_MAX     255
 #define MQTT_BUFF_MAX     200
 
-//-------------------------.........1....1....2....2....3....3....4....4....5....5....6....6....7....7
-//-------------------------1...5....0....5....0....5....0....5....0....5....0....5....0....5....0....5
-//#define DATA_FORMAT       "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;\n"
-//#define DATA_CSV_HEADER   "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;"
-//#define DATA_RECLEN       75
-
 enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 
 typedef enum E_ringfiletype {RINGHOURS, RINGDAYS, RINGMONTHS};
 
 typedef struct {
-    char filename[18];
+    char filename[17];
     int8_t slots;
     unsigned int seconds;
   } S_ringfile;
@@ -72,6 +66,11 @@ typedef struct {
 //onderstaande struct kan niet in PROGMEM opgenomen worden. gaat stuk bij SPIFF.open functie
 
 const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RINGdays.json",14+1,SECS_PER_DAY},{"/RINGmonths.json",24+1,0}}; 
+
+#define DATA_FORMAT       "{\"date\":\"%-8.8s\",\"values\":[%10.3f,%10.3f,%10.3f,%10.3f,%10.3f]}"
+#define DATA_RECLEN       87  //total length incl comma and new line
+#define JSON_HEADER_LEN   23  //total length incl new line
+#define DATA_CLOSE        2   //length last row of datafile
 
 #include "Debug.h"
 #include "networkStuff.h"
@@ -194,6 +193,8 @@ char      settingIndexPage[50] = _DEFAULT_HOMEPAGE;
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
 int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
 String    pTimestamp;
+//uint32_t  antiWearTimer = 0;
+
 
 //===========================================================================================
 // setup timers 

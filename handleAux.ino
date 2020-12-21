@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : handleAux - definitions for handling aux input
-**  Version  : v2.1.1
+**  Version  : v2.1.2
 **
 **  Copyright (c) 2020 Martijn Hendriks
 **
@@ -10,6 +10,7 @@
 */  
 
 #ifdef USE_AUX
+
 uint32_t    isrAux_cnt = 0;
 
 ICACHE_RAM_ATTR void isrAux() //isr routine 
@@ -29,7 +30,7 @@ void handleAux()
     else  snprintf(topicId, sizeof(topicId), "%s/", settingMQTTtopTopic);
     strConcat(topicId, sizeof(topicId), "Aux");
         
-    if (!MQTTclient.publish(topicId, "Signal") ) DebugTf("Error publish(%s) \r\n", topicId );
+    if (!MQTTclient.publish(topicId, "Signal") ) DebugTf(F("Error publish: "); Debugln(topicId);
     else DebugT(F("Aux signal send\r\n"));    
     CHANGE_INTERVAL_MS(AuxTimer,  3000); //longer waiting time to prevent pushing out a lot of events
   }  else CHANGE_INTERVAL_MS(AuxTimer,  500); //normal waiting time

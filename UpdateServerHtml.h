@@ -1,3 +1,4 @@
+pup#ifdef USE_UPDATE_SERVER
 
 static const char UpdateServerIndex[] PROGMEM =
   R"(<html charset="UTF-8">
@@ -69,3 +70,5 @@ static const char UpdateServerSuccess[] PROGMEM =
          }, 1000);
      </script>
      </html>)";
+
+ #endif

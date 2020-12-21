@@ -424,6 +424,7 @@ void updateMeterValues(uint8_t period)
 String Format(double x, int len, int d) 
 {
   String r;
+//  r.reserve(len);
   int rl;
   
   r = String(x, d);

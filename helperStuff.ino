@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : helperStuff, part of DSMRloggerAPI
-**  Version  : v2.1.1
+**  Version  : v2.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -13,8 +13,7 @@ bool bailout () // to prevent firmware from crashing!
 {
   if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
   {
-    DebugTf("Bailout due to low heap (%d bytes)\r\n", ESP.getFreeHeap());
-    writeToSysLog("Bailout low heap (%d bytes)", ESP.getFreeHeap());
+    DebugT(F("Bailout due to low heap: ")); Debugln(ESP.getFreeHeap());
     return true;
   }
   return false;
@@ -220,16 +219,6 @@ void strConcat(char *dest, int maxLen, int32_t v)
 } // strConcat()
 
 
-//===========================================================================================
-void strToLower(char *src)
-{
-  for (int i = 0; i < strlen(src); i++)
-  {
-    if (src[i] == '\0') return;
-    if (src[i] >= 'A' && src[i] <= 'Z')
-        src[i] += 32;
-  }
-} // strToLower()
 
 //===========================================================================================
 // a 'save' string copy
@@ -273,29 +262,6 @@ int stricmp(const char *a, const char *b)
     
 } // stricmp()
 
-//===========================================================================================
-char *intToStr(int32_t v)
-{
-  static char buff[25];
-  sprintf(buff,"%d", v);
-  return buff;
-  
-} // intToStr()
-
-//===========================================================================================
-char *floatToStr(float v, int dec)
-{
-  static char buff[25];
-  if (dec == 0)       sprintf(buff,"%.0f", v);
-  else if (dec == 1)  sprintf(buff,"%.1f", v);
-  else if (dec == 2)  sprintf(buff,"%.2f", v);
-  else if (dec == 3)  sprintf(buff,"%.3f", v);
-  else if (dec == 4)  sprintf(buff,"%.4f", v);
-  else if (dec == 5)  sprintf(buff,"%.5f", v);
-  else                sprintf(buff,"%f",   v);
-  return buff;
-  
-} // floattToStr()
 
 //===========================================================================================
 float formatFloat(float v, int dec)

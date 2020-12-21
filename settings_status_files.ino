@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settings_status_files, part of DSMRloggerAPI
-**  Version  : v2.1.1
+**  Version  : v2.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -35,46 +35,40 @@ void writeToJsonFile(const TSource &doc, File &_file)
 void readLastStatus()
 {  
   StaticJsonDocument<110> doc;  
-  char spiffsTimestamp[15] = "";
 
   File statusFile = SPIFFS.open("/DSMRstatus.json", "r");
   if (!statusFile) DebugTln("read(): No /DSMRstatus.json found");
   
   DeserializationError error = deserializeJson(doc, statusFile);
   if (error) DebugTln(F("read():Failed to read json file"));
-  
-  strcpy(spiffsTimestamp, doc["Timestamp"]);
-  nrReboots = doc["Reboots"];
-  slotErrors = doc["slotErrors"];
-  
   statusFile.close();
   
-  if (strlen(spiffsTimestamp) != 13) strcpy(spiffsTimestamp, "010101010101X");
-  
-  snprintf(actTimestamp, sizeof(actTimestamp), "%s", spiffsTimestamp);
+  nrReboots = doc["Reboots"];
+  slotErrors = doc["slotErrors"];
+  if (strlen( doc["Timestamp"]) != 13)  snprintf(actTimestamp, sizeof(actTimestamp), "%s", "010101010101X");
+  else  strcpy(actTimestamp, doc["Timestamp"]);
   
 }  // readLastStatus()
-
 
 //====================================================================
 void writeLastStatus()
 { 
   if (bailout()) return;
-  
-  StaticJsonDocument<110> doc;  
-  
   DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, nrReboots, slotErrors);
-  writeToSysLog("writeLastStatus() => %s; %u; %u;", actTimestamp, nrReboots, slotErrors);
-  
-  doc["Timestamp"] = actTimestamp;
-  doc["Reboots"] = nrReboots;
-  doc["slotErrors"] = slotErrors;
   
   File statusFile = SPIFFS.open("/DSMRstatus.json", "w");
-  if (!statusFile) DebugTln("write(): No /DSMRstatus.json found");
-
-  writeToJsonFile(doc, statusFile);
+  if (!statusFile) DebugTln(F("write(): No /DSMRstatus.json found"));
   
+  char buffer[74];
+  sprintf_P(buffer,PSTR("{\"Timestamp\":\"%s\",\"Reboots\":%d,\"slotErrors\":%d}"), actTimestamp, nrReboots, slotErrors);
+  
+  int bytesWritten = statusFile.print(buffer);
+  if (bytesWritten > 0) {
+    DebugT(F("File was written:"));Debugln(bytesWritten);
+  } else DebugTln(F("File write failed"));
+ 
+  statusFile.flush();
+  statusFile.close();
 } // writeLastStatus()
 
 //=======================================================================
@@ -283,8 +277,6 @@ void updateSetting(const char *field, const char *newValue)
     else                            settingSmHasFaseInfo = 0;  
   }
 
-  
-  
   if (!stricmp(field, "tlgrm_interval"))    
   {
     settingTelegramInterval     = String(newValue).toInt();  
@@ -340,8 +332,9 @@ void Rebootlog(){
     return;
   }
   
-  DebugT("RebootLog filesize: ");Debugln(RebootFile.size());
+  //log rotate
   if (RebootFile.size() > 1500){ 
+//    DebugT(F("RebootLog filesize: "));Debugln(RebootFile.size());
     SPIFFS.remove("/Rebootlog.old");     //remove .old if existing 
     //rename file
     DebugTln(F("RebootLog: rename file"));
@@ -350,21 +343,11 @@ void Rebootlog(){
     RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
     }
   
-  //make one record
-  const size_t capacity = JSON_OBJECT_SIZE(3) + 80;
-  StaticJsonDocument<capacity> doc;
-  doc["time"] = buildDateTimeString(actTimestamp, sizeof(actTimestamp));
-  doc["reason"] = lastReset;
-  doc["reboots"] = (int)nrReboots;
+    //make one record : {"time":"2020-09-23 17:03:25","reason":"Software/System restart","reboots":42}
+    RebootFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"reason\":\"" + lastReset + "\",\"reboots\":" +  (int)nrReboots + "}");
   
-  //write record to file
-  if (serializeJson(doc, RebootFile) == 0) DebugTln(F("write(): Failed to write to json file"));  
-  else DebugTln(F("write(): json file writen"));
-  
-  //closing the file
-  RebootFile.println(); //adds \n at the at of the record
-  RebootFile.flush();
-  RebootFile.close(); 
+    //closing the file
+    RebootFile.close(); 
 }
 
 /***************************************************************************

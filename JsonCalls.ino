@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : JsonCalls, part of DSMRloggerAPI
-**  Version  : v2.1.1
+**  Version  : v2.1.2
 **
 **  Copyright (c) 2020 Martijn Hendriks
 **
@@ -10,27 +10,13 @@
 */
 
 // ******* Global Vars *******
-uint32_t  antiWearTimer = 0;
-bool onlyIfPresent  = false;
-
-char fieldsArray[25][25] = {{0}}; // to lookup fields 
-int  fieldsElements      = 0;
-
 #define ACTUALELEMENTS  20
-const PROGMEM char  actualArray[][25] = { "timestamp"
-                          ,"energy_delivered_tariff1","energy_delivered_tariff2"
-                          ,"energy_returned_tariff1","energy_returned_tariff2"
-                          ,"power_delivered","power_returned"
-                          ,"voltage_l1","voltage_l2","voltage_l3"
-                          ,"current_l1","current_l2","current_l3"
-                          ,"power_delivered_l1","power_delivered_l2","power_delivered_l3"
-                          ,"power_returned_l1","power_returned_l2","power_returned_l3"
-                          ,"gas_delivered"
-                          ,"\0"};
-#define INFOELEMENTS  7
-const PROGMEM char  infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","gas_device_type","gas_equipment_id", "\0" };
-
+#define INFOELEMENTS  6
+int  fieldsElements = 0;
+char fieldsArray[2][25] = {"timestamp", "word5"}; // to lookup fields 
 char OneRecord[2300]= "";
+
+bool onlyIfPresent  = false;
 
 //=======================================================================
 void processAPI() {
@@ -303,19 +289,15 @@ void sendDeviceSettings()
 void sendApiNotFound(const char *URI)
 {
   DebugTln(F("sending device settings ...\r"));
-  char JsonOutput[200];
-  StaticJsonDocument<200> doc;
+//  String output = "{\"error\":{\"url\":\"" + String(URI) + "\",\"message\":\"url not valid\"}}";
   
-  doc["error"]["url"] = URI;
-  doc["error"]["message"] = "not valid url";
-
-  serializeJson(doc, JsonOutput);
-  //Serial.print(F("Sending json: "));
-  //Serial.println(JsonOutput);
+  byte len = 47 + strlen(URI);
+  char buffer[len];
+  sprintf_P(buffer,PSTR("{\"error\":{\"url\":\"%s\",\"message\":\"url not valid\"}}"), URI);
+  
   httpServer.sendHeader("Access-Control-Allow-Origin", "*");
-  httpServer.setContentLength(measureJson(doc));
-  httpServer.send(404, "application/json", JsonOutput); 
-  
+  httpServer.setContentLength(len);
+  httpServer.send(404, "application/json", buffer); 
   
 } // sendApiNotFound()
 //---------------------------------------------------------------
@@ -424,7 +406,7 @@ struct buildJsonApi {
     void apply(Item &i) {
       skip = false;
       String Name = Item::name;
-      if (!isInFieldsArray(Name.c_str(), fieldsElements))
+      if (!isInFieldsArray(Name.c_str()))
       {
         skip = true;
       }
@@ -481,14 +463,14 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     
   case 'i': //info
     onlyIfPresent = false;
-    copyToFieldsArray(infoArray, INFOELEMENTS);
+    fieldsElements = INFOELEMENTS;
     DSMRdata.applyEach(buildJsonApi());
     ArrayToJson() ;
   break;
   
   case 'a': //actual
+    fieldsElements = ACTUALELEMENTS;
     onlyIfPresent = true;
-    copyToFieldsArray(actualArray, ACTUALELEMENTS);
     DSMRdata.applyEach(buildJsonApi());
     ArrayToJson();
   break;
@@ -498,12 +480,9 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     onlyIfPresent = false;
     if (strlen(word5) > 0)
     {
-       memset(fieldsArray,0,sizeof(fieldsArray));
-       strCopy(fieldsArray[0], 34,"timestamp");
-       strCopy(fieldsArray[1], 34, word5);
+       strCopy(fieldsArray[1], 24, word5);
        fieldsElements = 2;
     }
-    //sendJsonFields(word4);
     DSMRdata.applyEach(buildJsonApi());
     ArrayToJson();
   break;  
@@ -634,9 +613,6 @@ void handleHistApi(const char *URI, const char *word4, const char *word5, const 
     
       //--- update MONTHS
       writeRingFile(RINGMONTHS, httpServer.arg(0).c_str());
-      //--- send OK response --
-      httpServer.send(200, "application/json", httpServer.arg(0));
-      
       return;
     }
     else 
@@ -684,47 +660,24 @@ void sendDeviceDebug(const char *URI, String tail)
 
 } // sendDeviceDebug()
 
-bool isInFieldsArray(const char* lookUp, int elemts)
+bool isInFieldsArray(const char* lookUp)
 {
-  if (elemts == 0) return true;
-
-  for (int i=0; i<elemts; i++)
+  const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","gas_device_type","gas_equipment_id" };
+  const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3","gas_delivered"};
+                          
+//    DebugTf("Elemts[%2d] | LookUp [%s] | LookUpType[%2d]\r\n", elemts, lookUp, LookUpType);
+if (fieldsElements == 0) return true;  
+  for (int i=0; i<fieldsElements; i++)
   {
     //if (Verbose2) DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]); 
-    if (strcmp(lookUp, fieldsArray[i]) == 0) return true;
+    if (fieldsElements == ACTUALELEMENTS ) { if (strcmp_P(lookUp, actualArray[i]) == 0 ) return true; }
+    else if (fieldsElements == INFOELEMENTS ) { if (strcmp_P(lookUp, infoArray[i]) == 0 ) return true; }
+    else if (fieldsElements == 2 ) { if (strcmp(lookUp, fieldsArray[i]) == 0) return true; }
   }
-  return false;
-  
+
+  return false; 
 } // isInFieldsArray()
 
-
-void copyToFieldsArray(const char inArray[][25], int elemts)
-{
-  int i = 0;
-  memset(fieldsArray,0,sizeof(fieldsArray));
-  //if (Verbose2) DebugTln("start copying ....");
-  
-  for ( i=0; i<elemts; i++)
-  {
-    strncpy(fieldsArray[i], inArray[i], 24);
-    //if (Verbose1) DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]); 
-
-  }
-  fieldsElements = i;
-  
-} // copyToFieldsArray()
-
-
-bool listFieldsArray(char inArray[][25])
-{
-  uint8_t i = 0;
-
-  for ( i=0; strlen(inArray[i]) == 0; i++)
-  {
-    DebugTf("[%2d] => inArray[%s]\r\n", i, inArray[i]); 
-  }
-  
-} // listFieldsArray()
 /***************************************************************************
 *
 * Permission is hereby granted, free of charge, to any person obtaining a

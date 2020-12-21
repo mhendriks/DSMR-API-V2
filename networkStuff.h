@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : networkStuff.h, part of DSMRloggerAPI
-**  Version  : v2.1.1
+**  Version  : v2.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -29,7 +29,6 @@ ESP8266WebServer        httpServer (80);
   ESP8266HTTPUpdateServer httpUpdater(true);
 #endif
 
-
 static      FSInfo SPIFFSinfo;
 bool        SPIFFSmounted; 
 bool        isConnected = false;
@@ -42,7 +41,6 @@ void configModeCallback (WiFiManager *myWiFiManager)
   DebugTln(WiFi.softAPIP().toString());
   //if you used auto generated SSID, print it
   DebugTln(myWiFiManager->getConfigPortalSSID());
-  
 
 } // configModeCallback()
 
