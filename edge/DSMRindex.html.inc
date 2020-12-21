@@ -289,6 +289,11 @@
     <td><a href="api/v2/hist/months" target="_blank">api/v2/hist/months</a></td>
     <td>History data per month in JSON format</td>
   </tr>  
+   <tr>
+    <td>History data file structure (month, day, hour)</td>
+	<td>{"actSlot":&lt;actual slot#&gt;,"data":[{"date":&lt;YYMMDDHH&gt;,"values":[&lt;EDT1&gt;,&lt;EDT2&gt;,&lt;ERT1&gt;,&lt;ERT2&gt;,&lt;GDT&gt;]}, ...]}</td>
+  </tr>  
+  
 </table>
   </section>  <!-- END API docs Tab -->
     

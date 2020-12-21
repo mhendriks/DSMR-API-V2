@@ -123,10 +123,10 @@
     //open only redirect section
 	document.getElementById("Redirect").style.display = "block";
    	
-   	if (location.hash.split('msg=')[1] == "RebootOnly"){  document.getElementById("RedirectMessage").innerHTML = "Systeem opnieuw opstarten...";}
-   	else if (location.hash.split('msg=')[1] == "RebootResetWifi"){  document.getElementById("RedirectMessage").innerHTML = "Systeem opnieuw opstarten... Stel hierna het wifi netwerk opnieuw in. zie handleiding.";}   	
-   	else if (location.hash.split('msg=')[1] == "NoUpdateServer"){  document.getElementById("RedirectMessage").innerHTML = "Systeem opnieuw opstarten... Er is geen update mogelijkheid beschikbaar";} 
-   	else if (location.hash.split('msg=')[1] == "Update"){  document.getElementById("RedirectMessage").innerHTML = "Systeem updaten en daarna opnieuw opstarten";} 
+   	if (location.hash.split('msg=')[1] == "RebootOnly"){  document.getElementById("RedirectMessage").innerHTML = "Het systeem wordt opnieuw gestart...";}
+   	else if (location.hash.split('msg=')[1] == "RebootResetWifi"){  document.getElementById("RedirectMessage").innerHTML = "Het systeem wordt opnieuw gestart... Stel hierna het wifi netwerk opnieuw in. zie handleiding.";}   	
+   	else if (location.hash.split('msg=')[1] == "NoUpdateServer"){  document.getElementById("RedirectMessage").innerHTML = "Het systeem wordt opnieuw gestart... Er is geen update mogelijkheid beschikbaar";} 
+   	else if (location.hash.split('msg=')[1] == "Update"){  document.getElementById("RedirectMessage").innerHTML = "Het systeem wordt vernieuwd en daarna opnieuw gestart";} 
 
 	setInterval(function() {
 		var div = document.querySelector('#counter');
@@ -1198,11 +1198,9 @@
     while (allChildren.firstChild) {
       allChildren.removeChild(allChildren.firstChild);
     }
-    
-    console.log("Now fill the DOM!");    
-    console.log("data.data.length: "+data.data.length);
-
     var dlength = data.data.length;
+    console.log("Now fill the DOM!");    
+    console.log("data.data.length: " + dlength);
   
     for (let index=data.actSlot + dlength; index>data.actSlot; index--)
     {  let i = index % dlength;
@@ -1324,15 +1322,15 @@
       
     } // for all elements in data
     
-    console.log("Now sequence EEYY/MM values ..(data.data.length="+dlength+")");
+    console.log("Now sequence EEYY/MM values ..");
     //--- sequence EEYY and MM data
+// 	console.log("actslot: " + data.actSlot);
+
     var changed = false;
     for (let index=data.actSlot+dlength; index>data.actSlot; index--)
     {  let i = index % dlength;
        let next = math.mod(i-1,dlength);
-    
-    //for (let i=0; i<(dlength -1); i++)
-    //  {
+    	console.log("index: "+index+" i: "+i+" next: "+next);
       //--- month
       if (data.data[next].MM == 0)
       {
@@ -1340,20 +1338,11 @@
         changed = true;
         if (data.data[next].MM < 1) {
           data.data[next].MM   = 12;
-          if (data.data[next].EEYY == 2000) {
-            data.data[next].EEYY = data.data[i].EEYY -1;
-            document.getElementById("em_YY_"+(next)).value = data.data[next].EEYY;
-            //document.getElementById("em_YY_"+(i+1)).style.background = "lightgray";
-          }
-        }
-        document.getElementById("em_MM_"+(next)).value = data.data[next].MM;
-        //document.getElementById("em_MM_"+(next)).style.background = "lightgray";
-      }
-      if (data.data[next].EEYY == 2000) {
-        data.data[next].EEYY = data.data[i].EEYY;
-        changed = true;
-        document.getElementById("em_YY_"+(next)).value = data.data[next].EEYY;
-        //document.getElementById("em_YY_"+(i+1)).style.background = "lightgray";
+		 data.data[next].EEYY = data.data[i].EEYY -1;
+		 document.getElementById("em_YY_"+(next)).value = data.data[next].EEYY;
+        } else {data.data[next].EEYY = data.data[i].EEYY}
+        document.getElementById("em_MM_"+(next)).value = data.data[next].MM;        
+  	 	document.getElementById("em_YY_"+(next)).value = data.data[next].EEYY;
       }
       if (changed) sendPostReading(next, data.data);
 
@@ -1672,7 +1661,7 @@
   function readGitHubVersion()
   {
     if (GitHubVersion != 0) return;
-    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@v2.1.0/edge/DSMRversion.dat")
+    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRversion.dat")
       .then(response => {
         if (response.ok) {
           return response.text();
@@ -1687,7 +1676,7 @@
         console.log("parsed: GitHubVersion is ["+GitHubVersion_dspl+"]");
         tmpX = tmpGHF.substring(1, tmpGHF.indexOf(' '));
         tmpN = tmpX.split(".");
-        GitHubVersion = tmpN[0]*10000 + tmpN[1]*1;
+        GitHubVersion = tmpN[0]*10000 + tmpN[1]*100 + tmpN[2]*1;
         
         console.log("firmwareVersion["+firmwareVersion+"] >= GitHubVersion["+GitHubVersion+"]");
         if (firmwareVersion == 0 || firmwareVersion >= GitHubVersion)
