@@ -20,13 +20,13 @@
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
     - Board: "Generic ESP8266 Module"
-    - Flash mode: "DOUT" 
-    - Flash size: "1MB (FS: 32KB OAT:~502KB)"  
+    - Flash mode: "DOUT"
+    - Flash size: "1MB (FS: 32KB OAT:~502KB)"
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
     - Reset Method: "none"   // but will depend on the programmer!
-    - Crystal Frequency: "26 MHz" 
+    - Crystal Frequency: "26 MHz"
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
     - CPU Frequency: "160MHz"
@@ -274,30 +274,28 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(2), isrAux, CHANGE);       // interrupt program when signal to pin 2 detected call ISR function when happens
 #endif
 
-  DebugTln(F("Enable slimmeMeter..\r"));
-
-#if defined( USE_REQUEST_PIN ) && !defined( HAS_NO_SLIMMEMETER )
-    DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
-    Debug(F("\nGebruik 'telnet "));
-    Debug (WiFi.localIP());
-    Debugln(F("' voor verdere debugging"));
-    DebugFlush();
-    delay(100);
-#endif // is_esp12
-
 #ifdef HIST_CONV
   hist_conv(); 
 #endif
 
-#ifndef DEBUG_MODE
-  Serial.swap(); 
-#endif
+   DebugTln(F("Enable slimmeMeter..\r"));
+
+#if defined( USE_REQUEST_PIN ) && !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
+  DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
+  Debug(F("\nGebruik 'telnet "));
+  Debug (WiFi.localIP());
+  Debugln(F("' voor verdere debugging"));
+  DebugFlush();
+  delay(100);
+  Serial.swap();
+  delay(100);
+  slimmeMeter.enable(true);
+#endif // is_esp12
+
 #ifdef DEBUG_MODE
   Debug(F("\n!!! DEBUG MODE AAN !!!\n\n")); 
 #endif
 
-  delay(100);
-  slimmeMeter.enable(true);
   Rebootlog(); // write reboot status to file
   //telegram
 #ifdef USE_TELEGRAM 
