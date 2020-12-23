@@ -336,22 +336,22 @@
       <span></span>
       <fileSize></fileSize>
       <hr>
-      <!--div style='width: 40%'>
+      <div id="btnReboot" class="act_btn">
         <span>
-        <form style='float: left;' action='/update' method='GET'>
-          <input type='submit' class='button' name='SUBMIT' value='Update Firmware' ENABLED/>
-        </form>
-        </span>
-      </div-->
-      <div style='width: 40%'>
-        <span>
-        <form style='float: left;' action='/ReBoot'>
+        <form  action='/ReBoot'>
           <input type='submit' class='button' name='SUBMIT' value='ReBoot'>
         </form>
-      </div>  
-      <div style='width: 40%'>
+      </div> 
+      <div id="btnFirmware" class="act_btn">
         <span>
-        <form style='float: left; margin-left:15px;' action='/ResetWifi' >
+        <form  action='/update' method='GET'>
+          <input id="update" type='submit' class='button' name='SUBMIT' value='Update Firmware' hidden/>
+        </form>
+        </span>
+      </div>
+      <div id="btnResetWifi" class="act_btn">
+        <span>
+        <form action='/ResetWifi' >
           <input id="resetWifi" type='submit' class='button' name='SUBMIT' value='Reset Wifi' hidden/>
         </form>
       </div>  
