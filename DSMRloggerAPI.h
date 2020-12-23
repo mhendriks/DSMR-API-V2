@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.1.2
+**  Version  : v2.2.0
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -82,6 +82,24 @@ const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RIN
  * and printing code smaller.
  * Each template argument below results in a field of the same name.
  */
+struct showValues {
+  template<typename Item>
+  void apply(Item &i) {
+    TelnetStream.print(F("showValues: "));
+    if (i.present()) 
+    {
+      TelnetStream.print(Item::name);
+      TelnetStream.print(F(": "));
+      TelnetStream.print(i.val());
+      TelnetStream.print(Item::unit());
+    //} else 
+    //{
+    //  TelnetStream.print(F("<no value>"));
+    }
+    TelnetStream.println();
+  }
+};
+ 
 using MyData = ParsedData<
   /* String */         identification
   /* String */        ,p1_version

@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.1.2 (21-11-2020)"
+#define _FW_VERSION "v2.2.0 (22-12-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -37,41 +37,22 @@
 */
 /******************** compiler options  ********************************************/
 #define USE_REQUEST_PIN               // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
+#define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
+#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_AUX][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
 //#define USE_AUX                     // define if the aux port should be used
-//#define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
+#define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
-#define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
 //#define USE_MINDERGAS               // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define USE_TELEGRAM                // define if Telegram messaging should be enabled
 /******************** don't change anything below this comment **********************/
-#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_AUX][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual
-//possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
-//#define DEBUG_MODE
+#define DEBUG_MODE
 //#define HIST_CONV
 
 #include "DSMRloggerAPI.h"
-
-struct showValues {
-  template<typename Item>
-  void apply(Item &i) {
-    TelnetStream.print(F("showValues: "));
-    if (i.present()) 
-    {
-      TelnetStream.print(Item::name);
-      TelnetStream.print(F(": "));
-      TelnetStream.print(i.val());
-      TelnetStream.print(Item::unit());
-    //} else 
-    //{
-    //  TelnetStream.print(F("<no value>"));
-    }
-    TelnetStream.println();
-  }
-};
 
 #ifdef USE_SYSLOGGER
 //===========================================================================================

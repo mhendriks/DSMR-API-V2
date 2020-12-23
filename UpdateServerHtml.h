@@ -1,9 +1,9 @@
-pup#ifdef USE_UPDATE_SERVER
+#ifdef USE_UPDATE_SERVER
 
 static const char UpdateServerIndex[] PROGMEM =
   R"(<html charset="UTF-8">
      <style type='text/css'>
-        body {background-color: lightblue;}
+        body {background-color:#ddd;}
      </style>
      <body>
      <h1>DSMR-logger Flash utility</h1>
@@ -18,7 +18,7 @@ static const char UpdateServerIndex[] PROGMEM =
           <input type='submit' value='Flash Spiffs'>
       </form>
       <hr>
-      <br/><font color='red'>Let op!!!</font>
+      <br/><font color='red'>LET OP!!!</font>
       <br/>Bij het flashen van SPIFFS raakt u de RING-bestanden kwijt. 
       <br/>Maak daarom eerst een kopie van deze bestanden (met de FSexplorer) 
       en zet de data-bestanden na het flashen van SPIFFS weer terug.
@@ -44,7 +44,7 @@ static const char UpdateServerIndex[] PROGMEM =
 static const char UpdateServerSuccess[] PROGMEM = 
   R"(<html charset="UTF-8">
      <style type='text/css'>
-        body {background-color: lightgray;}
+        body {background-color:#ddd;}
      </style>
      <body>
      <h1>DSMR-logger Flash utility</h1>

@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.1.2
+**  Version  : v2.2.0
 **
 **  Copyright (c) 2020 Martijn Hendriks
 **

@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : helperStuff, part of DSMRloggerAPI
-**  Version  : v2.1.2
+**  Version  : v2.2.0
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
