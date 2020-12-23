@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v2.1.0
+**  Version  : v2.2.0
 **
 **  Copyright (c) 2020 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
@@ -34,7 +34,7 @@
   var electr_netw_costs     = 0;
   var gas_netw_costs        = 0;
   var hostName            	=  "-";  
-  var data       = [];
+  var data       			= [];
                   
   let monthType        = "ED";
   let settingFontColor = 'white'
@@ -232,6 +232,7 @@
     } else if (activeTab == "bEditMonths") {
       document.getElementById('tabEditMonths').style.display = "block";
       document.getElementById('tabEditSettings').style.display = "none";
+      clearInterval(actualTimer); //otherwise the data blok is overwritten bij actual data
       getMonths();
 
     } else if (activeTab == "bSettings" || activeTab == "bEditSettings") {
@@ -240,6 +241,7 @@
 	  data = {};
       document.getElementById('tabEditSettings').style.display = 'block';
       document.getElementById('tabEditMonths').style.display = "none";
+	  clearInterval(actualTimer); //otherwise the data blok is overwritten bij actual data
       refreshSettings();
       getDevSettings();
       activeTab = "bEditSettings";
@@ -363,6 +365,7 @@
 
 	  tlgrmInterval = obj.telegraminterval;
       if (firmwareVersion > 20000) document.getElementById("resetWifi").removeAttribute('hidden');
+      if (firmwareVersion > 20102) document.getElementById("update").removeAttribute('hidden');
 
       })
       .catch(function(error) {
@@ -1637,8 +1640,8 @@
     let recId = sYY + sMM + sDDHH;
     console.log("send["+i+"] => ["+recId+"]");
     
-    const jsonString = {"recid": recId, "edt1": row[i].values[0], "edt2": row[i].values[1],
-                         "ert1": row[i].values[2],  "ert2": row[i].values[3], "gdt":  row[i].values[4] };
+    const jsonString = {"recid": recId, "edt1": 1 * row[i].values[0], "edt2": 1 * row[i].values[1],
+                         "ert1": 1 * row[i].values[2],  "ert2": 1 * row[i].values[3], "gdt":  1 * row[i].values[4] };
 	console.log ("JsonString: "+JSON.stringify(jsonString));
     const other_params = {
         headers : { "content-type" : "application/json; charset=UTF-8"},
