@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.2.0
+**  Version  : v2.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -112,19 +112,19 @@ using MyData = ParsedData<
   /* String */        ,electricity_tariff
   /* FixedValue */    ,power_delivered
   /* FixedValue */    ,power_returned
-  /* FixedValue */    ,electricity_threshold
-  /* uint8_t */       ,electricity_switch_position
-  /* uint32_t */      ,electricity_failures
-  /* uint32_t */      ,electricity_long_failures
-  /* String */        ,electricity_failure_log
-  /* uint32_t */      ,electricity_sags_l1
-  /* uint32_t */      ,electricity_sags_l2
-  /* uint32_t */      ,electricity_sags_l3
-  /* uint32_t */      ,electricity_swells_l1
-  /* uint32_t */      ,electricity_swells_l2
-  /* uint32_t */      ,electricity_swells_l3
-  /* String */        ,message_short
-  /* String */        ,message_long
+//  /* FixedValue */    ,electricity_threshold
+//  /* uint8_t */       ,electricity_switch_position
+//  /* uint32_t */      ,electricity_failures
+//  /* uint32_t */      ,electricity_long_failures
+//  /* String */        ,electricity_failure_log
+//  /* uint32_t */      ,electricity_sags_l1
+//  /* uint32_t */      ,electricity_sags_l2
+//  /* uint32_t */      ,electricity_sags_l3
+//  /* uint32_t */      ,electricity_swells_l1
+//  /* uint32_t */      ,electricity_swells_l2
+//  /* uint32_t */      ,electricity_swells_l3
+//  /* String */        ,message_short
+//  /* String */        ,message_long
   /* FixedValue */    ,voltage_l1
   /* FixedValue */    ,voltage_l2
   /* FixedValue */    ,voltage_l3
@@ -139,20 +139,20 @@ using MyData = ParsedData<
   /* FixedValue */    ,power_returned_l3
   /* uint16_t */      ,gas_device_type
   /* String */        ,gas_equipment_id
-  /* uint8_t */       ,gas_valve_position
+//  /* uint8_t */       ,gas_valve_position
   /* TimestampedFixedValue */ ,gas_delivered
-  /* uint16_t */      ,thermal_device_type
-  /* String */        ,thermal_equipment_id
-  /* uint8_t */       ,thermal_valve_position
-  /* TimestampedFixedValue */ ,thermal_delivered
-  /* uint16_t */      ,water_device_type
-  /* String */        ,water_equipment_id
-  /* uint8_t */       ,water_valve_position
-  /* TimestampedFixedValue */ ,water_delivered
-  /* uint16_t */      ,slave_device_type
-  /* String */        ,slave_equipment_id
-  /* uint8_t */       ,slave_valve_position
-  /* TimestampedFixedValue */ ,slave_delivered
+//  /* uint16_t */      ,thermal_device_type
+//  /* String */        ,thermal_equipment_id
+//  /* uint8_t */       ,thermal_valve_position
+//  /* TimestampedFixedValue */ ,thermal_delivered
+//  /* uint16_t */      ,water_device_type
+//  /* String */        ,water_equipment_id
+//  /* uint8_t */       ,water_valve_position
+//  /* TimestampedFixedValue */ ,water_delivered
+//  /* uint16_t */      ,slave_device_type
+//  /* String */        ,slave_equipment_id
+//  /* uint8_t */       ,slave_valve_position
+//  /* TimestampedFixedValue */ ,slave_delivered
 >;
 
 enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };

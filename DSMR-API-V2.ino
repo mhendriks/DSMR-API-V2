@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.2.1 (23-12-2020)"
+#define _FW_VERSION "v2.2.1 (26-12-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
 **
@@ -10,12 +10,13 @@
 ***************************************************************************      
 *      
 *      TODO
-*      - update server
 *      - optimize record SMApi
-*      Backlog
-*      - telegram message bij drempelwaardes
-*      - telegram verbruiksrapport einde dag/week/maand
-*      - telegram bot gebruiken als UI
+*      - dashboard
+*      - update via site ipv url incl logica voor uitvragen hiervan
+*      - Telegram notificaties (waarschijnlijk pas in de ESP32 implementatie ivm memory ssl certificaten)
+*      -- message bij drempelwaardes 
+*      -- verbruiksrapport einde dag/week/maand
+*      -- bot gebruiken als interface
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 

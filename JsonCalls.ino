@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : JsonCalls, part of DSMRloggerAPI
-**  Version  : v2.2.0
+**  Version  : v2.2.1
 **
 **  Copyright (c) 2020 Martijn Hendriks
 **
@@ -18,6 +18,9 @@ char OneRecord[2300]= "";
 
 bool onlyIfPresent  = false;
 
+const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","gas_device_type","gas_equipment_id" };
+const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3","gas_delivered"};
+ 
 //=======================================================================
 void processAPI() {
   char fName[40] = "";
@@ -85,32 +88,31 @@ void processAPI() {
 
 template <typename TSource>
 void sendJson(const TSource &doc) 
-{
-  String JsonOutput;
-  JsonOutput.reserve(measureJson(doc));
-  if (Verbose1) serializeJsonPretty(doc, JsonOutput); 
-  else serializeJson(doc, JsonOutput);
+{  
+  const size_t strsize = measureJson(doc)+1;
+  char buffer[strsize];
   
-  DebugTln(F("http: json sent .."));
-  //Serial.print(F("Sending json: "));
-  //Serial.println(JsonOutput);
-  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
-  httpServer.setContentLength(measureJson(doc));
-  httpServer.send(200, "application/json", JsonOutput);  
+  if (Verbose1) serializeJsonPretty(doc,buffer,strsize); 
+  else serializeJson(doc,buffer,strsize);
+//  DebugT(F("Sending json: ")); Debugln(buffer);
+//  DebugT("strsize:"); Debugln(strsize);
+  sendJsonBuffer(buffer);
+  DebugTln(F("sendJson: json sent .."));
+    
 }
+void sendJsonBuffer(char* buffer){
+  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer.setContentLength(strlen(buffer));
+  httpServer.send(200, "application/json", buffer);
+} //sendJsonBuffer
 
 void sendDeviceTime() 
 {
-  // Allocate a temporary JsonDocument
-  // Use arduinojson.org/v6/assistant to compute the capacity.
-  StaticJsonDocument<110> doc;
+   char buffer[80];
+  //  {"timestamp":"201201074021S","time":"2020-12-01 07:40:21","epoch":1606808619}
+  sprintf_P(buffer,PSTR("{\"timestamp\":\"%s\",\"time\":\"%s\",\"epoch\":%d}"), actTimestamp, buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str() , now() );
+  sendJsonBuffer(buffer);
   
-  doc["timestamp"] = actTimestamp;
-  doc["time"] = buildDateTimeString(actTimestamp, sizeof(actTimestamp));
-  doc["epoch"] = (int)now();
-  
-  sendJson(doc);
-
 } // sendDeviceTime()
 
 void sendDeviceInfo() 
@@ -445,9 +447,7 @@ void ArrayToJson(){
   } else OneRecord[strlen(OneRecord)-1] = '}'; //replace "," with json terminating char
   
   DebugTln(F("http: json sent .."));
-  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
-  httpServer.setContentLength(strlen(OneRecord));
-  httpServer.send(200, "application/json", OneRecord);  
+  sendJsonBuffer(OneRecord); 
 }    
 
 //====================================================
@@ -516,7 +516,8 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     tlgrm[0] = '/'; 
     showRaw = false;
     if (Verbose1) Debugf("Telegram (%d chars):\r\n/%s", strlen(tlgrm), tlgrm);
-    httpServer.send(200, "application/plain", tlgrm);
+    //httpServer.send(200, "application/plain", tlgrm);
+    sendJsonBuffer(tlgrm);
     break; 
     } 
   default:
@@ -661,10 +662,7 @@ void sendDeviceDebug(const char *URI, String tail)
 } // sendDeviceDebug()
 
 bool isInFieldsArray(const char* lookUp)
-{
-  const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","gas_device_type","gas_equipment_id" };
-  const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3","gas_delivered"};
-                          
+{                        
 //    DebugTf("Elemts[%2d] | LookUp [%s] | LookUpType[%2d]\r\n", elemts, lookUp, LookUpType);
 if (fieldsElements == 0) return true;  
   for (int i=0; i<fieldsElements; i++)
