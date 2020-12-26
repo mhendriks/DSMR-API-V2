@@ -50,7 +50,7 @@
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define USE_TELEGRAM                // define if Telegram messaging should be enabled
 /******************** don't change anything below this comment **********************/
-#define DEBUG_MODE
+//#define DEBUG_MODE
 //#define HIST_CONV
 
 #include "DSMRloggerAPI.h"
