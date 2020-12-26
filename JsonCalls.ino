@@ -247,9 +247,9 @@ void sendDeviceSettings()
   doc["tlgrm_interval"]["min"] = 2;
   doc["tlgrm_interval"]["max"] = 60;
   
-  doc["index_page"]["value"] = settingIndexPage;
-  doc["index_page"]["type"] = "s";
-  doc["index_page"]["maxlen"] = sizeof(settingIndexPage) -1;
+  doc["IndexPage"]["value"] = settingIndexPage;
+  doc["IndexPage"]["type"] = "s";
+  doc["IndexPage"]["maxlen"] = sizeof(settingIndexPage) -1;
   
   doc["mqtt_broker"]["value"]  = settingMQTTbroker;
   doc["mqtt_broker"]["type"] = "s";

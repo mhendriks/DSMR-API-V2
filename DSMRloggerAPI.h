@@ -35,7 +35,7 @@
 #endif
 
 #define _DEFAULT_HOSTNAME  "DSMR-API" 
-#define _DEFAULT_HOMEPAGE  "DSMRindexEDGE.html"
+#define _DEFAULT_HOMEPAGE  "/DSMRindexEDGE.html"
 #define SETTINGS_FILE      "/DSMRsettings.json"
   
 #ifdef USE_REQUEST_PIN

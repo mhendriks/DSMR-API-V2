@@ -39,8 +39,8 @@
 /******************** compiler options  ********************************************/
 #define USE_REQUEST_PIN               // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
 #define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
-#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
-//#define USE_AUX                     // define if the aux port should be used
+#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_AUX][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
+#define USE_AUX                     // define if the aux port should be used
 #define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
@@ -50,7 +50,7 @@
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define USE_TELEGRAM                // define if Telegram messaging should be enabled
 /******************** don't change anything below this comment **********************/
-//#define DEBUG_MODE
+#define DEBUG_MODE
 //#define HIST_CONV
 
 #include "DSMRloggerAPI.h"
@@ -215,10 +215,11 @@ void setup()
 
   if (!spiffsNotPopulated) {
     DebugTln(F("SPIFFS correct populated -> normal operation!\r"));
-    httpServer.serveStatic("/",                 SPIFFS, "/DSMRindexEDGE.html");
-    httpServer.serveStatic("/DSMRindex.html",   SPIFFS, "/DSMRindexEDGE.html");
-    httpServer.serveStatic("/index",            SPIFFS, "/DSMRindexEDGE.html");
-    httpServer.serveStatic("/index.html",       SPIFFS, "/DSMRindexEDGE.html");
+    httpServer.serveStatic("/",                 SPIFFS, settingIndexPage);
+    httpServer.serveStatic("/DSMRindex.html",   SPIFFS, settingIndexPage);
+    httpServer.serveStatic("/DSMRindexEDGE.html",SPIFFS, settingIndexPage);
+    httpServer.serveStatic("/index",            SPIFFS, settingIndexPage);
+    httpServer.serveStatic("/index.html",       SPIFFS, settingIndexPage);
   } else {
     DebugTln(F("Oeps! not all files found on SPIFFS -> present FSexplorer!\r"));
     spiffsNotPopulated = true;

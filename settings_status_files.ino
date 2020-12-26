@@ -283,7 +283,7 @@ void updateSetting(const char *field, const char *newValue)
     CHANGE_INTERVAL_SEC(nextTelegram, settingTelegramInterval)
   }
 
-  if (!stricmp(field, "index_page"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  
+  if (!stricmp(field, "IndexPage"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  
 
 #ifdef USE_MINDERGAS
   if (!stricmp(field, "MindergasToken"))    strCopy(settingMindergasToken, 20, newValue);  

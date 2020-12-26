@@ -11,7 +11,7 @@
 
 #ifdef USE_AUX
 
-volatile uint32_t    isrAux_cnt = 0;
+uint32_t    isrAux_cnt = 0;
 
 ICACHE_RAM_ATTR void isrAux() //isr routine 
 { 
