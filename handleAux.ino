@@ -11,7 +11,7 @@
 
 #ifdef USE_AUX
 
-uint32_t    isrAux_cnt = 0;
+volatile uint32_t    isrAux_cnt = 0;
 
 ICACHE_RAM_ATTR void isrAux() //isr routine 
 { 
@@ -23,23 +23,22 @@ void handleAux()
   if (isrAux_cnt > 2) // don't trigger on single pulse
   {
     char topicId[30];
-    
     isrAux_cnt = 0;
-    if (settingMQTTtopTopic[strlen(settingMQTTtopTopic)-1] == '/')
-              snprintf(topicId, sizeof(topicId), "%s",  settingMQTTtopTopic);
-    else  snprintf(topicId, sizeof(topicId), "%s/", settingMQTTtopTopic);
+    
+    if (settingMQTTtopTopic[strlen(settingMQTTtopTopic)-1] == '/') snprintf(topicId, sizeof(topicId), "%s",  settingMQTTtopTopic);
+    else snprintf(topicId, sizeof(topicId), "%s/", settingMQTTtopTopic);
+    
     strConcat(topicId, sizeof(topicId), "Aux");
         
-    if (!MQTTclient.publish(topicId, "Signal") ) DebugTf(F("Error publish: "); Debugln(topicId);
-    else DebugT(F("Aux signal send\r\n"));    
+    if (!MQTTclient.publish(topicId, "Signal") ) { DebugT(F("Error publish: ")); Debugln(topicId); }
+    else DebugTln(F("Aux signal send\r\n"));    
     CHANGE_INTERVAL_MS(AuxTimer,  3000); //longer waiting time to prevent pushing out a lot of events
-  }  else CHANGE_INTERVAL_MS(AuxTimer,  500); //normal waiting time
+  } 
+  else CHANGE_INTERVAL_MS(AuxTimer,  500); //normal waiting time
   RESTART_TIMER(AuxTimer);
 }
 
 #endif
-
-
 /***************************************************************************
 *
 * Permission is hereby granted, free of charge, to any person obtaining a

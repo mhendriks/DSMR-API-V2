@@ -39,7 +39,7 @@
 /******************** compiler options  ********************************************/
 #define USE_REQUEST_PIN               // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
 #define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
-#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_AUX][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
+#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
 //#define USE_AUX                     // define if the aux port should be used
 #define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
