@@ -12,15 +12,15 @@ Na het aansluiten van de adapter op je P1 ingang van je slimme meter bouwt de ad
 
 Zorg dat je met je computer of mobiel device contact maakt met dit netwerk. Automatisch wordt een updatescherm getoond waarin de Wifi settings te zien zijn. Zie onderstaande voorbeeld op een MacBook.
 
-![](RackMultipart20201228-4-jhwz0a_html_15f284962bb2ce14.png)
+![](afb/afbeelding1.png)
 
 Zorg dat je met je computer of mobiel device contact maakt met dit netwerk, door hier op te klikken. Automatisch wordt een scherm getoond waarin de WifiManager te zien is. Zie onderstaande plaatje.
 
-![](RackMultipart20201228-4-jhwz0a_html_2c306293b3c5a2a6.gif) ![](RackMultipart20201228-4-jhwz0a_html_3f37276196503b36.png)
+![](afb/afbeelding2.png)
 
 1. Klik op &quot;Configuratie Wifi&quot;
 
-![](RackMultipart20201228-4-jhwz0a_html_80e057c9eba82fe.png)
+![](afb/afbeelding3.png)
 
 1. Klik op het uw netwerk naam en vul daarna het bijbehorende en **wachtwoord** in bij Password.
 2. Druk op &quot;Save&quot;
@@ -42,7 +42,7 @@ Er zijn drie manieren om via de adapter de slimmemeter uit te lezen, namelijk:
 
 Het hoofdscherm opent met onderstaande pagina. Kan zijn dat de tabel nog leeg is in de eerste 30 seconden na opstarten.
 
-![](RackMultipart20201228-4-jhwz0a_html_f8da330dd714afdb.png)
+![](afb/afbeelding4.png)
 
 In de menu zijn de volgende opties opgenomen
 
@@ -61,7 +61,7 @@ Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/)
 
 Druk op het wieltje rechts in het menu. Het onderstaande settingsscherm is zichtbaar.
 
-![](RackMultipart20201228-4-jhwz0a_html_6eb601ec5b67ea92.png)
+![](afb/afbeelding5.png)
 
 1 - MQTT
 
@@ -91,9 +91,8 @@ Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 
 Flashen dient via een FTDI interface te gebeuren. Op J2 zitten de aansluitingen voor deze interface.
 
-![](RackMultipart20201228-4-jhwz0a_html_9ff17f6ebcefa8b6.png)De pinout is :
-
- ![](RackMultipart20201228-4-jhwz0a_html_bb9bf0a37c84dfc0.gif)
+De pinout is :
+![Pinout module](afb/afbeelding6.png)
 1. Flash (vierkante pad / Rode pijl); Flash naar GND en opnieuw opstarten om in de program mode te komen
 2. GND
 3. 3Volt
