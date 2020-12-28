@@ -57,11 +57,11 @@ In de menu zijn de volgende opties opgenomen
 
 **Configuratie**
 
-Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/)
+Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/) <!-- .element height="50%" width="50%" -->
 
 Druk op het wieltje rechts in het menu. Het onderstaande settingsscherm is zichtbaar.
 
-![](afb/afbeelding5.png)
+![](afb/afbeelding5.png) <!-- .element height="50%" width="50%" -->
 
 1 - MQTT
 
