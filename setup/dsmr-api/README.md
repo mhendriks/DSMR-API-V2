@@ -1,34 +1,35 @@
 # **Slimmemeter DSMR-API adapter**
 
-Dit document beschrijft de installatie en configuratie van de DSMR API op hardware versie 2.0. De hardware komt normaal gesproken met werkende software. Zo niet of wil je deze aanpassen ga dan naar het onderdeel software.
+Dit document beschrijft de installatie en configuratie van de DSMR API op hardware versie 2.0. De hardware komt normaal gesproken met werkende software. Wil je deze aanpassen ga dan naar het onderdeel software.
 
-Dit project is een doorontwikkeling op basis van het pionierswerk van Willem Aandewiel. Er zijn een aantal verbeteringen doorgevoerd in de weblayout, het laden van de pagina&#39;s en interface berichten. MQTT interface is ongewijzigd. API interface is versie 2.0 en daarmee aangepast (andere structuur).
+Dit project is een doorontwikkeling op basis van het pionierswerk van Willem Aandewiel. Er zijn aanpassingen doorgevoerd in de weblayout, het laden van de pagina's en interface. MQTT interface is ongewijzigd. API interface is versie 2.x en daarmee aangepast (andere structuur).
 
- Zie voor meer informatie [https://mrwheel-docs.gitbook.io/dsmrloggerapi/](https://mrwheel-docs.gitbook.io/dsmrloggerapi/)
+Zie voor meer informatie [https://mrwheel-docs.gitbook.io/dsmrloggerapi/](https://mrwheel-docs.gitbook.io/dsmrloggerapi/)
 
 **Configuratie Wifi**
 
-Na het aansluiten van de adapter op je P1 ingang van je slimme meter bouwt de adapterals eerste een eigen Wifi hotspot op ten behoeve van configuratie. Deze hotspot is te herkennen door de Wifinaam DSRM-API-?????.
+Na het aansluiten van de adapter op je P1 ingang van je slimmemeter bouwt de adapterals eerste een eigen Wifi hotspot op ten behoeve van configuratie. Deze hotspot is te herkennen door de Wifinaam DSRM-API-?????.
 
-Zorg dat je met je computer of mobiel device contact maakt met dit netwerk. Automatisch wordt een updatescherm getoond waarin de Wifi settings te zien zijn. Zie onderstaande voorbeeld op een MacBook.
+Zorg dat je met je computer of mobieldevice contact maakt met dit netwerk. Automatisch wordt een updatescherm getoond waarin de Wifi settings te zien zijn. Zie onderstaande voorbeeld op MacOS.
 
-![](afb/afbeelding1.png)
+<img src="afb/afbeelding1.png" width="20%">
 
 Zorg dat je met je computer of mobiel device contact maakt met dit netwerk, door hier op te klikken. Automatisch wordt een scherm getoond waarin de WifiManager te zien is. Zie onderstaande plaatje.
 
-![](afb/afbeelding2.png)
+<img src="afb/afbeelding2.png" width="40%">
+
 
 1. Klik op &quot;Configuratie Wifi&quot;
 
-![](afb/afbeelding3.png)
+<img src="afb/afbeelding3.png" width="40%">
 
-1. Klik op het uw netwerk naam en vul daarna het bijbehorende en **wachtwoord** in bij Password.
+1. Klik op het uw netwerknaam en vul daarna het bijbehorende en **wachtwoord** in bij Password.
 2. Druk op &quot;Save&quot;
-3. Adapter zal op nieuwe opstarten en u kunt het eind scherm sluiten.
+3. Adapter zal op nieuwe opstarten en u kunt het scherm sluiten.
 
 Vanaf dit moment zal de adapter te vinden zijn via: [http://dsmr-api.local/](http://dsmr-api.local/)
 
-Deze naam is aanpasbaar zie verderop in deze beschrijving.
+Deze naam is aanpasbaar (via configuratie).
 
 **Uitlezen Slimmemeter**
 
@@ -42,7 +43,8 @@ Er zijn drie manieren om via de adapter de slimmemeter uit te lezen, namelijk:
 
 Het hoofdscherm opent met onderstaande pagina. Kan zijn dat de tabel nog leeg is in de eerste 30 seconden na opstarten.
 
-![](afb/afbeelding4.png)
+<img src="afb/afbeelding4.png" width="50%">
+
 
 In de menu zijn de volgende opties opgenomen
 
@@ -57,11 +59,11 @@ In de menu zijn de volgende opties opgenomen
 
 **Configuratie**
 
-Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/) <!-- .element height="50%" width="50%" -->
+Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/)
 
 Druk op het wieltje rechts in het menu. Het onderstaande settingsscherm is zichtbaar.
 
-<img src="afb/afbeelding5.png" width="20%">
+<img src="afb/afbeelding5.png" width="40%">
 
 1 - MQTT
 
@@ -92,7 +94,7 @@ Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 Flashen dient via een FTDI interface te gebeuren. Op J2 zitten de aansluitingen voor deze interface. 
 De pinout is :
 
-<img src="afb/afbeelding6v3.png" width="20%">
+<img src="afb/afbeelding6v3.png" width="15%">
 
 1. Flash (vierkante pad / Rode pijl); Flash naar GND en opnieuw opstarten om in de program mode te komen
 2. GND
@@ -105,14 +107,7 @@ De software is te vinden op [https://github.com/mhendriks/DSMR-API-V2](https://g
 
 **Aansluiten extra signaal**
 
-Op J5 kan een extra input worden aangesloten. De bedoeling is om een 8 of 12Volt bel af te tappen zodat het belsignaal ook verzonden kan worden naar bv je telefoon of een woonkamer lamp laat knipperen. Hoe gaat dit in zijn werk?
-
-1. Check de spanning van de beltransformator.
-2. Trek een 2 aderige kabel naar de bel en sluit de twee draden aan
-3. Sluit 1 draad aan op J5-Bell
-4. Sluit de andere draad aan op 8 of 12Volt (afhankelijk van de transformator spanning)
-
-Is de transformator van het DC type dan kan het zijn dat de twee draden om gedraaid dienen te worden.
+Zie [setup/aux_(bel)](aux_(bel)/README.md) voor meer details
 
 **Instellen Domotica oplossing**
 
