@@ -92,7 +92,7 @@ Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 Flashen dient via een FTDI interface te gebeuren. Op J2 zitten de aansluitingen voor deze interface. 
 De pinout is :
 
-![Pinout module](afb/afbeelding6v3.png width="50")
+![Pinout module](afb/afbeelding6v3.png) <!-- .element width="40%" -->
 
 1. Flash (vierkante pad / Rode pijl); Flash naar GND en opnieuw opstarten om in de program mode te komen
 2. GND
