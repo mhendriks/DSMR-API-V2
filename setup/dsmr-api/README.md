@@ -61,7 +61,7 @@ Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/) <!-- .elemen
 
 Druk op het wieltje rechts in het menu. Het onderstaande settingsscherm is zichtbaar.
 
-![](afb/afbeelding5.png) <!-- .element height="50%" width="50%" -->
+<img src="afb/afbeelding5.png" width="20%">
 
 1 - MQTT
 
@@ -92,7 +92,7 @@ Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 Flashen dient via een FTDI interface te gebeuren. Op J2 zitten de aansluitingen voor deze interface. 
 De pinout is :
 
-![Pinout module](afb/afbeelding6v3.png) {:height="50%" width="50%"}
+<img src="afb/afbeelding6v3.png" width="20%">
 
 1. Flash (vierkante pad / Rode pijl); Flash naar GND en opnieuw opstarten om in de program mode te komen
 2. GND
