@@ -1,4 +1,4 @@
-# Aansluiten Aux
+# Aansluiten Aux (Bel)
 Als de p1 adapter de optie heeft om een extra signaal aan te bieden dan kan daar bijvoorbeeld een deurbel op aangesloten worden. In de praktijk kan er elke bron worden aangesloten op de P1 adapter mits deze een signaal geeft tussen de 5 en 12Volt. Dit kan een AC of DC signaal zijn zolang deze maar een pulse of pulsen geeft. Het signaal gaat een optocoupler in op de p1 adapter en is daardoor galvanisch gescheiden van de overige logica.
 
 ## Aftakken signaal
