@@ -14,7 +14,7 @@ Uit de P1 adapter komen drie draadjes, namelijk:
 - Zwart: 5 - 8 Volt (weerstand 330 ohm)
 - Geel : ground
 
-Advies is om eerst rood/geel te gebruiken. Mocht dit niet lukken omdat de spanning te laag is de zwart/geel combinatie
+Advies is om eerst rood/geel te gebruiken. Mocht dit niet lukken, omdat de spanning te laag is, de zwart/geel combinatie.
 
 ## Software
 Een opgevangen signaal wordt ALLEEN omgezet naar een MQTT signaal indien dit signaal minimaal 3 pulsen heeft gegeven. Zodra er 3 of meer pulsen zijn gedetecteerd wordt het onderstaande MQTT bericht gestuurd. Dan volgt er een timeout van ±3000ms (om te voorkomen dat er maar berichten blijven komen). Elke ±500ms checkt de logica of er pulsen zijn binnen gekomen.
