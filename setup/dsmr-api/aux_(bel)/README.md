@@ -10,9 +10,9 @@ In onderstaande overzicht staat een reguliere deurbelschakeling. Het signaal bij
 ## Aansluitingen op de P1 adapter
 Uit de P1 adapter komen drie draadjes, namelijk:
 
-Rood : 8 - 12 Volt (weerstand 560 ohm)
-Zwart: 5 - 8 Volt (weerstand 330 ohm)
-Geel : ground
+- Rood : 8 - 12 Volt (weerstand 560 ohm)
+- Zwart: 5 - 8 Volt (weerstand 330 ohm)
+- Geel : ground
 
 Advies is om eerst rood/geel te gebruiken. Mocht dit niet lukken omdat de spanning te laag is de zwart/geel combinatie
 
