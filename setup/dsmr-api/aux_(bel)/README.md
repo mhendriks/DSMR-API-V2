@@ -4,7 +4,8 @@ Als de p1 adapter de optie heeft om een extra signaal aan te bieden dan kan daar
 ## Aftakken signaal
 In onderstaande overzicht staat een reguliere deurbelschakeling. Het signaal bij de bel dient afgetakt te worden en naar de P1 adapter te gaan. 
 
-![Aftakken signaal](aansluiten_aux.png)
+<img src="aansluiten_aux.png" width="60%">
+
 
 ## Aansluitingen op de P1 adapter
 Uit de P1 adapter komen drie draadjes, namelijk:
