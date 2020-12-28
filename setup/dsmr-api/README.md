@@ -89,17 +89,17 @@ Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 
 **Flashen / Updaten**
 
-Flashen dient via een FTDI interface te gebeuren. Op J2 zitten de aansluitingen voor deze interface.
-
+Flashen dient via een FTDI interface te gebeuren. Op J2 zitten de aansluitingen voor deze interface. 
 De pinout is :
-![Pinout module](afb/afbeelding6.png)
+
+![Pinout module](afb/afbeelding6v3.png)
+
 1. Flash (vierkante pad / Rode pijl); Flash naar GND en opnieuw opstarten om in de program mode te komen
 2. GND
 3. 3Volt
 4. RX
 5. TX
-
-J4 is de reset. Reset = GND
+6. Reset = GND
 
 De software is te vinden op [https://github.com/mhendriks/DSMR-API-V2](https://github.com/mhendriks/DSMR-API-V2)
 
