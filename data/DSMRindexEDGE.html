@@ -29,8 +29,8 @@
   function readPageBody()
   {
     console.log("readPageBody() ..");
-    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRindex.html.inc")
-    //fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRindex_body.html")
+//     fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRindex.html.inc")
+    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRindex_body.html")
       .then(response => {
         if (response.ok) {
           return response.text();
