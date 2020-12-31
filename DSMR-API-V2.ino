@@ -2,16 +2,15 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.2.1 (26-12-2020)"
+#define _FW_VERSION "v2.3.0 (01-01-2021)"
 /*
-**  Copyright (c) 2020 Willem Aandewiel / Martijn Hendriks
+**  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 *      
 *      TODO
-*      - optimize record SMApi
-*      - dashboard
+*      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
 *      - Telegram notificaties (waarschijnlijk pas in de ESP32 implementatie ivm memory ssl certificaten)
 *      -- message bij drempelwaardes 
@@ -22,7 +21,7 @@
 
     - Board: "Generic ESP8266 Module"
     - Flash mode: "DOUT"
-    - Flash size: "1MB (FS: 32KB OAT:~502KB)"
+    - Flash size: "1MB (FS: 64KB OAT:~470KB)"
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -39,8 +38,8 @@
 /******************** compiler options  ********************************************/
 #define USE_REQUEST_PIN               // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
 #define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
-#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_AUX][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
-#define USE_AUX                     // define if the aux port should be used
+#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
+//#define USE_AUX                     // define if the aux port should be used
 #define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
@@ -50,7 +49,7 @@
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define USE_TELEGRAM                // define if Telegram messaging should be enabled
 /******************** don't change anything below this comment **********************/
-#define DEBUG_MODE
+//#define DEBUG_MODE
 //#define HIST_CONV
 
 #include "DSMRloggerAPI.h"
@@ -225,7 +224,7 @@ void setup()
     spiffsNotPopulated = true;
   }
   
-  httpServer.serveStatic("/FSexplorer",      SPIFFS, "/FSexplorer.html"); //for version 2.0.0 firmware
+  //httpServer.serveStatic("/FSexplorer",      SPIFFS, "/FSexplorer.html"); //for version 2.0.0 firmware
   
   setupFSexplorer();
   httpServer.on("/api", HTTP_GET, processAPI); // all other api calls are catched in FSexplorer onNotFounD!

@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : settings_status_files, part of DSMRloggerAPI
-**  Version  : v2.2.1
+**  Version  : v2.3.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2021 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -145,10 +145,10 @@ void readSettings(bool show)
     {
       if (T == 0) DebugTf(" .. something went wrong opening [%s]\r\n", SETTINGS_FILE);
       else        DebugT(T);
-      delay(100);
+      delay(500);
     }
   } // try T times ..
-
+  
   DebugTln(F("Reading settings:\r"));
 
   DeserializationError error = deserializeJson(doc, SettingsFile);

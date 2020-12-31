@@ -1,18 +1,18 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v2.2.1
+**  Version  : v2.3.0
 **
-**  Copyright (c) 2020 Martijn Hendriks / based on DSMR Api Willem Aandewiel
+**  Copyright (c) 2021 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-	const APIGW='http://'+window.location.host+'/api/';
+  const APIGW='http://'+window.location.host+'/api/';
 
   "use strict";
 
-  let activeTab             = "bActualTab";
+  let activeTab             = "bDashTab";
   let presentationType      = "TAB";
   let tabTimer              = 0;
   let actualTimer           = 0;
@@ -47,7 +47,274 @@
   var FS_no_delete = [ "FSexplorer.html", "DSMRindex.html","DSMRsettings.json","DSMRindexEDGE.html","\0"];
   const spinner = document.getElementById("loader");
 
+// ---- DASH
+const AMPS=25;
+var MaxAmps = 0.0;
+var TotalAmps=0.0,minKW = 0.0, maxKW = 0.0,minV = 0.0, maxV = 0.0, Pmax,Gmax;
+var hist_arrG=[4], hist_arrP=[4]; //berekening verbruik
+var day = 0;
+
+let GaugeOptions = {
+		id: "gauge", // the id of the html element
+		value: 0,
+		min: 0,
+		max: 25,
+		decimals: 2,
+		gaugeWidthScale: 0.6,
+		pointer: true,
+		pointerOptions: {
+			toplength: -15,
+			bottomlength: 12,
+			bottomwidth: 12,
+			color: '#8e8e93',
+			stroke: '#ffffff',
+			stroke_width: 3,
+			stroke_linecap: 'round'
+		}, counter: true,
+		customSectors: {
+			percents: true, // lo and hi values are in %
+			ranges: [{
+				color : "#43bf58",
+				lo : 0,
+				hi : 33
+				},
+				{
+				color : "#fff130",
+				lo : 34,
+				hi : 75
+				},
+				{
+				color : "#ff3b30",
+				lo : 76,
+				hi : 100
+				}]
+		}, 
+		label: "Ampere" };
+
+let GaugeOptionsV = {
+		id: "gauge-v", // the id of the html element
+		value: 230,
+		min: 207,
+		max: 253,
+		decimals: 0,
+		gaugeWidthScale: 0.6,
+		pointer: true,
+		pointerOptions: {
+			toplength: -15,
+			bottomlength: 12,
+			bottomwidth: 12,
+			color: '#8e8e93',
+			stroke: '#ffffff',
+			stroke_width: 3,
+			stroke_linecap: 'round'
+		}, counter: true,
+		customSectors: {
+			percents: true, // lo and hi values are in %
+			ranges: [{
+				color : "#ff3b30",
+				lo : 0,
+				hi : 10
+				},
+				{
+				color : "#43bf58",
+				lo : 11,
+				hi : 90
+				},
+				{
+				color : "#ff3b30",
+				lo : 91,
+				hi : 100
+				}]
+		}, 
+		label: "Volt" };
+
+let TrendG = {
+    type: 'doughnut',
+    data: {
+      labels: ["gasverbruik", "verschil met hoogste"],
+      datasets: [
+        {
+          label: "vandaag",
+          backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
+          data: [0,1],
+        },
+        {
+          label: "gisteren",
+          backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
+          data: [0,1]
+        },
+        {
+          label: "eergisteren",
+          backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
+          data: [0,1]
+        }
+      ]
+    },
+    options: {
+      circumference: Math.PI,
+			rotation: -Math.PI,
+      plugins: {
+      labels: {
+        render: function (args) {
+          return args.value + " \u33A5";
+        },//render
+        arc: true,
+        fontColor: ["#fff","rgba(0,0,0,0)"],
+      },//labels      
+    }, //plugins
+    legend: {display: false},
+    }, //options
+};
+
+let TrendP = {
+    type: 'doughnut',
+    data: {
+      labels: ["gasverbruik", "verschil met hoogste"],
+      datasets: [
+        {
+          label: "vandaag",
+          backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
+          data: [0,1],
+        },
+        {
+          label: "gisteren",
+          backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
+          data: [0,1]
+        },
+        {
+          label: "eergisteren",
+          backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
+          data: [0,1]
+        }
+      ]
+    },
+    options: {
+      circumference: Math.PI,
+		rotation:  - Math.PI,
+      plugins: {
+      labels: {
+        render: function (args) {
+          return args.value + " kWh";
+        },//render
+        arc: true,
+        fontColor: ["#fff","rgba(0,0,0,0)"],
+      },//labels      
+    }, //plugins
+      legend: {display: false},
+    } //options
+};
+
+function updataHist(){
+
+}
+
+//============================================================================  
   
+function UpdateDash()
+{	
+	var Parr=[3], Garr=[3];
+	var now = Math.floor(new Date().getTime()/8.64e7);
+	console.log("Update dash");
+
+	if (day != now) { //check first start and day change
+		refreshDays();
+		day = now;
+	}
+	showSpinner();
+	fetch(APIGW+"v2/sm/fields", {"setTimeout": 2000})
+	  .then(response => response.json())
+	  .then(json => {
+		// console.log(json);
+     	// console.log(json.power_delivered.value);
+// 		if (hist_arrP[0] != 4){ 
+		for(let i=0;i<3;i++){
+			if (i==0) {
+				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - hist_arrP[i+1]).toFixed(3);
+				Garr[i]=Number(json.gas_delivered.value - hist_arrG[i+1]).toFixed(3) ;
+			} else {
+				Parr[i]=Number(hist_arrP[i] - hist_arrP[i+1]).toFixed(3);
+				Garr[i]=Number(hist_arrG[i] - hist_arrG[i+1]).toFixed(3);
+			}
+		}
+		// maximale waarde bepalen voor de gauge
+		Pmax = math.max(Parr);
+		Gmax = math.max(Garr);
+
+		// 		console.log(Pmax);
+		// 		console.log(Gmax);
+// 		} else {
+// 			Parr = [0,0,0];
+// 			Garr = [0,0,0];
+// 			Pmax =0, Gmax=0;
+// 		}
+		//data sets berekenen voor de gauges
+		for(let i=0;i<3;i++){
+			trend_p.data.datasets[i].data=[Number(Parr[i]).toFixed(1),Number(Pmax-Parr[i]).toFixed(1)];
+			trend_g.data.datasets[i].data=[Number(Garr[i]).toFixed(1),Number(Gmax-Garr[i]).toFixed(1)];
+		};
+		trend_p.update();
+		trend_g.update();
+	
+		//check if gasmeter is available
+		 if (isNaN(json.gas_delivered.value)) document.getElementById("l4").style.display = "none";
+		
+		 if (json.power_delivered.value > 0) 
+		{	
+			var fases = 1;
+			let cvKW=document.getElementById("power_delivered").innerHTML;
+			let nvKW= json.power_delivered.value; 
+			let nvA=  json.current_l1.value;
+			
+			if (!isNaN(json.current_l2.value)) fases++;
+			if (!isNaN(json.current_l3.value)) fases++;
+			
+			document.getElementById("fases").innerHTML = fases;
+			
+			TotalAmps = (isNaN(json.current_l1.value)?0:json.current_l1.value) + 
+				(isNaN(json.current_l2.value)?0:json.current_l2.value) + 
+				(isNaN(json.current_l3.value)?0:json.current_l3.value);
+
+			let TotalU = (isNaN(json.voltage_l1.value)?0:json.voltage_l1.value) + 
+				(isNaN(json.voltage_l2.value)?0:json.voltage_l2.value) + 
+				(isNaN(json.voltage_l3.value)?0:json.voltage_l3.value);
+
+			let Vgem=TotalU/fases;
+			let TotalKW = json.power_delivered.value;
+
+			gauge.refresh(TotalAmps, AMPS * fases);
+			gauge_v.refresh(Vgem);
+
+			document.getElementById("power_delivered").innerHTML = TotalKW.toLocaleString();
+			document.getElementById("P").innerHTML = Number(Parr[0]).toLocaleString();
+			document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString();
+
+			//vermogen(P)
+			if (minKW == 0.0 || nvKW < minKW) { minKW = nvKW;}
+			if (nvKW> maxKW){ maxKW = nvKW; }
+			document.getElementById(`power_delivered_1max`).innerHTML = Number(maxKW.toFixed(3)).toLocaleString();                    
+			document.getElementById(`power_delivered_1min`).innerHTML = Number(minKW.toFixed(3)).toLocaleString();                        
+			
+			//Spanning(V)
+			if (minV == 0.0 || Vgem < minV) { minV = Vgem; }
+			if (Vgem > maxV) { maxV = Vgem; }
+			document.getElementById(`power_delivered_2max`).innerHTML = Number(maxV.toFixed(0)).toLocaleString();
+			document.getElementById(`power_delivered_2min`).innerHTML = Number(minV.toFixed(0)).toLocaleString();   
+			
+			//verbruik P
+			document.getElementById(`Pmax`).innerHTML = Number(Pmax).toLocaleString();
+			document.getElementById(`Pmin`).innerHTML = Math.min.apply(Math, Parr).toLocaleString();
+			
+			//verbruik G    
+			document.getElementById(`Gmax`).innerHTML = Number(Gmax).toLocaleString();
+			document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
+												
+		};//end if
+		hideSpinner();
+		}); //end fetch fields
+}
+	
+// -------------- END DASH
+
   window.onload=bootsTrapMain;
   /*
   window.onfocus = function() {
@@ -61,8 +328,12 @@
   function bootsTrapMain() {
     console.log("bootsTrapMain()");
 	console.log("hash:"+ location.hash);
+	gauge = new JustGage(GaugeOptions); // initialize gauge
+	gauge_v = new JustGage(GaugeOptionsV); // initialize gauge
+	trend_g = new Chart(document.getElementById("container-4"), TrendG);
+	trend_p = new Chart(document.getElementById("container-3"), TrendP);
 
-   //handle Clickevents - main-menu
+	//handle Clickevents - main-menu
 	var btns = document.getElementsByClassName("nav-item");
 	for (let i = 0; i < btns.length; i++) {
   		btns[i].addEventListener("click", function() {
@@ -100,16 +371,16 @@
     initActualGraph();
     setPresentationType('TAB');
 	//after loading ... flow the #target url just for FSExplorer
-	console.log("location-hash: " + location.hash );
-	console.log("location-pathname: " + location.pathname );
-	console.log("location-msg: " + location.hash.split('msg=')[1]);
-	console.log("location-hash-split: " + location.hash.split('#')[1].split('?')[0]);
+	consol// e.log("location-hash: " + location.hash );
+// 	console.log("location-pathname: " + location.pathname );
+// 	console.log("location-msg: " + location.hash.split('msg=')[1]);
+// 	console.log("location-hash-split: " + location.hash.split('#')[1].split('?')[0]);
 	//goto tab after reload 
 	if (location.hash == "#FileExplorer") { document.getElementById('bFSexplorer').click(); }
 	if (location.hash.split('#')[1].split('?')[0] == "Redirect") { handleRedirect(); }
 
-	//reselect Actual when Home icon has been clicked
- 	document.getElementById('Home').addEventListener("click", function() { document.getElementById('bActualTab').click(); });
+	//reselect Dash when Home icon has been clicked
+ 	document.getElementById("Home").addEventListener("click", function() { document.getElementById('bDashTab').click(); });
   } // bootsTrapMain()
   
   //============================================================================  
@@ -175,6 +446,7 @@
 
   //============================================================================  
   function openTab() {
+	if (activeTab == "Home") activeTab = "bDashTab";
     console.log("openTab : " + activeTab );
   	update_nav();
     clearInterval(tabTimer);  
@@ -227,6 +499,10 @@
 
     } else if (activeTab == "bInfo_APIdoc") {
       //do nothing = static html
+    } else if (activeTab == "bDashTab") {
+       UpdateDash();
+       clearInterval(tabTimer);
+       tabTimer = setInterval(UpdateDash, 10 * 1000); // repeat every 10s
     } else if (activeTab == "bFSexplorer") {
       FSExplorer();
     } else if (activeTab == "bEditMonths") {
@@ -321,7 +597,7 @@
     fetch(APIGW+"v2/dev/info")
       .then(response => response.json())
       .then(json => {
-        //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
+        console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
 		hideSpinner();
         obj = json;
         var tableRef = document.getElementById('tb_info');
@@ -595,6 +871,17 @@
         if (presentationType == "TAB")
               showHistTable(data, "Days");
         else  showHistGraph(data, "Days");
+		//voor dashboard
+        var act_slot = data.actSlot;
+		for (let i=0;i<4;i++)
+		{	
+			hist_arrG[i] =json.data[math.mod(act_slot-i,15)].values[4];
+			hist_arrP[i] = json.data[math.mod(act_slot-i,15)].values[0] 
+				+ json.data[math.mod(act_slot-i,15)].values[1];
+		};
+		// 		console.log(hist_arrG);
+		// 		console.log(hist_arrP);
+
 	    hideSpinner();
 
       })
@@ -1962,8 +2249,7 @@
           ,[ "uptime",                    "Up Time [dagen] - [hh:mm]" ]
           ,[ "reboots",                   "Aantal keer opnieuw opgestart" ]
           ,[ "lastreset",                 "Laatste Reset reden" ]
-          
-                        ];
+];
 
 /*
 ***************************************************************************

@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.css, part of DSMRfirmwareAPI
-**  Version  : v2.2.1
+**  Version  : v2.3.0
 **
-**  Copyright (c) 2020 Martijn Hendriks / based on DSMR Api Willem Aandewiel
+**  Copyright (c) 2021 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -404,6 +404,156 @@ body > div.bottom.right-0 {
   100% { transform: rotate(360deg); }
 }
 
+/* DASH css */
+ 
+#DashTab .outer {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+#DashTab *{
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-family: 'Dosis', sans-serif;
+	line-height: 1.6;
+	color: #666;
+	background: #fff;
+}
+
+@media screen and (min-width: 600px) {
+	.card {
+	  flex: 1 1 calc(50% - 2rem);
+	}
+}
+  
+@media screen and (min-width: 900px) {
+	.card {
+	  flex: 1 1 calc(33% - 2rem);
+	}
+}
+
+#legenda{
+	margin-top: -61px;
+    position: relative;
+    margin-left: 2px;
+	margin-bottom: 39px;
+    background: transparent;
+    }
+
+/* Show the tooltip text when you mouse over the tooltip container */
+#DashTab .lblVerbuik:hover .tooltiptext {
+  display: inline-block;
+  opacity: 1;
+  position: absolute;
+  z-index: 1;
+  bottom: 1%;
+  left: 63%;
+  margin-left: -60px;
+}
+
+/* Tooltip text */
+#DashTab .tooltiptext {
+  display: none;
+  background: gray;
+  padding: 0 10px;
+  background: gray;
+  border-radius: 6px;
+  color: white;
+}
+
+.card {
+	margin: 1rem;
+	background: white;
+	box-shadow: 2px 4px 25px rgba(0, 0, 0, .1);
+	border-radius: 12px;
+	overflow: hidden;
+	transition: all .2s linear;
+	max-width: 200px;  
+	min-width: 180px;
+}
+
+.card:hover {
+	box-shadow: 2px 8px 45px rgba(0, 0, 0, .15);
+	transform: translate3D(0, -2px, 0);
+}
+
+.chart-container {
+	width: 200px;
+	float: none;
+	height: 180px;
+}
+
+#container-3 {
+	margin-top:25px;
+	width:220px;
+}
+
+#container-4 {
+	margin-top:25px;
+	width:220px;
+}
+
+#DashTab .lblVerbuik {
+	text-align: center;
+    color: white;
+    height: 14px;
+    font-size: 12px;
+    line-height: 0.8;
+    width: 14px;
+    display: inline-block;
+}
+
+#DashTab .vandaag{
+    background: #314b77;
+}
+
+#DashTab .gisteren{
+    background: #316b77;
+}
+
+#DashTab .eergisteren{
+    background: #318b77;
+}
+
+#DashTab .card h1 {
+	text-align: center;
+	padding: 0.5rem 1.5rem;
+	background: #314b77;
+	margin: 0 0 0rem 0;
+	font-size: 1.5rem;
+	color: white!important;
+}
+
+#DashTab h2 {
+	text-align: center;
+	font-size: 3rem;
+	padding: 0.2rem 0.2rem;	
+	margin: 0;
+}
+
+#DashTab h3 {
+	text-align: center;
+	font-size: 1.3rem;
+	font-family: 'Heiti TC';
+	padding: 0.2rem 0.2rem;	
+	margin: 0;
+}
+#DashTab .label {
+	text-align: center;
+    margin-top: -21px;
+    /* z-index: 100; */
+    position: relative;
+    background: rgba(0,0,0,0);
+    font-weight: bold;
+    color: black;
+    margin-bottom: 56px;
+}
+
+#DashTab hr {
+	width: 80%;
+	opacity: 0.5;
+}
 /*
 ***************************************************************************
 *

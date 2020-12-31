@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : handleAux - definitions for handling aux input
-**  Version  : v2.2.1
+**  Version  : v2.3.0
 **
-**  Copyright (c) 2020 Martijn Hendriks
+**  Copyright (c) 2021 Martijn Hendriks
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      

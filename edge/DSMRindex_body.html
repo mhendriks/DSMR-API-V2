@@ -1,9 +1,9 @@
 <!--
 ***************************************************************************  
-**  Program  : DSMRindex.html.inc, part of DSMRloggerAPI
-**  Version  : v2.2.1
+**  Program  : DSMRindex_body.html, part of DSMRloggerAPI
+**  Version  : v2.3.0
 **
-**  Copyright (c) 2020 Martijn Hendriks / based on DSMR Api Willem Aandewiel
+**  Copyright (c) 2021 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -13,8 +13,9 @@
   <div class="nav-container">
   	<div class="inner-nav">
     <nav id='nav-main'>
-      <a id='Home'   		class='nav-item nav-img' href="#ActualTab"><span class="mdi mdi-chart-box-outline"></span></a>
-      <a id='bActualTab'    class='nav-item tabButton active' href="#ActualTab">Actueel</a>
+      <a id='Home'   		class='nav-item nav-img' href="#DashTab"><span class="mdi mdi-chart-box-outline"></span></a>
+	  <a id='bDashTab'    	class='nav-item tabButton active' href="#DashTab">Dash</a>
+	  <a id='bActualTab'    class='nav-item tabButton' href="#ActualTab">Actueel</a>
       <a id='bHoursTab'     class='nav-item tabButton' href="#HoursTab">Uur</a>
       <a id='bDaysTab'      class='nav-item tabButton' href="#DaysTab">Dag</a>
       <a id='bMonthsTab'    class='nav-item tabButton' href="#MonthsTab">Maand</a>
@@ -362,8 +363,9 @@
 	<div><b>Redirect over <span id='counter'>45</span> seconden.</b>
 	<hr>Indien de pagina niet automatisch getoond wordt klik dan op <a href='/'>Home pagina</a></div>
     </section>  
+   
 <!-- START ActualTab Tab -->
-  <section id="ActualTab" class="tabName default">
+  <section id="ActualTab" class="tabName">
     <!-- START actueelTab Dummy -->
         <h2>Actueel</h2>
     <div>
@@ -395,6 +397,63 @@
     </div>
   
   </section>  <!-- END ActualTab Tab -->
+  
+  <!-- START Dash Tab -->
+  <section id="DashTab" class="tabName default">
+        <h2>Dashboard</h2>
+    <div class=outer>
+        <div class=card id=l1>
+            <h1 id=power_delivered_l1h>Actueel</h1>
+	        <div class="chart-container" id="gauge"></div>
+            <hr/>
+            <div style="text-align:center">Vandaag [kW]</div>
+            <h2 id="power_delivered">0.0</h2>
+            <h3>max: <span id="power_delivered_1max">0.0</span> kW</h3>
+            <h3>min: <span id="power_delivered_1min">0.0</span> kW</h3>
+        </div>
+        <div class=card id=l2>
+            <h1 id=power_delivered_l2h>Spanning</h1>
+            <div class="chart-container" id="gauge-v"></div>
+            <hr/>
+            <div style="text-align:center">Aantal fases</div>
+            <h2 id="fases">1</h2>
+            <h3>max: <span id="power_delivered_2max">0.0</span> Volt</h3>
+            <h3>min: <span id="power_delivered_2min">0.0</span> Volt</h3>
+        </div>
+        <div class=card id=l3>
+            <h1 id=Ph>Stroomverbruik</h1>
+            <canvas class="chart-container" id="container-3"></canvas>
+            <div class="label">STROOM</div>        
+			<div id=legenda>
+				<div class="lblVerbuik vandaag">v<span class="tooltiptext">Vandaag</span></div>
+				<div class="lblVerbuik gisteren">g<span class="tooltiptext">Gisteren</span></div>
+				<div class="lblVerbuik eergisteren">e<span class="tooltiptext">Eergisteren</span></div>
+			</div>
+    		<hr/>
+            <div style="text-align:center">Vandaag [kWh]</div>
+            <h2 id=P>0.0</h2>
+            <h3>max: <span id="Pmax">0.0</span></h3>
+            <h3>min: <span id="Pmin">0.0</span></h3>
+        </div>
+        <div class=card id=l4>
+            <h1 id=Gh>Gasverbruik</h1>
+            <canvas class="chart-container" id="container-4"></canvas>
+			<div class="label stroom">GAS</div>
+			<div id=legenda>
+				<div class="lblVerbuik vandaag">v<span class="tooltiptext">Vandaag</span></div>
+				<div class="lblVerbuik gisteren">g<span class="tooltiptext">Gisteren</span></div>
+				<div class="lblVerbuik eergisteren">e<span class="tooltiptext">Eergisteren</span></div>
+			</div>
+            <hr/>
+            <div style="text-align:center">Vandaag [㎥]</div>
+            <h2 id="G">0.0</h2>
+            <h3>max: <span id="Gmax">0.0</span></h3>
+            <h3>min: <span id="Gmin">0.0</span></h3>
+        </div>
+
+    </div> <!-- outer -->  
+  </section>  <!-- END Dash Tab --> 
+  
   <div hidden id="loader"></div>
   <!-- REST -->
   <div style="margin: 30px;">
@@ -402,11 +461,10 @@
     <canvas id="gasChart"  style="display: none;" width="900" height="125"></canvas>
   </div>
 <!-- Pin to bottom right corner -->
-    <div class="bottom right-0"><span id="devVersion">[version]</span>  |  2020 &copy; Martijn Hendriks</div>
+    <div class="bottom right-0"><span id="devVersion">[version]</span>  |  2021 &copy; Martijn Hendriks</div>
     <!-- Pin to bottom left corner -->
     <div id="message" class="bottom left-0">-</div>    
 </div> <!-- main page-->
-
 <!--
 ***************************************************************************
 *
