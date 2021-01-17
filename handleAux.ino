@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : handleAux - definitions for handling aux input
-**  Version  : v2.3.0
+**  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Martijn Hendriks
 **

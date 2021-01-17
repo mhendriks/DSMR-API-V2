@@ -35,6 +35,7 @@
   var gas_netw_costs        = 0;
   var hostName            	=  "-";  
   var data       			= [];
+  var Dtimer				= 0; //Dashboard reload timer
                   
   let monthType        = "ED";
   let settingFontColor = 'white'
@@ -213,20 +214,21 @@ function updataHist(){
 function UpdateDash()
 {	
 	var Parr=[3], Garr=[3];
-	var now = Math.floor(new Date().getTime()/8.64e7);
 	console.log("Update dash");
+	if (!Dtimer) refreshDays(); //load data first visit
 
-	if (day != now) { //check first start and day change
-		refreshDays();
-		day = now;
+	Dtimer++; // +1 every 10 secs because if the update periode
+	// 	console.log("Dtimer: " + Dtimer);
+	if (Dtimer > 300 ) { //check first start and day change reload every 50min = 60*60/10 = 300
+		Dtimer = 0;
+		location.reload(); //reload page
 	}
 	showSpinner();
 	fetch(APIGW+"v2/sm/fields", {"setTimeout": 2000})
 	  .then(response => response.json())
 	  .then(json => {
-		// console.log(json);
+ 		//console.log(json);
      	// console.log(json.power_delivered.value);
-// 		if (hist_arrP[0] != 4){ 
 		for(let i=0;i<3;i++){
 			if (i==0) {
 				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - hist_arrP[i+1]).toFixed(3);
@@ -236,17 +238,14 @@ function UpdateDash()
 				Garr[i]=Number(hist_arrG[i] - hist_arrG[i+1]).toFixed(3);
 			}
 		}
+
 		// maximale waarde bepalen voor de gauge
 		Pmax = math.max(Parr);
 		Gmax = math.max(Garr);
 
 		// 		console.log(Pmax);
 		// 		console.log(Gmax);
-// 		} else {
-// 			Parr = [0,0,0];
-// 			Garr = [0,0,0];
-// 			Pmax =0, Gmax=0;
-// 		}
+
 		//data sets berekenen voor de gauges
 		for(let i=0;i<3;i++){
 			trend_p.data.datasets[i].data=[Number(Parr[i]).toFixed(1),Number(Pmax-Parr[i]).toFixed(1)];

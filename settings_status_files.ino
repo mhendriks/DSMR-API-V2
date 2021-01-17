@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settings_status_files, part of DSMRloggerAPI
-**  Version  : v2.3.0
+**  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Willem Aandewiel
 **
@@ -13,6 +13,7 @@
 template <typename TSource>
 void writeToJsonFile(const TSource &doc, File &_file) 
 {
+  if (!SPIFFSmounted) return;
   if (serializeJson(doc, _file) == 0) {
       DebugTln(F("write(): Failed to write to json file"));  
   } 
@@ -35,7 +36,8 @@ void writeToJsonFile(const TSource &doc, File &_file)
 void readLastStatus()
 {  
   StaticJsonDocument<110> doc;  
-
+  
+  if (!SPIFFSmounted) return;
   File statusFile = SPIFFS.open("/DSMRstatus.json", "r");
   if (!statusFile) DebugTln("read(): No /DSMRstatus.json found");
   
@@ -53,7 +55,7 @@ void readLastStatus()
 //====================================================================
 void writeLastStatus()
 { 
-  if (bailout()) return;
+  if (bailout() || !SPIFFSmounted ) return;
   DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, nrReboots, slotErrors);
   
   File statusFile = SPIFFS.open("/DSMRstatus.json", "w");
@@ -75,7 +77,8 @@ void writeLastStatus()
 void writeSettings() 
 {
   StaticJsonDocument<600> doc; 
-
+  if (!SPIFFSmounted) return;
+  
   DebugT(F("Writing to [")); Debug(SETTINGS_FILE); Debugln(F("] ..."));
   
   File SettingsFile = SPIFFS.open(SETTINGS_FILE, "w"); // open for reading and writing
@@ -129,6 +132,7 @@ void readSettings(bool show)
 {
   StaticJsonDocument<600> doc; 
   File SettingsFile;
+  if (!SPIFFSmounted) return;
   
   DebugTf(" %s ..\r\n", SETTINGS_FILE);
  
@@ -248,7 +252,7 @@ void readSettings(bool show)
 void updateSetting(const char *field, const char *newValue)
 {
   DebugTf("-> field[%s], newValue[%s]\r\n", field, newValue);
-
+  if (!SPIFFSmounted) return;
   if (!stricmp(field, "Hostname")) {
     strCopy(settingHostname, 29, newValue); 
     if (strlen(settingHostname) < 1) strCopy(settingHostname, 29, _DEFAULT_HOSTNAME); 
@@ -326,6 +330,7 @@ void updateSetting(const char *field, const char *newValue)
 
 //=======================================================================
 void Rebootlog(){
+  if (!SPIFFSmounted) return;
   File RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
   if (!RebootFile) {
     DebugTln(F("open RebootLog file FAILED!!!--> Bailout\r\n"));

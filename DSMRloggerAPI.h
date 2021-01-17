@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.3.0
+**  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -38,15 +38,10 @@
 #define _DEFAULT_HOMEPAGE  "/DSMRindexEDGE.html"
 #define SETTINGS_FILE      "/DSMRsettings.json"
   
-#ifdef USE_REQUEST_PIN
-    #define DTR_ENABLE  14
-#endif
+#define DTR_ENABLE  14
+#define AUX_IN 2
 
-#ifdef DTR_ENABLE
-  P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
-#else
-  P1Reader    slimmeMeter(&Serial, 0);
-#endif
+P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
 
 #define FLASH_BUTTON        0
 #define JSON_BUFF_MAX     255

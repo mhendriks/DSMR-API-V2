@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : networkStuff.h, part of DSMRloggerAPI
-**  Version  : v2.3.0
+**  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -30,7 +30,7 @@ ESP8266WebServer        httpServer (80);
 #endif
 
 static      FSInfo SPIFFSinfo;
-bool        SPIFFSmounted; 
+bool        SPIFFSmounted = false; 
 bool        isConnected = false;
 
 //gets called when WiFiManager enters configuration mode
@@ -52,7 +52,7 @@ void startWiFi(const char* hostname, int timeOut)
   uint32_t lTime = millis();
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
 
-  DebugT("start ...");
+  DebugTln("start ...");
   
   manageWiFi.setDebugOutput(true);
   
@@ -81,7 +81,7 @@ void startWiFi(const char* hostname, int timeOut)
     return;
   }
   
-  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
+//  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
   
 
 #ifdef USE_UPDATE_SERVER
@@ -89,7 +89,7 @@ void startWiFi(const char* hostname, int timeOut)
   httpUpdater.setIndexPage(UpdateServerIndex);
   httpUpdater.setSuccessPage(UpdateServerSuccess);
 #endif
-  DebugTf(" took [%d] seconds => OK!\r\n", (millis() - lTime) / 1000);
+  DebugTf(" took [%d] seconds => OK!\n", (millis() - lTime) / 1000);
   
 } // startWiFi()
 
@@ -97,7 +97,7 @@ void startWiFi(const char* hostname, int timeOut)
 void startTelnet() 
 {
   TelnetStream.begin();
-  DebugTln(F("\nTelnet server started .."));
+  DebugTln(F("Telnet server started"));
   TelnetStream.flush();
 
 } // startTelnet()

@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : Debug.h, part of DSMRloggerAPI
-**  Version  : v2.3.0
+**  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Willem Aandewiel
 **  Met dank aan Erik
@@ -39,8 +39,6 @@
                         })
 
 /*---- einde macro's ------------------------------------------------------------------*/
-
-// needs #include <TelnetStream.h>       // Version 0.0.1 - https://github.com/jandrassy/TelnetStream
 
 char _bol[128];
 void _debugBOL(const char *fn, int line)

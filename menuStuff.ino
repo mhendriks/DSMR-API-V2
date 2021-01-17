@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : menuStuff, part of DSMRloggerAPI
-**  Version  : v2.3.0
+**  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -38,11 +38,8 @@ void displayBoardInfo()
   Debugln(F("\r\n==================================================================\r"));
   Debug(F(" \r\n            (c)2020 by [Willem Aandewiel"));
   Debug(F("]\r\n      Firmware Version ["));  Debug( _FW_VERSION );
-  Debug(F("]\r\n              Compiled ["));  Debug( __DATE__ ); 
-                                               Debug( "  " );
-                                               Debug( __TIME__ );
-  Debug(F("]\r\n         compiled with [dsmr.h"));
-  Debug(F("]\r\n              #defines ")); Debug(F(ALL_OPTIONS));
+  Debug(F("]\r\n              Compiled ["));  Debug( __DATE__ "  "  __TIME__ );
+  Debug(F("]\r\n              #defines "));   Debug(F(ALL_OPTIONS));
   Debug(F(" \r\n   Telegrams Processed ["));  Debug( telegramCount );
   Debug(F("]\r\n           With Errors ["));  Debug( telegramErrors );
   Debug(F("]\r\n              FreeHeap ["));  Debug( ESP.getFreeHeap() );
@@ -163,10 +160,8 @@ void handleKeyInput()
 #endif
       case 'p':
       case 'P':     showRaw = !showRaw;
-                 #ifdef USE_REQUEST_PIN
                     if (showRaw)  digitalWrite(DTR_ENABLE, HIGH);
                     else          digitalWrite(DTR_ENABLE, LOW);
-                 #endif
                     showRawCount = 0;
                     break;
       case 'R':     DebugT(F("Reboot in 3 seconds ... \r\n"));

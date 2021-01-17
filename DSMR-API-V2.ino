@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.3.0 (01-01-2021)"
+#define _FW_VERSION "v2.3.1 (03-01-2021)"
 /*
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -12,14 +12,11 @@
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
-*      - Telegram notificaties (waarschijnlijk pas in de ESP32 implementatie ivm memory ssl certificaten)
-*      -- message bij drempelwaardes 
-*      -- verbruiksrapport einde dag/week/maand
-*      -- bot gebruiken als interface
+
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
-    - Board: "Generic ESP8266 Module"
+    - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
     - Flash mode: "DOUT"
     - Flash size: "1MB (FS: 64KB OAT:~470KB)"
     - DebugT port: "Disabled"
@@ -36,9 +33,8 @@
     - Port: <select correct port>
 */
 /******************** compiler options  ********************************************/
-#define USE_REQUEST_PIN               // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
 #define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
-#define ALL_OPTIONS "[USE_REQUEST_PIN][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_REQUEST_PIN][USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
+#define ALL_OPTIONS "[USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
 //#define USE_AUX                     // define if the aux port should be used
 #define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
@@ -47,7 +43,6 @@
 //#define USE_MINDERGAS               // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
-//#define USE_TELEGRAM                // define if Telegram messaging should be enabled
 /******************** don't change anything below this comment **********************/
 //#define DEBUG_MODE
 //#define HIST_CONV
@@ -90,35 +85,29 @@ void openSysLog(bool empty)
 //===========================================================================================
 void setup() 
 {
- Serial.begin(115200, SERIAL_8N1);
-  pinMode(2, INPUT); //optocoopler input
+  Serial.begin(115200, SERIAL_8N1);
+  pinMode(AUX_IN, INPUT); //optocoopler input
   pinMode(FLASH_BUTTON, INPUT);
-#ifdef DTR_ENABLE
   pinMode(DTR_ENABLE, OUTPUT);
-#endif
   //--- setup randomseed the right way
   //--- This is 8266 HWRNG used to seed the Random PRNG
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
   randomSeed(RANDOM_REG32); 
-  snprintf(settingHostname, sizeof(settingHostname), "%s", _DEFAULT_HOSTNAME);
-  Debugf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
-  delay(500);
-  lastReset     = ESP.getResetReason();
+  Debug("\n\n ----> BOOTING....[" _FW_VERSION "] <-----\n\n");
+  DebugTln("The board name is: " ARDUINO_BOARD);
+
+  lastReset = ESP.getResetReason();
+  DebugT(F("Last reset reason: ")); Debugln(lastReset);
 
   startTelnet();
-  Debugln("The board name is: " ARDUINO_BOARD);
   
 //================ SPIFFS ===========================================
   if (SPIFFS.begin()) 
   {
-    DebugTln(F("SPIFFS Mount succesfull\r"));
-    SPIFFSmounted = true;
-      
-  } else { 
-    DebugTln(F("SPIFFS Mount failed\r"));   // Serious problem with SPIFFS 
-    SPIFFSmounted = false;
-    
-  }
+    DebugTln(F("SPIFFS Mount succesfull"));
+    SPIFFSmounted = true;   
+  } else DebugTln(F("!!!SPIFFS Mount failed"));   // Serious problem with SPIFFS 
+
 
 //------ read status file for last Timestamp --------------------
   
@@ -133,6 +122,7 @@ void setup()
   
   readSettings(true);
   writeLastStatus(); //update reboots
+  Rebootlog(); // write reboot status to file
   
 //=============start Networkstuff==================================
   
@@ -231,7 +221,7 @@ void setup()
   httpServer.begin();
   DebugTln( F("HTTP server gestart\r") );
   
-  delay(2000);
+  delay(1500);
   
 //================ Start HTTP Server ================================
   
@@ -245,14 +235,10 @@ void setup()
 //================ End of Slimmer Meter ============================
 //================ The final part of the Setup =====================
 
-  snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
-  DebugTln(cMsg);
-
+  
 //================ Start Slimme Meter ===============================
 #ifdef USE_AUX
-  //enable AUX input 
-  DebugTln(F("Enable Aux interrupt..\r"));
-  pinMode(2, INPUT);                   // set pin 2 as input
+  DebugTln(F("Enable Aux interrupt..."));
   attachInterrupt(digitalPinToInterrupt(2), isrAux, CHANGE);       // interrupt program when signal to pin 2 detected call ISR function when happens
 #endif
 
@@ -260,9 +246,8 @@ void setup()
   hist_conv(); 
 #endif
 
-   DebugTln(F("Enable slimmeMeter..\r"));
 
-#if defined( USE_REQUEST_PIN ) && !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
+#if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
   DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
   Debug(F("\nGebruik 'telnet "));
   Debug (WiFi.localIP());
@@ -271,18 +256,12 @@ void setup()
   delay(100);
   Serial.swap();
   delay(100);
+  DebugTln(F("Enable slimmeMeter...\n"));
   slimmeMeter.enable(true);
+#else
+  Debug(F("\n!!! DEBUG MODE AAN !!!\n\n")); 
 #endif // is_esp12
 
-#ifdef DEBUG_MODE
-  Debug(F("\n!!! DEBUG MODE AAN !!!\n\n")); 
-#endif
-
-  Rebootlog(); // write reboot status to file
-  //telegram
-#ifdef USE_TELEGRAM 
-  Bot_setup();
- #endif
 } // setup()
 
 
@@ -400,9 +379,7 @@ void loop ()
 #ifdef USE_AUX
   if DUE(AuxTimer) handleAux(); //manage Aux interupt
 #endif
-#ifdef USE_TELEGRAM
-  Bot_loop();
-#endif
+
 } // loop()
 
 

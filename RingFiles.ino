@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : JsonCalls, part of DSMRloggerAPI
-**  Version  : v2.3.0
+**  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Martijn Hendriks
 **
@@ -11,6 +11,7 @@
 
 void createRingFile(E_ringfiletype ringfiletype) 
 {
+  if (!SPIFFSmounted) return;
   File RingFile = SPIFFS.open(RingFiles[ringfiletype].filename, "w"); // open for writing  
   if (!RingFile) {
     DebugT(F("open ring file FAILED!!! --> Bailout\r\n"));Debugln(RingFiles[ringfiletype].filename);
@@ -56,7 +57,7 @@ uint8_t CalcSlot(E_ringfiletype ringfiletype, char* Timestamp)
 //---------
 void RingFileTo(E_ringfiletype ringfiletype, bool toFile) 
 {  
-  if (bailout()) return; //exit when heapsize is too small
+  if (bailout() || !SPIFFSmounted) return; //exit when heapsize is too small
 
   if (DUE(antiWearTimer))
   {
@@ -98,7 +99,8 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
   uint8_t actSlot = CalcSlot(ringfiletype, actTimestamp);
   if (actSlot == 99) return;  // stop if error occured
   StaticJsonDocument<145> rec;
-
+  if (!SPIFFSmounted) return;
+  
   char buffer[DATA_RECLEN];
   if (strlen(JsonRec) > 1) {
     DebugTln(JsonRec);
