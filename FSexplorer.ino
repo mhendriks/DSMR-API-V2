@@ -26,7 +26,7 @@ const PROGMEM char Header[] = "HTTP/1.1 303 OK\r\nLocation:/#FileExplorer\r\nCac
 //=====================================================================================
 void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebunden werden
 {    
-  SPIFFS.begin();
+//  SPIFFS.begin(); //double
   httpServer.on("/api/listfiles", APIlistFiles);
   httpServer.on("/SPIFFSformat", formatSpiffs);
   httpServer.on("/upload", HTTP_POST, []() {}, handleFileUpload);
