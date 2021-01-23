@@ -5,6 +5,14 @@
 # rest: pas de hostname aan indien nodig bij resource            #
 ##################################################################
 
+### LET OP! juiste hoofd/kleine letters gebruiken
+binary_sensor slimmemeter_auxbin:
+   platform: mqtt
+   state_topic: "DSMR-API/Aux"
+   name: deurbel
+   payload_on: "Signal"
+   off_delay: 2
+
 sensor:
   - platform: mqtt
     name: "Gebruik"
@@ -60,6 +68,7 @@ sensor:
               value_json.timestamp.value[6:8] + ":" + 
               value_json.timestamp.value[8:10] + ":" + 
               value_json.timestamp.value[10:13] }}
+
 
   - platform: rest
     name: "Levering l1"
