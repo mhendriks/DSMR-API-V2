@@ -284,7 +284,7 @@ void updateSetting(const char *field, const char *newValue)
   if (!stricmp(field, "tlgrm_interval"))    
   {
     settingTelegramInterval     = String(newValue).toInt();  
-    CHANGE_INTERVAL_SEC(nextTelegram, settingTelegramInterval)
+    CHANGE_INTERVAL_SEC(nextTelegram, settingTelegramInterval);
   }
 
   if (!stricmp(field, "IndexPage"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  

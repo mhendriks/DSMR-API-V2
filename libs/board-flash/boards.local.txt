@@ -1,0 +1,10 @@
+generic.menu.eesz.1M32=1MB (FS:32KB OTA:~480KB)
+generic.menu.eesz.1M32.build.flash_size=1M
+generic.menu.eesz.1M32.build.flash_size_bytes=0x100000
+generic.menu.eesz.1M32.build.flash_ld=eagle.flash.1m32.ld
+generic.menu.eesz.1M32.build.spiffs_pagesize=256
+generic.menu.eesz.1M32.upload.maximum_size=958448
+generic.menu.eesz.1M32.build.rfcal_addr=0xFC000
+generic.menu.eesz.1M32.build.spiffs_start=0xF3000
+generic.menu.eesz.1M32.build.spiffs_end=0xFB000
+generic.menu.eesz.1M32.build.spiffs_blocksize=4096

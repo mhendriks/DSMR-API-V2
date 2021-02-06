@@ -19,7 +19,7 @@
   #include "ModUpdateServer.h"  // https://github.com/mrWheel/ModUpdateServer
   #include "UpdateServerHtml.h"
 #endif
-#include <WiFiManager.h>        // version 0.14.0 - https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h>        // version 0.16.0 - https://github.com/tzapu/WiFiManager
 // included in main program: #include <TelnetStream.h>       // Version 0.0.1 - https://github.com/jandrassy/TelnetStream
 //#include <Hash.h>
 #include <FS.h>                 // part of ESP8266 Core https://github.com/esp8266/Arduino
@@ -54,7 +54,7 @@ void startWiFi(const char* hostname, int timeOut)
 
   DebugTln("start ...");
   
-  manageWiFi.setDebugOutput(true);
+  manageWiFi.setDebugOutput(false);
   
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   manageWiFi.setAPCallback(configModeCallback);

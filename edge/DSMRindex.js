@@ -170,7 +170,7 @@ let TrendG = {
 let TrendP = {
     type: 'doughnut',
     data: {
-      labels: ["gasverbruik", "verschil met hoogste"],
+      labels: ["stroomverbruik", "verschil met hoogste"],
       datasets: [
         {
           label: "vandaag",
@@ -205,9 +205,14 @@ let TrendP = {
     } //options
 };
 
-function updataHist(){
-
-}
+  window.onload=bootsTrapMain;
+  /*
+  window.onfocus = function() {
+    if (needBootsTrapMain) {
+      window.location.reload(true);
+    }
+  };
+  */
 
 //============================================================================  
   
@@ -224,7 +229,7 @@ function UpdateDash()
 		location.reload(); //reload page
 	}
 	showSpinner();
-	fetch(APIGW+"v2/sm/fields", {"setTimeout": 2000})
+	fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
 	  .then(response => response.json())
 	  .then(json => {
  		//console.log(json);
@@ -313,20 +318,11 @@ function UpdateDash()
 }
 	
 // -------------- END DASH
-
-  window.onload=bootsTrapMain;
-  /*
-  window.onfocus = function() {
-    if (needBootsTrapMain) {
-      window.location.reload(true);
-    }
-  };
-  */
     
   //============================================================================  
   function bootsTrapMain() {
     console.log("bootsTrapMain()");
-	console.log("hash:"+ location.hash);
+// 	console.log("hash:"+ location.hash);
 	gauge = new JustGage(GaugeOptions); // initialize gauge
 	gauge_v = new JustGage(GaugeOptionsV); // initialize gauge
 	trend_g = new Chart(document.getElementById("container-4"), TrendG);
@@ -370,7 +366,7 @@ function UpdateDash()
     initActualGraph();
     setPresentationType('TAB');
 	//after loading ... flow the #target url just for FSExplorer
-	consol// e.log("location-hash: " + location.hash );
+// 	console.log("location-hash: " + location.hash );
 // 	console.log("location-pathname: " + location.pathname );
 // 	console.log("location-msg: " + location.hash.split('msg=')[1]);
 // 	console.log("location-hash-split: " + location.hash.split('#')[1].split('?')[0]);
@@ -531,7 +527,7 @@ function UpdateDash()
 	 let fileSize = document.querySelector('fileSize');
 	showSpinner();
 
-	 fetch('api/listfiles').then(function (response) {
+	 fetch('api/listfiles', {"setTimeout": 5000}).then(function (response) {
 		 return response.json();
 	 }).then(function (json) {
 	
@@ -593,7 +589,7 @@ function UpdateDash()
   //============================================================================  
   function refreshDevInfo()
   { showSpinner();
-    fetch(APIGW+"v2/dev/info")
+    fetch(APIGW+"v2/dev/info", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
         console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
@@ -657,7 +653,7 @@ function UpdateDash()
   function refreshDevTime()
   {
     //console.log("Refresh api/v2/dev/time ..");
-    fetch(APIGW+"v2/dev/time")
+    fetch(APIGW+"v2/dev/time", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
               document.getElementById('theTime').innerHTML = json.time;
@@ -681,7 +677,7 @@ function UpdateDash()
   //============================================================================  
   function refreshSmActual()
   { showSpinner();
-    fetch(APIGW+"v2/sm/actual", {"setTimeout": 2000})
+    fetch(APIGW+"v2/sm/actual", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
           console.log("actual parsed .., fields is ["+ JSON.stringify(json)+"]");
@@ -705,7 +701,7 @@ function UpdateDash()
   //============================================================================  
   function refreshSmFields()
   { showSpinner();
-    fetch(APIGW+"v2/sm/fields")
+    fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
           console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
@@ -836,7 +832,7 @@ function UpdateDash()
   { showSpinner();
     console.log("fetch("+APIGW+"v2/hist/hours)");
 
-    fetch(APIGW+"v2/hist/hours", {"setTimeout": 2000})
+    fetch(APIGW+"v2/hist/hours", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
         //console.log(json);
@@ -862,7 +858,7 @@ function UpdateDash()
   {
   	showSpinner();
     console.log("fetch("+APIGW+"v2/hist/days)");
-    fetch(APIGW+"v2/hist/days", {"setTimeout": 2000})
+    fetch(APIGW+"v2/hist/days", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
         data = json;
@@ -898,7 +894,7 @@ function UpdateDash()
   {
   	showSpinner();
     console.log("fetch("+APIGW+"v2/hist/months)");
-    fetch(APIGW+"v2/hist/months", {"setTimeout": 2000})
+    fetch(APIGW+"v2/hist/months", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
         //console.log(response);
@@ -1458,7 +1454,7 @@ function UpdateDash()
   function getMonths()
   {	showSpinner();
     console.log("fetch("+APIGW+"v2/hist/months)");
-    fetch(APIGW+"v2/hist/months", {"setTimeout": 2000})
+    fetch(APIGW+"v2/hist/months", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
         //console.log(response);

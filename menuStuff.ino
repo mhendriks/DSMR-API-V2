@@ -36,7 +36,6 @@ void displayMonthsHist(bool Telnet=true)
 void displayBoardInfo() 
 {
   Debugln(F("\r\n==================================================================\r"));
-  Debug(F(" \r\n            (c)2020 by [Willem Aandewiel"));
   Debug(F("]\r\n      Firmware Version ["));  Debug( _FW_VERSION );
   Debug(F("]\r\n              Compiled ["));  Debug( __DATE__ "  "  __TIME__ );
   Debug(F("]\r\n              #defines "));   Debug(F(ALL_OPTIONS));

@@ -8,11 +8,16 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */  
+#ifndef DSMRloggerAPI_h
+#define DSMRloggerAPI_h
 
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time
 #include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream/commit/1294a9ee5cc9b1f7e51005091e351d60c8cddecf
 #include "safeTimers.h"
 #include <ArduinoJson.h>
+#ifdef USE_BLYNK
+  #include <BlynkSimpleEsp8266.h>
+#endif
 
 #ifdef USE_SYSLOGGER
   #include "ESP_SysLogger.h"      // https://github.com/mrWheel/ESP_SysLogger
@@ -221,6 +226,7 @@ DECLARE_TIMER_MIN(minderGasTimer,     10, CATCH_UP_MISSED_TICKS);
 DECLARE_TIMER_SEC(antiWearTimer,      61);
 DECLARE_TIMER_MS(AuxTimer,           500);
 
+#endif
 /***************************************************************************
 *
 * Permission is hereby granted, free of charge, to any person obtaining a

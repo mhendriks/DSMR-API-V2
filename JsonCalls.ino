@@ -516,7 +516,6 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     tlgrm[0] = '/'; 
     showRaw = false;
     if (Verbose1) Debugf("Telegram (%d chars):\r\n/%s", strlen(tlgrm), tlgrm);
-    //httpServer.send(200, "application/plain", tlgrm);
     sendJsonBuffer(tlgrm);
     break; 
     } 

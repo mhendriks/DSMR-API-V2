@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.3.1 (03-01-2021)"
+#define _FW_VERSION "v2.3.1 (06-02-2021)"
 /*
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -34,7 +34,7 @@
 */
 /******************** compiler options  ********************************************/
 #define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
-#define ALL_OPTIONS "[USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_AUX][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
+#define ALL_OPTIONS "[USE_MQTT][USE_DUTCH_PROTOCOL][BLYNK]" //change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
 //#define USE_AUX                     // define if the aux port should be used
 #define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
@@ -43,6 +43,8 @@
 //#define USE_MINDERGAS               // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
+#define USE_BLYNK
+//#define USE_PUSHOVER
 /******************** don't change anything below this comment **********************/
 //#define DEBUG_MODE
 //#define HIST_CONV
@@ -242,6 +244,11 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(2), isrAux, CHANGE);       // interrupt program when signal to pin 2 detected call ISR function when happens
 #endif
 
+#ifdef USE_BLYNK
+  DebugTln(F("Enable Blynk..."));
+  SetupBlynk();
+#endif
+
 #ifdef HIST_CONV
   hist_conv(); 
 #endif
@@ -329,6 +336,10 @@ void loop ()
   if DUE(nextTelegram)
   {
     doTaskTelegram();
+    #ifdef USE_BLYNK
+      Blynk.run();
+      handleBlynk();
+    #endif
   }
 
   //--- update upTime counter
@@ -379,6 +390,8 @@ void loop ()
 #ifdef USE_AUX
   if DUE(AuxTimer) handleAux(); //manage Aux interupt
 #endif
+
+
 
 } // loop()
 
