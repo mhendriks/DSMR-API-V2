@@ -452,13 +452,10 @@ function UpdateDash()
     document.getElementById("gasChart").style.display  = "none";
     
     if (activeTab != "bActualTab") {
-      //clearInterval(actualTimer);
       actualTimer = setInterval(refreshSmActual, 60 * 1000);                  // repeat every 60s
     }
     if (activeTab == "bActualTab") {
-      readGitHubVersion();
       refreshSmActual();
-      //clearInterval(actualTimer);   
       if (tlgrmInterval < 10)
             actualTimer = setInterval(refreshSmActual, 10 * 1000);            // repeat every 10s
       else  actualTimer = setInterval(refreshSmActual, tlgrmInterval * 1000); // repeat every tlgrmInterval seconds
@@ -495,6 +492,7 @@ function UpdateDash()
     } else if (activeTab == "bInfo_APIdoc") {
       //do nothing = static html
     } else if (activeTab == "bDashTab") {
+       readGitHubVersion();
        UpdateDash();
        clearInterval(tabTimer);
        tabTimer = setInterval(UpdateDash, 10 * 1000); // repeat every 10s
@@ -617,16 +615,20 @@ function UpdateDash()
 			   console.log("fwversion: " + obj[k] );
 			   devVersion = obj[k];
            }
-           
         } //for loop
       
 	  //new fwversion detection
   	  document.getElementById('devVersion').innerHTML = obj.fwversion;
 	  var tmpFW = devVersion;
 	  firmwareVersion_dspl = tmpFW;
-	  tmpX = tmpFW.substring(1, tmpFW.indexOf(' '));
+	  tmpFW = tmpFW.replace("+", " ");
+	  tmpFW = tmpFW.replace("v", "");
+// 	  console.log("tmpFW: " + tmpFW);
+	  tmpX = tmpFW.substring(0, tmpFW.indexOf(' '));
+// 	  console.log("tmpX: " + tmpX);
 	  tmpN = tmpX.split(".");
-	  firmwareVersion = tmpN[0]*10000+tmpN[1]*100+tmpN[2]*1;
+// 	  	  console.log("tmpN: " + tmpN);
+firmwareVersion = tmpN[0]*10000+tmpN[1]*100+tmpN[2]*1;
 	  console.log("firmwareVersion["+firmwareVersion+"] >= GitHubVersion["+GitHubVersion+"]");
 	  if (GitHubVersion == 0 || firmwareVersion >= GitHubVersion)
 			newVersionMsg = "";
