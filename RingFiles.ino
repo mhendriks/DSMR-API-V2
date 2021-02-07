@@ -1,6 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : JsonCalls, part of DSMRloggerAPI
+**  Program  : RingFiles, part of DSMRloggerAPI
 **  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Martijn Hendriks
@@ -24,7 +24,7 @@ void createRingFile(E_ringfiletype ringfiletype)
   RingFile.print("{\"actSlot\": 0,\"data\":[\n"); //start the json file 
   for (uint8_t slot=0; slot < RingFiles[ringfiletype].slots; slot++ ) 
   { 
-    RingFile.print("{\"date\":\"20000000\",\"values\":[     0.000,     0.000,     0.000,     0.000,     0.000]}"); // one empty record
+    RingFile.print("{\"date\":\"21000000\",\"values\":[     0.000,     0.000,     0.000,     0.000,     0.000]}"); // one empty record
    if (slot < (RingFiles[ringfiletype].slots - 1) ) RingFile.print(",\n");
 
   }

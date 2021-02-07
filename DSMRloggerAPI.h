@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.3.1
+**  Version  : v2.3.2
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -15,6 +15,9 @@
 #include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream/commit/1294a9ee5cc9b1f7e51005091e351d60c8cddecf
 #include "safeTimers.h"
 #include <ArduinoJson.h>
+#include "Debug.h"
+#include "Network.h"
+
 #ifdef USE_BLYNK
   #include <BlynkSimpleEsp8266.h>
 #endif
@@ -39,22 +42,19 @@
   #include <dsmr.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
 #endif
 
-#define _DEFAULT_HOSTNAME  "DSMR-API" 
-#define _DEFAULT_HOMEPAGE  "/DSMRindexEDGE.html"
-#define SETTINGS_FILE      "/DSMRsettings.json"
-  
-#define DTR_ENABLE  14
-#define AUX_IN 2
+#define _DEFAULT_HOSTNAME   "DSMR-API" 
+#define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
+#define SETTINGS_FILE       "/DSMRsettings.json"
+#define DTR_ENABLE          14
+#define AUX_IN               2
+#define FLASH_BUTTON          0
+#define JSON_BUFF_MAX       255
+#define MQTT_BUFF_MAX       200
 
 P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
 
-#define FLASH_BUTTON        0
-#define JSON_BUFF_MAX     255
-#define MQTT_BUFF_MAX     200
-
-enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
-
-typedef enum E_ringfiletype {RINGHOURS, RINGDAYS, RINGMONTHS};
+enum { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
+enum E_ringfiletype {RINGHOURS, RINGDAYS, RINGMONTHS};
 
 typedef struct {
     char filename[17];
@@ -72,9 +72,6 @@ const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RIN
 #define JSON_HEADER_LEN   23  //total length incl new line
 #define DATA_CLOSE        2   //length last row of datafile
 
-#include "Debug.h"
-#include "networkStuff.h"
-
 /**
  * Define the DSMRdata we're interested in, as well as the DSMRdatastructure to
  * hold the parsed DSMRdata. This list shows all supported fields, remove
@@ -82,23 +79,6 @@ const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RIN
  * and printing code smaller.
  * Each template argument below results in a field of the same name.
  */
-struct showValues {
-  template<typename Item>
-  void apply(Item &i) {
-    TelnetStream.print(F("showValues: "));
-    if (i.present()) 
-    {
-      TelnetStream.print(Item::name);
-      TelnetStream.print(F(": "));
-      TelnetStream.print(i.val());
-      TelnetStream.print(Item::unit());
-    //} else 
-    //{
-    //  TelnetStream.print(F("<no value>"));
-    }
-    TelnetStream.println();
-  }
-};
  
 using MyData = ParsedData<
   /* String */         identification
@@ -169,6 +149,11 @@ void delayms(unsigned long);
 
 //===========================GLOBAL VAR'S======================================
   WiFiClient  wifiClient;
+#ifdef USE_MQTT
+  #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
+  static PubSubClient MQTTclient(wifiClient);
+#endif
+  
   MyData      DSMRdata;
   uint32_t    readTimer;
   time_t      actT, newT;
@@ -180,39 +165,30 @@ void delayms(unsigned long);
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw = false;
   int8_t      showRawCount = 0;
-
-#ifdef USE_MQTT
-  #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
-  static PubSubClient MQTTclient(wifiClient);
-#endif
-
 #ifdef USE_MINDERGAS
   static char      settingMindergasToken[21] = "";
   static uint16_t  intStatuscodeMindergas    = 0; 
   static char      txtResponseMindergas[30]  = "";
   static char      timeLastResponse[16]      = "";  
 #endif
-
-char      cMsg[150];
-String    lastReset           = "";
-bool      spiffsNotPopulated  = false;
-bool      mqttIsConnected     = false;
-bool      doLog = false, Verbose1 = false, Verbose2 = false;
-int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
-uint32_t  unixTimestamp;
-uint64_t  upTimeSeconds;
-IPAddress ipDNS, ipGateWay, ipSubnet;
-float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
-float     settingENBK = 15.15, settingGNBK = 11.11;
-uint8_t   settingTelegramInterval = 10; //seconden
-uint8_t   settingSmHasFaseInfo = 1;
-char      settingHostname[30] = _DEFAULT_HOSTNAME;
-char      settingIndexPage[50] = _DEFAULT_HOMEPAGE;
-char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
-int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
-String    pTimestamp;
-//uint32_t  antiWearTimer = 0;
-
+  char      cMsg[150];
+  String    lastReset           = "";
+  bool      spiffsNotPopulated  = false;
+  bool      mqttIsConnected     = false;
+  bool      doLog = false, Verbose1 = false, Verbose2 = false;
+  int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
+  uint32_t  unixTimestamp;
+  uint64_t  upTimeSeconds;
+  IPAddress ipDNS, ipGateWay, ipSubnet;
+  float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
+  float     settingENBK = 15.15, settingGNBK = 11.11;
+  uint8_t   settingTelegramInterval = 10; //seconden
+  uint8_t   settingSmHasFaseInfo = 1;
+  char      settingHostname[30] = _DEFAULT_HOSTNAME;
+  char      settingIndexPage[50] = _DEFAULT_HOMEPAGE;
+  char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
+  int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
+  String    pTimestamp;
 
 //===========================================================================================
 // setup timers 

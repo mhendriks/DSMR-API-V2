@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
-**  Program  : settings_status_files, part of DSMRloggerAPI
+**  Program  : OtherFiles, part of DSMRloggerAPI (status/settings/log files locally stored)
 **  Version  : v2.3.1
 **
-**  Copyright (c) 2021 Willem Aandewiel
+**  Copyright (c) 2021 Martijn Hendriks
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      

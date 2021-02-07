@@ -1,6 +1,6 @@
 /*
 ***************************************************************************  
-**  Program  : handleSlimmeMeter - part of DSMRloggerAPI
+**  Program  : SlimmeMeter - part of DSMRloggerAPI
 **  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
@@ -9,6 +9,24 @@
 ***************************************************************************      
 */  
 
+struct showValues {
+  template<typename Item>
+  void apply(Item &i) {
+    TelnetStream.print(F("showValues: "));
+    if (i.present()) 
+    {
+      TelnetStream.print(Item::name);
+      TelnetStream.print(F(": "));
+      TelnetStream.print(i.val());
+      TelnetStream.print(Item::unit());
+    //} else 
+    //{
+    //  TelnetStream.print(F("<no value>"));
+    }
+    TelnetStream.println();
+  }
+};
+
 #if !defined(HAS_NO_SLIMMEMETER)
 //==================================================================================
 void handleSlimmemeter()
@@ -16,7 +34,8 @@ void handleSlimmemeter()
   //DebugTf("showRaw (%s)\r\n", showRaw ?"true":"false");
   if (showRaw) {
     //-- process telegrams in raw mode
-    processSlimmemeterRaw();
+    int l = slimmeMeter.raw().length();
+    Debugf("Telegram Raw (%d)\n%s\n" ,l,slimmeMeter.raw().c_str()); 
   } 
   else
   {
@@ -24,52 +43,6 @@ void handleSlimmemeter()
   } 
 
 } // handleSlimmemeter()
-
-
-//==================================================================================
-void processSlimmemeterRaw()
-{
-  char    tlgrm[1200] = "";
-   
-  DebugTf("handleSlimmerMeter RawCount=[%4d]\r\n", showRawCount);
-  showRawCount++;
-  showRaw = (showRawCount <= 20);
-  if (!showRaw)
-  {
-    showRawCount  = 0;
-    return;
-  }
-
-  slimmeMeter.enable(true);
-  Serial.setTimeout(5000);  // 5 seconds must be enough ..
-  memset(tlgrm, 0, sizeof(tlgrm));
-  int l = 0;
-  // The terminator character is discarded from the serial buffer.
-  l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
-  // now read from '/' to '!'
-  // The terminator character is discarded from the serial buffer.
-  l = Serial.readBytesUntil('!', tlgrm, sizeof(tlgrm));
-  Serial.setTimeout(1000);  // seems to be the default ..
-//  DebugTf("read [%d] bytes\r\n", l);
-  if (l == 0) 
-  {
-    DebugTln(F("RawMode: Timerout - no telegram received within 5 seconds"));
-    return;
-  }
-
-  tlgrm[l++] = '!';
-  tlgrm[l++]    = '\r';
-  tlgrm[l++]    = '\n';
-  tlgrm[(l +1)] = '\0';
-  // shift telegram 1 char to the right (make room at pos [0] for '/')
-  for (int i=strlen(tlgrm); i>=0; i--) { tlgrm[i+1] = tlgrm[i]; yield(); }
-  tlgrm[0] = '/'; 
-  //Post result to Debug 
-  Debugf("Telegram (%d chars):\r\n/%s\r\n", strlen(tlgrm), tlgrm); 
-  return;
-  
-} // processSlimmemeterRaw()
-
 
 //==================================================================================
 void processSlimmemeter()

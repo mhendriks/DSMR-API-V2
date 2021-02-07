@@ -275,7 +275,6 @@ float strToFloat(const char *s, int dec)
 {
   float r =  0.0;
   int   p =  0;
-  int   d = -1;
   
   r = strtof(s, NULL);
   p = (int)(r*pow(10, dec));

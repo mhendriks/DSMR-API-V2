@@ -1,5 +1,4 @@
 #ifdef USE_PUSHOVER
-
 #include "Pushover.h"
 
 void SetupPushOver() {

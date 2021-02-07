@@ -1,17 +1,14 @@
 /*
 ***************************************************************************  
-**  Program  : timeStuff, part of DSMRloggerAPI
+**  Program  : Time, part of DSMRloggerAPI
 **  Version  : v2.3.1
 **
-**  Copyright (c) 2021 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
 
-//static time_t ntpTimeSav;
-
-//===========================================================================================
 String buildDateTimeString(const char* timeStamp, int len) 
 {
   String tmpTS = String(timeStamp);

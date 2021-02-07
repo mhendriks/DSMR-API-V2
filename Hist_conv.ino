@@ -1,6 +1,7 @@
 /*
 ***************************************************************************  
-**  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
+**  Program  : Hist_conv.h - definitions for DSMRloggerAPI
+**  Convert 2.1.1 and older history files to 2.1.2+ version structure (fixed length files)
 **  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Martijn Hendriks
@@ -8,7 +9,6 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */  
-// Convert 2.1.1 and older history files to 2.1.2+ version structure (fixed length files)
 
 #ifdef HIST_CONV
 

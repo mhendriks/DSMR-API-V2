@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : JsonCalls, part of DSMRloggerAPI
-**  Version  : v2.3.1
+**  Version  : v2.3.2
 **
 **  Copyright (c) 2021 Martijn Hendriks
 **
@@ -9,21 +9,60 @@
 ***************************************************************************      
 */
 
-// ******* Global Vars *******
 #define ACTUALELEMENTS  20
-#define INFOELEMENTS  6
-int  fieldsElements = 0;
-char fieldsArray[2][25] = {"timestamp", "word5"}; // to lookup fields 
-char OneRecord[2300]= "";
+#define INFOELEMENTS     6
+#define FIELDELEMENTS    1
 
-bool onlyIfPresent  = false;
+int  fieldsElements = 0;
+char Onefield[25];
+bool onlyIfPresent = false;
 
 const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","gas_device_type","gas_equipment_id" };
 const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3","gas_delivered"};
+
+DynamicJsonDocument jsonDoc(4000);  // generic doc to return, clear() before use!
+
+struct buildJson {
+    
+    template<typename Item>
+    void apply(Item &i) {
+      String Name = Item::name;
+      if (isInFieldsArray(Name.c_str())) {
+        if (i.present()) 
+        {          
+          String Unit = Item::unit();
+          jsonDoc[Name]["value"] = value_to_json(i.val());
+          
+          if (Unit.length() > 0)
+          {
+            jsonDoc[Name]["unit"]  = Unit;
+          }
+        }  else if (!onlyIfPresent)
+        {
+          jsonDoc[Name]["value"] = "-";
+ 
+        }
+    } //infielsarrayname
+  }
+  
+  template<typename Item>
+  Item& value_to_json(Item& i) {
+    return i;
+  }
+
+  String value_to_json(TimestampedFixedValue i) {
+    return String(i);
+  }
+  
+  float value_to_json(FixedValue i) {
+    return i;
+  }
+
+}; // buildjson{} 
  
 //=======================================================================
 void processAPI() {
-  char fName[40] = "";
+//  char fName[40] = "";
   char URI[50]   = "";
   String words[10];
 
@@ -90,6 +129,11 @@ template <typename TSource>
 void sendJson(const TSource &doc) 
 {  
   const size_t strsize = measureJson(doc)+1;
+  if (doc.isNull()) {
+//    DebugT(F("sendjson isNull"));
+    sendJsonBuffer("{}");
+    return;
+  }
   char buffer[strsize];
   
   if (Verbose1) serializeJsonPretty(doc,buffer,strsize); 
@@ -97,8 +141,7 @@ void sendJson(const TSource &doc)
 //  DebugT(F("Sending json: ")); Debugln(buffer);
 //  DebugT("strsize:"); Debugln(strsize);
   sendJsonBuffer(buffer);
-  DebugTln(F("sendJson: json sent .."));
-    
+  DebugTln(F("sendJson: json sent .."));   
 }
 void sendJsonBuffer(char* buffer){
   httpServer.sendHeader("Access-Control-Allow-Origin", "*");
@@ -301,178 +344,28 @@ void sendApiNotFound(const char *URI)
   httpServer.setContentLength(len);
   httpServer.send(404, "application/json", buffer); 
   
-} // sendApiNotFound()
-//---------------------------------------------------------------
-void FillJsonRec(const char *cName, String sValue)
-{
-  char noUnit[] = {'\0'};
- 
-  if (sValue.length() > (JSON_BUFF_MAX - 60) )
-  {
-    FillJsonRec(cName, sValue.substring(0,(JSON_BUFF_MAX - (strlen(cName) + 30))), noUnit);
-  }
-  else
-  {
-    FillJsonRec(cName, sValue, noUnit);
-  }
-  
-} // FillJsonRec(*char, String)
-
-//=======================================================================
-void FillJsonRec(const char *cName, const char *cValue, const char *cUnit)
-{
-    //DebugTln("const char *cName, const char *cValue, const char *cUnit");
-
-  if (strlen(cUnit) == 0)
-  {
-    snprintf(OneRecord, sizeof(OneRecord)-1, "%s\"%s\":{\"value\":\"%s\"},"
-                                      ,OneRecord, cName, cValue);
-  }
-  else
-  {
-    snprintf(OneRecord, sizeof(OneRecord)-1, "%s\"%s\":{\"value\":\"%s\",\"unit\":\"%s\"},"
-                                      ,OneRecord, cName, cValue, cUnit);
-  }
-
-} // FillJsonRec(*char, *char, *char)
-
-//---------------------------------------------------------------
-void FillJsonRec(const char *cName, const char *cValue)
-{
-    //DebugTln(F("const char *cName, const char *cValue"));
-    char noUnit[] = {'\0'};
-
-  FillJsonRec(cName, cValue, noUnit);
-  
-} // FillJsonRec(*char, *char)
-
-
-//=======================================================================
-void FillJsonRec(const char *cName, String sValue, const char *cUnit)
-{
-  //DebugTln(F("const char *cName, String sValue, const char *cUnit "));
-
-  if (sValue.length() > (JSON_BUFF_MAX - 65) )
-  {
-    DebugTf("[2] sValue.length() [%d]\r\n", sValue.length());
-  }
-  
-  if (strlen(cUnit) == 0)
-  {
-    snprintf(OneRecord, sizeof(OneRecord)-1, "%s\"%s\":{\"value\":\"%s\"},"
-                                      ,OneRecord, cName, sValue.c_str());
-  }
-  else
-  {
-    snprintf(OneRecord, sizeof(OneRecord)-1, "%s\"%s\":{\"value\":\"%s\",\"unit\":\"%s\"},"
-                                      ,OneRecord, cName, sValue.c_str(), cUnit);
-  }
-
-} // FillJsonRec(*char, String, *char)
-
-//---------------------------------------------------------------
-void FillJsonRec(const char *cName, float fValue)
-{
-        //DebugTln(F("const char *cName, float fValue"));
-
-  char noUnit[] = {'\0'};
-
-  FillJsonRec(cName, fValue, noUnit);
-  
-} // FillJsonRec(*char, float)
-
-//=======================================================================
-void FillJsonRec(const char *cName, float fValue, const char *cUnit)
-{  
-      //DebugTln(F("const char *cName, float fValue, const char *cUnit"));
-
-  if (strlen(cUnit) == 0)
-  {
-    snprintf(OneRecord, sizeof(OneRecord)-1, "%s\"%s\":{\"value\":%.3f},"
-                                      ,OneRecord, cName, fValue);
-  }
-  else
-  {
-    snprintf(OneRecord, sizeof(OneRecord)-1, "%s \"%s\":{\"value\":%.3f,\"unit\":\"%s\"},"
-                                      ,OneRecord, cName, fValue, cUnit);
-  }
-
-} // FillJsonRec(*char, float, *char)
-
-//=======================================================================
-
-struct buildJsonApi {
-    bool  skip = false;
-
-    template<typename Item>
-    void apply(Item &i) {
-      skip = false;
-      String Name = Item::name;
-      if (!isInFieldsArray(Name.c_str()))
-      {
-        skip = true;
-      }
-      if (!skip)
-      {
-        if (i.present()) 
-        {
-          String Unit = Item::unit();
-        
-          if (Unit.length() > 0)
-          {
-            FillJsonRec(Name.c_str(), typecastValue(i.val()), Unit.c_str());
-          }
-          else 
-          {
-            FillJsonRec(Name.c_str(), typecastValue(i.val()));
-          }
-        }
-        else if (!onlyIfPresent)
-        {
-          FillJsonRec(Name.c_str(), "-");
- 
-        }
-        //printf("OneRecord: %s \n\r", OneRecord);
-      }
-  }
-
-};  // buildJsonApi()
-
-void ArrayToJson(){
-  //send json output
-  
-  if (strlen(OneRecord) < 4 ) { //some relevant data should be available
-    OneRecord[1] = '}';
-    OneRecord[2] = '\0';
-  } else OneRecord[strlen(OneRecord)-1] = '}'; //replace "," with json terminating char
-  
-  DebugTln(F("http: json sent .."));
-  sendJsonBuffer(OneRecord); 
-}    
+} // sendApiNotFound()  
 
 //====================================================
 void handleSmApi(const char *URI, const char *word4, const char *word5, const char *word6)
 {
-  char    tlgrm[1200] = "";
-  bool    stopParsingTelegram = false;
-  memset(OneRecord,0,sizeof(OneRecord));//clear onerecord
-  OneRecord[0] = '{'; //start Json
-  
   //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   switch (word4[0]) {
     
   case 'i': //info
     onlyIfPresent = false;
     fieldsElements = INFOELEMENTS;
-    DSMRdata.applyEach(buildJsonApi());
-    ArrayToJson() ;
+    jsonDoc.clear();
+    DSMRdata.applyEach(buildJson());
+    sendJson(jsonDoc);
   break;
   
   case 'a': //actual
     fieldsElements = ACTUALELEMENTS;
     onlyIfPresent = true;
-    DSMRdata.applyEach(buildJsonApi());
-    ArrayToJson();
+    jsonDoc.clear();
+    DSMRdata.applyEach(buildJson());
+    sendJson(jsonDoc);
   break;
   
   case 'f': //fields
@@ -480,43 +373,22 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     onlyIfPresent = false;
     if (strlen(word5) > 0)
     {
-       strCopy(fieldsArray[1], 24, word5);
-       fieldsElements = 2;
+       strCopy(Onefield, 24, word5);
+       fieldsElements = FIELDELEMENTS;
     }
-    DSMRdata.applyEach(buildJsonApi());
-    ArrayToJson();
+    jsonDoc.clear();
+    DSMRdata.applyEach(buildJson());
+    sendJson(jsonDoc);
   break;  
   case 't': //telegramm 
   {
-    showRaw = true;
-    slimmeMeter.enable(true);
-    Serial.setTimeout(5000);  // 5 seconds must be enough ..
-    memset(tlgrm, 0, sizeof(tlgrm));
-    int l = 0;
-    // The terminator character is discarded from the serial buffer.
-    l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
-    // now read from '/' to '!'
-    // The terminator character is discarded from the serial buffer.
-    l = Serial.readBytesUntil('!', tlgrm, sizeof(tlgrm));
-    Serial.setTimeout(1000);  // seems to be the default ..
-    DebugTf("read [%d] bytes\r\n", l);
-    if (l == 0) 
+    String buff = slimmeMeter.raw();
+    if (buff.length() == 0) 
     {
       httpServer.send(200, "application/plain", "no telegram received");
-      showRaw = false;
       return;
     }
-
-    tlgrm[l++] = '!';
-    tlgrm[l++]    = '\r';
-    tlgrm[l++]    = '\n';
-    tlgrm[(l +1)] = '\0';
-    // shift telegram 1 char to the right (make room at pos [0] for '/')
-    for (int i=strlen(tlgrm); i>=0; i--) { tlgrm[i+1] = tlgrm[i]; yield(); }
-    tlgrm[0] = '/'; 
-    showRaw = false;
-    if (Verbose1) Debugf("Telegram (%d chars):\r\n/%s", strlen(tlgrm), tlgrm);
-    sendJsonBuffer(tlgrm);
+    sendJsonBuffer(&buff[0]);
     break; 
     } 
   default:
@@ -669,7 +541,7 @@ if (fieldsElements == 0) return true;
     //if (Verbose2) DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]); 
     if (fieldsElements == ACTUALELEMENTS ) { if (strcmp_P(lookUp, actualArray[i]) == 0 ) return true; }
     else if (fieldsElements == INFOELEMENTS ) { if (strcmp_P(lookUp, infoArray[i]) == 0 ) return true; }
-    else if (fieldsElements == 2 ) { if (strcmp(lookUp, fieldsArray[i]) == 0) return true; }
+    else if (fieldsElements == FIELDELEMENTS ) { if ( (strcmp(lookUp, Onefield) == 0) || (strcmp(lookUp, "timestamp") == 0)  ) return true; }
   }
 
   return false; 

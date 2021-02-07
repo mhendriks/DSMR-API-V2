@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.3.1 (06-02-2021)"
+#define _FW_VERSION "v2.3.2 (07-02-2021)"
 /*
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -13,12 +13,11 @@
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
 
-
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
     - Flash mode: "DOUT"
-    - Flash size: "1MB (FS: 64KB OAT:~470KB)"
+    - Flash size: "1MB (FS: 64KB OAT:~470KB)" // or 2MB newer boards
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -35,24 +34,24 @@
 /******************** compiler options  ********************************************/
 #define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
 #define ALL_OPTIONS "[USE_MQTT][USE_DUTCH_PROTOCOL][BLYNK]" //change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
-//#define USE_AUX                     // define if the aux port should be used
 #define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
-//  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
-//  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
-//  #define HAS_NO_SLIMMEMETER        // define for testing only!
-//#define USE_MINDERGAS               // define if you want to update mindergas (configure through webinterface)
-//  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
-//  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
-#define USE_BLYNK
-//#define USE_PUSHOVER
-/******************** don't change anything below this comment **********************/
+//#define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
+//#define HAS_NO_SLIMMEMETER        // define for testing only!
+//#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
 //#define HIST_CONV
+
+//----- EXTENSIONS
+//#define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
+//#define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
+//#define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
+//#define USE_AUX                   // define if the aux port input should be used
+//#define USE_BLYNK                 // define if the blynk app could be used
+//#define USE_PUSHOVER              // define if the pushover app could be used
 
 #include "DSMRloggerAPI.h"
 
 #ifdef USE_SYSLOGGER
-//===========================================================================================
 void openSysLog(bool empty)
 {
   if (sysLog.begin(500, 100, empty))  // 500 lines use existing sysLog file

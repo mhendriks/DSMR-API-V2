@@ -1,6 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : menuStuff, part of DSMRloggerAPI
+**  Program  : TelnetMenu, part of DSMRloggerAPI
 **  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
@@ -8,31 +8,6 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-//===========================================================================================
-void displayHoursHist(bool Telnet=true) 
-{
-    //readAllSlots(HOURS, HOURS_FILE, actTimestamp, false, "");
-    RingFileTo(RINGHOURS, false);
-} // displayHoursHist()
-
-
-//===========================================================================================
-void displayDaysHist(bool Telnet=true) 
-{
-    //readAllSlots(DAYS, DAYS_FILE, actTimestamp, false, "");
-    RingFileTo(RINGDAYS, false);
-} // displayDaysHist()
-
-
-//===========================================================================================
-void displayMonthsHist(bool Telnet=true) 
-{
-    //readAllSlots(MONTHS, MONTHS_FILE, actTimestamp, false, "");
-    RingFileTo(RINGMONTHS, false);
-} // displayMonthsHist()
-
-
-//===========================================================================================
 void displayBoardInfo() 
 {
   Debugln(F("\r\n==================================================================\r"));
@@ -128,7 +103,7 @@ void handleKeyInput()
       case 'L':     readSettings(true);
                     break;
       case 'd':
-      case 'D':     displayDaysHist(true);
+      case 'D':     RingFileTo(RINGDAYS, false);
                     break;
       case 'E':     eraseFile();
                     break;
@@ -138,10 +113,10 @@ void handleKeyInput()
                     break;
 #endif
       case 'h':
-      case 'H':     displayHoursHist(true);
+      case 'H':     RingFileTo(RINGHOURS, false);
                     break;
       case 'm':
-      case 'M':     displayMonthsHist(true);
+      case 'M':     RingFileTo(RINGMONTHS, false);
                     break;
                     
       case 'W':     Debugf("\r\nConnect to AP [%s] and go to ip address shown in the AP-name\r\n", settingHostname);
