@@ -1,9 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
-*/
-#define _FW_VERSION "v2.3.2 (07-02-2021)"
-/*
+**
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
@@ -33,7 +31,7 @@
 */
 /******************** compiler options  ********************************************/
 #define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
-#define ALL_OPTIONS "[USE_MQTT][USE_DUTCH_PROTOCOL][BLYNK]" //change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
+#define ALL_OPTIONS "[USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
 #define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
 //#define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
@@ -94,7 +92,7 @@ void setup()
   //--- This is 8266 HWRNG used to seed the Random PRNG
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
   randomSeed(RANDOM_REG32); 
-  Debug("\n\n ----> BOOTING....[" _FW_VERSION "] <-----\n\n");
+  Debug("\n\n ----> BOOTING....[" _VERSION "] <-----\n\n");
   DebugTln("The board name is: " ARDUINO_BOARD);
 
   lastReset = ESP.getResetReason();

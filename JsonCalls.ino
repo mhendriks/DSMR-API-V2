@@ -13,7 +13,7 @@
 #define INFOELEMENTS     6
 #define FIELDELEMENTS    1
 
-int  fieldsElements = 0;
+byte fieldsElements = 0;
 char Onefield[25];
 bool onlyIfPresent = false;
 
@@ -32,16 +32,9 @@ struct buildJson {
         {          
           String Unit = Item::unit();
           jsonDoc[Name]["value"] = value_to_json(i.val());
-          
-          if (Unit.length() > 0)
-          {
-            jsonDoc[Name]["unit"]  = Unit;
-          }
-        }  else if (!onlyIfPresent)
-        {
-          jsonDoc[Name]["value"] = "-";
+          if (Unit.length() > 0) jsonDoc[Name]["unit"]  = Unit;
+        }  else if (!onlyIfPresent) jsonDoc[Name]["value"] = "-";
  
-        }
     } //infielsarrayname
   }
   
@@ -161,7 +154,7 @@ void sendDeviceTime()
 void sendDeviceInfo() 
 {
   DynamicJsonDocument doc(1500);
-  doc["fwversion"] = _FW_VERSION;
+  doc["fwversion"] = _VERSION;
   snprintf(cMsg, sizeof(cMsg), "%s %s", __DATE__, __TIME__);
   doc["compiled"] = cMsg;
   doc["hostname"] = settingHostname;

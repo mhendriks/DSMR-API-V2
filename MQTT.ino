@@ -178,9 +178,7 @@ struct buildJsonMQTT {
           nested["value"] = value_to_json(i.val());
           nested["unit"] = Unit;
         }
-        else {
-          nested["value"] = value_to_json(i.val());
-        }
+        else nested["value"] = value_to_json(i.val());
         serializeJson(doc, mqttBuff);
         if (!MQTTclient.publish(topicId, mqttBuff) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", topicId, mqttBuff, (strlen(topicId) + strlen(mqttBuff)));
       } // if i.present
@@ -208,9 +206,7 @@ void sendMQTTData()
 #ifdef USE_MQTT
   String dateTime, topicId, json;
 
-  if (settingMQTTinterval == 0) return;
-
-  if (bailout()) return;
+  if ((settingMQTTinterval == 0) || bailout() ) return;
 
   //make proper TopTopic
   if (settingMQTTtopTopic[strlen(settingMQTTtopTopic)-1] != '/') snprintf(settingMQTTtopTopic, sizeof(settingMQTTtopTopic), "%s/",  settingMQTTtopTopic);

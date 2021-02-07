@@ -11,7 +11,7 @@
 void displayBoardInfo() 
 {
   Debugln(F("\r\n==================================================================\r"));
-  Debug(F("]\r\n      Firmware Version ["));  Debug( _FW_VERSION );
+  Debug(F("]\r\n      Firmware Version ["));  Debug( _VERSION );
   Debug(F("]\r\n              Compiled ["));  Debug( __DATE__ "  "  __TIME__ );
   Debug(F("]\r\n              #defines "));   Debug(F(ALL_OPTIONS));
   Debug(F(" \r\n   Telegrams Processed ["));  Debug( telegramCount );

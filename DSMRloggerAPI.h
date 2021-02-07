@@ -11,6 +11,7 @@
 #ifndef DSMRloggerAPI_h
 #define DSMRloggerAPI_h
 
+#include "version.h"
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time
 #include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream/commit/1294a9ee5cc9b1f7e51005091e351d60c8cddecf
 #include "safeTimers.h"
