@@ -35,7 +35,7 @@ void handleBlynk(){
     Blynk.virtualWrite(V11, DSMRdata.power_delivered); // Electriciteit per uur
     DebugTln(F("handleBlynk"));
   } else {
-    if (SPIFFS.exists("/BlynkSetup")) SetupBlynk(); //check if new auth file is present
+    if (SPIFFS.exists("/BlynkSetup")) SetupBlynk(); //check if  auth file is present then setup
   }
 }
 
