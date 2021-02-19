@@ -36,13 +36,20 @@ void writeToJsonFile(const TSource &doc, File &_file)
 void readLastStatus()
 {  
   StaticJsonDocument<110> doc;  
+  DeserializationError error;
   
   if (!SPIFFSmounted) return;
   File statusFile = SPIFFS.open("/DSMRstatus.json", "r");
-  if (!statusFile) DebugTln("read(): No /DSMRstatus.json found");
+  if (statusFile) error = deserializeJson(doc, statusFile);
+
+  if (!statusFile || error) {
+    DebugTln(F("read(): No /DSMRstatus.json found or failed to read"));
+    statusFile.close();
+    writeLastStatus();
+    return;
+  }
   
-  DeserializationError error = deserializeJson(doc, statusFile);
-  if (error) DebugTln(F("read():Failed to read json file"));
+
   statusFile.close();
   
   nrReboots = doc["Reboots"];
@@ -60,7 +67,8 @@ void writeLastStatus()
   
   File statusFile = SPIFFS.open("/DSMRstatus.json", "w");
   if (!statusFile) DebugTln(F("write(): No /DSMRstatus.json found"));
-  
+
+  if (strlen( doc["Timestamp"]) != 13)  snprintf(actTimestamp, sizeof(actTimestamp), "%s", "010101010101X");
   char buffer[74];
   sprintf_P(buffer,PSTR("{\"Timestamp\":\"%s\",\"Reboots\":%d,\"slotErrors\":%d}"), actTimestamp, nrReboots, slotErrors);
   
@@ -140,24 +148,19 @@ void readSettings(bool show)
   {
     DebugTln(F(" .. DSMRsettings.json file not found! --> created file!"));
     writeSettings();
+    return;
   }
 
-  for (int T = 0; T < 2; T++) 
-  {
+
     SettingsFile = SPIFFS.open(SETTINGS_FILE, "r");
-    if (!SettingsFile) 
-    {
-      if (T == 0) DebugTf(" .. something went wrong opening [%s]\r\n", SETTINGS_FILE);
-      else        DebugT(T);
-      delay(500);
-    }
-  } // try T times ..
-  
-  DebugTln(F("Reading settings:\r"));
+    if (!SettingsFile) DebugTf(" .. something went wrong opening [%s]\r\n", SETTINGS_FILE);
+    else DebugTln(F("Reading settings:\r"));
 
   DeserializationError error = deserializeJson(doc, SettingsFile);
   if (error) {
     DebugTln(F("read():Failed to read DSMRsettings.json file"));
+    SettingsFile.close();
+    writeSettings();
     return;
   }
   
