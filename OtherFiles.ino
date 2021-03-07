@@ -68,7 +68,6 @@ void writeLastStatus()
   File statusFile = SPIFFS.open("/DSMRstatus.json", "w");
   if (!statusFile) DebugTln(F("write(): No /DSMRstatus.json found"));
 
-  if (strlen( doc["Timestamp"]) != 13)  snprintf(actTimestamp, sizeof(actTimestamp), "%s", "010101010101X");
   char buffer[74];
   sprintf_P(buffer,PSTR("{\"Timestamp\":\"%s\",\"Reboots\":%d,\"slotErrors\":%d}"), actTimestamp, nrReboots, slotErrors);
   
