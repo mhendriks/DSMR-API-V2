@@ -237,9 +237,11 @@ function UpdateDash()
 		for(let i=0;i<3;i++){
 			if (i==0) {
 				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - json.energy_returned_tariff1.value - json.energy_returned_tariff2.value- hist_arrP[i+1]).toFixed(3);
+				if (Parr[i] < 0) Parr[i] = 0;
 				Garr[i]=Number(json.gas_delivered.value - hist_arrG[i+1]).toFixed(3) ;
 			} else {
 				Parr[i]=Number(hist_arrP[i] - hist_arrP[i+1]).toFixed(3);
+				if (Parr[i] < 0) Parr[i] = 0;
 				Garr[i]=Number(hist_arrG[i] - hist_arrG[i+1]).toFixed(3);
 			}
 		}
