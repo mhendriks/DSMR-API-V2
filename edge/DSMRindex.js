@@ -236,7 +236,7 @@ function UpdateDash()
      	// console.log(json.power_delivered.value);
 		for(let i=0;i<3;i++){
 			if (i==0) {
-				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - hist_arrP[i+1]).toFixed(3);
+				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - json.energy_returned_tariff1.value - json.energy_returned_tariff2.value- hist_arrP[i+1]).toFixed(3);
 				Garr[i]=Number(json.gas_delivered.value - hist_arrG[i+1]).toFixed(3) ;
 			} else {
 				Parr[i]=Number(hist_arrP[i] - hist_arrP[i+1]).toFixed(3);
@@ -262,7 +262,7 @@ function UpdateDash()
 		//check if gasmeter is available
 		 if (isNaN(json.gas_delivered.value)) document.getElementById("l4").style.display = "none";
 		
-		 if (json.power_delivered.value > 0) 
+		 if (json.power_delivered.value > 0 || json.power_returned > 0) 
 		{	
 			var fases = 1;
 			let cvKW=document.getElementById("power_delivered").innerHTML;
@@ -284,6 +284,20 @@ function UpdateDash()
 
 			let Vgem=TotalU/fases;
 			let TotalKW = json.power_delivered.value;
+			
+			//debug 
+// 			if (Math.random() > 0.5 ) TotalKW = 0;
+			//
+						
+			if (TotalKW == 0 && json.power_returned.value > 0) { 
+				TotalKW = json.power_returned.value;
+				document.getElementById("power_delivered_l1h").style.backgroundColor = "green";
+				document.getElementById("power_delivered_l1h").innerHTML = "Teruglevering";
+				} else
+				{
+				document.getElementById("power_delivered_l1h").innerHTML = "Actueel";
+				document.getElementById("power_delivered_l1h").style.backgroundColor = "#314b77";
+				}
 
 			gauge.refresh(TotalAmps, AMPS * fases);
 			gauge_v.refresh(Vgem);
@@ -871,10 +885,9 @@ firmwareVersion = tmpN[0]*10000+tmpN[1]*100+tmpN[2]*1;
 		//voor dashboard
         var act_slot = data.actSlot;
 		for (let i=0;i<4;i++)
-		{	
-			hist_arrG[i] =json.data[math.mod(act_slot-i,15)].values[4];
-			hist_arrP[i] = json.data[math.mod(act_slot-i,15)].values[0] 
-				+ json.data[math.mod(act_slot-i,15)].values[1];
+		{	let tempslot = math.mod(act_slot-i,15);
+			hist_arrG[i] =json.data[tempslot].values[4];
+			hist_arrP[i] = json.data[tempslot].values[0] + json.data[tempslot].values[1] - json.data[tempslot].values[2] - json.data[tempslot].values[3];
 		};
 		// 		console.log(hist_arrG);
 		// 		console.log(hist_arrP);
