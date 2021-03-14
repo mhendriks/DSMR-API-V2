@@ -233,7 +233,8 @@ function UpdateDash()
 	  .then(response => response.json())
 	  .then(json => {
  		//console.log(json);
-     	// console.log(json.power_delivered.value);
+     	console.log("Dashupdate - delivered: " + json.power_delivered.value);
+     	console.log("Dashupdate - returned: " + json.power_returned.value);
 		for(let i=0;i<3;i++){
 			if (i==0) {
 				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - json.energy_returned_tariff1.value - json.energy_returned_tariff2.value- hist_arrP[i+1]).toFixed(3);
@@ -264,7 +265,7 @@ function UpdateDash()
 		//check if gasmeter is available
 		 if (isNaN(json.gas_delivered.value)) document.getElementById("l4").style.display = "none";
 		
-		 if (json.power_delivered.value > 0 || json.power_returned > 0) 
+		 if (json.power_delivered.value > 0 || json.power_returned.value > 0) 
 		{	
 			var fases = 1;
 			let cvKW=document.getElementById("power_delivered").innerHTML;
