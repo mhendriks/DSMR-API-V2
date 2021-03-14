@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v2.3.0
+**  Version  : v2.3.3
 **
 **  Copyright (c) 2021 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
@@ -291,7 +291,7 @@ function UpdateDash()
 // 			if (Math.random() > 0.5 ) TotalKW = 0;
 			//
 						
-			if (TotalKW == 0 && json.power_returned.value > 0) { 
+			if (json.power_returned.value > 0) { 
 				TotalKW = json.power_returned.value;
 				document.getElementById("power_delivered_l1h").style.backgroundColor = "green";
 				document.getElementById("power_delivered_l1h").innerHTML = "Teruglevering";
