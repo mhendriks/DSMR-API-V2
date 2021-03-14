@@ -60,7 +60,7 @@ let GaugeOptions = {
 		value: 0,
 		min: 0,
 		max: 25,
-		decimals: 2,
+		decimals: 0,
 		gaugeWidthScale: 0.6,
 		pointer: true,
 		pointerOptions: {
@@ -233,8 +233,8 @@ function UpdateDash()
 	  .then(response => response.json())
 	  .then(json => {
  		//console.log(json);
-     	console.log("Dashupdate - delivered: " + json.power_delivered.value);
-     	console.log("Dashupdate - returned: " + json.power_returned.value);
+//      	console.log("Dashupdate - delivered: " + json.power_delivered.value);
+//      	console.log("Dashupdate - returned: " + json.power_returned.value);
 		for(let i=0;i<3;i++){
 			if (i==0) {
 				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - json.energy_returned_tariff1.value - json.energy_returned_tariff2.value- hist_arrP[i+1]).toFixed(3);
