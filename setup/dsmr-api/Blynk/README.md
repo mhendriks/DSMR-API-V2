@@ -53,23 +53,24 @@ De P1 adapter heeft het token nodig om de Blynk app van data te kunnen voorzien.
 <img src="blynk-upload-p1.png" width="50%">
 
 
-Via bestandsbeheer (folder icoon rechtsboven) op de p1 adapter (web interface) kan dit bestand worden geupload via bestand kiezen. Na 10 seconden zal de Blynk app aangegeven dat de datafeed actief is. Is na 10 seconden in de Blynk app nog steeds geen data binnen gekomen dan kan er iets mis gegaan zijn met het copieren van de AUTH gegevens.
+Via bestandsbeheer (folder icoon rechtsboven) op de p1 adapter (web interface) kan dit bestand worden geupload via bestand kiezen. Na 10 seconden zal de Blynk app aangegeven dat de datafeed actief is. Is na 10 seconden in de Blynk app nog steeds geen data binnen gekomen dan kan er iets mis gegaan zijn met het kopiëren van de AUTH gegevens.
 
 **Blynk interval dataverversing** 
 De snelheid waarmee ververst wordt hangt samen met de snelheid waarmee de datagrammen uit de slimme meter gelezen worden. In de standaard configuratie is dat 10 seconden. In de instellingen kan dit worden aangepast naar elk gewenste snelheid.
 
 **Welke gegevens kunnen worden bekeken?**  
-De onderstaande gegevens kunnen worden bekeken via de Blynk apa.
+De onderstaande gegevens kunnen worden bekeken via de Blynk app.
 
-Virtueel veld | Omschrijving | Eenheid 
-------------- |------------- | -------
-V0  | Actueel elektriciteit verbruik | [Watt]
-V1  | Meterstand t1 = laag | [kWh]
-V2  | Meterstand t2 = hoog | [kWh]  
-V3  | Actuele teruglevering | [Watt]  
-V5  | Gastellerstand | [m3]  
-V6  | Meterstand 1 teruglevering = laag teruglevering  | [kWh]  
-V7  | Meterstand 2 teruglevering = hoog teruglevering  | [kWh]  
-V9  | Ruw telegram  (werkt nog niet optimaal, app buffer is snel vol)
-V10 | gas per uur (is nu gelijk aan V5)  | [m3]
-V11 | elektriciteit per uur (is nu gelijk aan V0)  | [kWh]
+ veld 	| Omschrijving 							| Eenheid 	| Firmware 
+----- 	|------------- 							| ------- 	| -------
+V0  	| Actueel elektriciteit verbruik 		| [Watt]	| 2.3.1
+V1  	| Meterstand t1 = laag 					| [kWh]		| 2.3.1
+V2  	| Meterstand t2 = hoog 					| [kWh]  	| 2.3.1
+V3  	| Actuele teruglevering 				| [Watt]  	| 2.3.1
+V5  	| Gastellerstand 						| [m3]  	| 2.3.1
+V6  	| Meterstand 1  = laag teruglevering  	| [kWh]  	| 2.3.1
+V7  	| Meterstand 2  = hoog teruglevering  	| [kWh]  	| 2.3.1
+V9  	| Ruw telegram  (werkt nog niet optimaal, app buffer is snel vol)| | 2.3.1
+V10 	| Gasverbruik vandaag 					| [m3] 		| 2.3.3
+V11 	| Verbruik electra vandaag  			| [kWh] 	| 2.3.3
+V12 	| Teruglevering electra vandaag  		| [kWh] 	| 2.3.3

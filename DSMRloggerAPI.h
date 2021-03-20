@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.3.2
+**  Version  : v2.3.3
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -161,6 +161,8 @@ void delayms(unsigned long);
   char        actTimestamp[20] = "";
   char        newTimestamp[20] = "";
   uint32_t    slotErrors = 0;
+  byte        DagSlot = 99; // geen geldige slot waarde
+  float       GDT_G = 0, EDT1_G = 0,  EDT2_G = 0,ERT1_G = 0,ERT2_G = 0; //eindstand teller gisteren ivm dagberekening
   uint32_t    nrReboots  = 0;
   uint32_t    loopCount = 0;
   uint32_t    telegramCount = 0, telegramErrors = 0;

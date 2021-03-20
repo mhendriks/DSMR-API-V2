@@ -10,6 +10,7 @@
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
+*      
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
@@ -334,6 +335,7 @@ void loop ()
   {
     doTaskTelegram();
     #ifdef USE_BLYNK
+      UpdateDayStats();
       Blynk.run();
       handleBlynk();
     #endif

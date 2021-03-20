@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : processTelegram, part of DSMRloggerAPI
-**  Version  : v2.3.1
+**  Version  : v2.3.3
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -41,6 +41,13 @@ void processTelegram()
     writeLastStatus();
   }
 
+  if (DagSlot == 99) { //check of initiele vulling vorige dag ontbreekt, kan alleen indien datum bekend is ivm slots
+      DagSlot = CalcSlot(RINGDAYS, actTimestamp);
+      DebugT(F("DagSlot: ")); Debugln(DagSlot);
+      readRingDaySlot();
+      DebugTln(F("Update DagSlot gegevens"));
+  }
+    
   if ( DUE(publishMQTTtimer) )
   {
     sendMQTTData();      

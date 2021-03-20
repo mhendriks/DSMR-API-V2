@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : RingFiles, part of DSMRloggerAPI
-**  Version  : v2.3.1
+**  Version  : v2.3.3
 **
 **  Copyright (c) 2021 Martijn Hendriks
 **
@@ -167,6 +167,41 @@ void writeRingFiles()
   writeRingFile(RINGMONTHS, "");
 
 } // writeRingFiles()
+
+//===========================================================================================
+void readRingDaySlot() 
+{
+  if (bailout() || !SPIFFSmounted) return; //exit when heapsize is too small
+
+  if (!SPIFFS.exists(RingFiles[RINGDAYS].filename)) return;
+
+  DynamicJsonDocument doc(3100);
+
+  File RingFile = SPIFFS.open(RingFiles[RINGDAYS].filename, "r"); // open for reading
+  DeserializationError error = deserializeJson(doc, RingFile);
+  yield();
+  EDT1_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][0];  
+  EDT2_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][1];
+  ERT1_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][2];
+  ERT2_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][3];
+  GDT_G  = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][4];
+ 
+  //goto writing starting point  
+  // elegantere manier om een slot er uit te lezen
+//  uint16_t offset = ( (DagSlot-1) % RingFiles[RINGDAYS].slots * DATA_RECLEN) + JSON_HEADER_LEN;
+//  RingFile.seek(offset, SeekSet);
+//  
+//  //read line
+//  char buffer[64];
+//  while (RingFile.available()) {
+//     int l = RingFile.readBytesUntil('\n', buffer, sizeof(buffer));
+//     if (buffer[l-1] == ",") buffer[l-1] = 0 else buffer[l] = 0; // remove 
+//     Debugln(buffer);
+//  } 
+
+  RingFile.close();
+
+} //readRingDaySlot
 
 /***************************************************************************
 *
