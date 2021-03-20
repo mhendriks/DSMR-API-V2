@@ -50,7 +50,5 @@ void SetupBlynk(){
   if (readBlynkAuth() != 0) Blynk.config(auth);
   else DebugTln(F("Setup Blynk: auth. not available"));
   DebugTf("Blynk auth: %s (%d)\n",auth,strlen(auth));
-  delay(500);
-  handleBlynk(); //firsttime
 }
 #endif

@@ -242,11 +242,6 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(2), isrAux, CHANGE);       // interrupt program when signal to pin 2 detected call ISR function when happens
 #endif
 
-#ifdef USE_BLYNK
-  DebugTln(F("Enable Blynk..."));
-  SetupBlynk();
-#endif
-
 #ifdef HIST_CONV
   hist_conv(); 
 #endif
