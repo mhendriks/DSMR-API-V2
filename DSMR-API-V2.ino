@@ -385,8 +385,6 @@ void loop ()
   if DUE(AuxTimer) handleAux(); //manage Aux interupt
 #endif
 
-
-
 } // loop()
 
 

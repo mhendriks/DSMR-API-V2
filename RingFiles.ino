@@ -41,8 +41,7 @@ uint8_t CalcSlot(E_ringfiletype ringfiletype, char* Timestamp)
   if (ringfiletype == RINGMONTHS ) nr = ( (year(t1) -1) * 12) + month(t1);    // eg: year(2023) * 12 = 24276 + month(9) = 202309
   else nr = t1 / RingFiles[ringfiletype].seconds;
   uint8_t slot = nr % RingFiles[ringfiletype].slots;
-    DebugTf("slot: Slot is [%d]\r\n", slot);
-    DebugTf("nr: nr is [%d]\r\n", nr);
+    DebugTf("slot: [%d], nr: [%d]\n", slot, nr);
 
   if (slot < 0 || slot >= RingFiles[ringfiletype].slots)
   {
