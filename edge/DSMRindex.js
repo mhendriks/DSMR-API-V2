@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v2.3.3
+**  Version  : v2.3.4
 **
 **  Copyright (c) 2021 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
@@ -35,7 +35,7 @@
   var gas_netw_costs        = 0;
   var hostName            	=  "-";  
   var data       			= [];
-  var Dtimer				= 0; //Dashboard reload timer
+  var DayEpoch				= 0;
                   
   let monthType        = "ED";
   let settingFontColor = 'white'
@@ -220,19 +220,21 @@ function UpdateDash()
 {	
 	var Parr=[3], Garr=[3];
 	console.log("Update dash");
-	if (!Dtimer) refreshDays(); //load data first visit
-
-	Dtimer++; // +1 every 10 secs because if the update periode
-	// 	console.log("Dtimer: " + Dtimer);
-	if (Dtimer > 300 ) { //check first start and day change reload every 50min = 60*60/10 = 300
-		Dtimer = 0;
-		location.reload(); //reload page
+	
+	//check new day = refresh
+	var DayEpochTemp = Math.floor(new Date().getTime() / 86400000.0);
+// 	console.log("DayEpochTemp: " + DayEpochTemp + " DayEpoch: " + DayEpoch );
+	if (DayEpoch != DayEpochTemp) {
+		refreshDays(); //load data first visit
+// 		location.reload(); //reload page
+		DayEpoch = DayEpochTemp;	
 	}
+	
 	showSpinner();
 	fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
 	  .then(response => response.json())
 	  .then(json => {
- 		//console.log(json);
+//  		console.log(json);
 //      	console.log("Dashupdate - delivered: " + json.power_delivered.value);
 //      	console.log("Dashupdate - returned: " + json.power_returned.value);
 		for(let i=0;i<3;i++){
