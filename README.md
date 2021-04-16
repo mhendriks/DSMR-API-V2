@@ -1,10 +1,10 @@
-# Slimmemeter MQTT interface - DSMR-API - Hardware versie 2
+# Slimmemeter MQTT interface - DSMR-API - Hardware versie 3
 Gebaseerd op versie 1 met een aantal verbeteringen en aanvullingen
-- ESP-M2 in plaats van M3
+- ESP-M2 als CPU Soc
 - gebruikt secundaire seriale interface (sneller en geen extra library meer nodig)
 - 2 SMD optocouplers; 1 voor de P1 en een extra voor externe input (bijvoorbeeld deurbel)
 - mogelijkheid om ook iets te kunnen doen met I2C ... meer experimenteel
-- iets compacter
+- toevoeging van een RJ11 socket
 
 ## SCHEMA
 Gekozen voor iets compactere ESP-M2 (ESP8285) vooral omdat de secundaire seriele interface van de ESP bereikbaar is op de M2 en niet op de M3. 

@@ -49,7 +49,7 @@
   const spinner = document.getElementById("loader");
 
 // ---- DASH
-const AMPS=25;
+const AMPS=35;
 var MaxAmps = 0.0;
 var TotalAmps=0.0,minKW = 0.0, maxKW = 0.0,minV = 0.0, maxV = 0.0, Pmax,Gmax;
 var hist_arrG=[4], hist_arrP=[4]; //berekening verbruik
