@@ -220,11 +220,12 @@ function UpdateDash()
 {	
 	var Parr=[3], Garr=[3];
 	console.log("Update dash");
+// 	console.log("hist_arrP length: " + hist_arrP.length);
 	
 	//check new day = refresh
 	var DayEpochTemp = Math.floor(new Date().getTime() / 86400000.0);
 // 	console.log("DayEpochTemp: " + DayEpochTemp + " DayEpoch: " + DayEpoch );
-	if (DayEpoch != DayEpochTemp) {
+	if (DayEpoch != DayEpochTemp || hist_arrP.length < 4 ) {
 		refreshDays(); //load data first visit
 // 		location.reload(); //reload page
 		DayEpoch = DayEpochTemp;	
@@ -246,6 +247,7 @@ function UpdateDash()
 				Parr[i]=Number(hist_arrP[i] - hist_arrP[i+1]).toFixed(3);
 				if (Parr[i] < 0) Parr[i] = 0;
 				Garr[i]=Number(hist_arrG[i] - hist_arrG[i+1]).toFixed(3);
+				if (Garr[i] < 0) Garr[i] = 0;
 			}
 		}
 
@@ -882,20 +884,21 @@ firmwareVersion = tmpN[0]*10000+tmpN[1]*100+tmpN[2]*1;
     fetch(APIGW+"v2/hist/days", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
-        data = json;
+		data = json;
         expandData(data);
         if (presentationType == "TAB")
               showHistTable(data, "Days");
         else  showHistGraph(data, "Days");
 		//voor dashboard
         var act_slot = data.actSlot;
+//         console.log("Refreshdays - actSlot: " + act_slot);
 		for (let i=0;i<4;i++)
 		{	let tempslot = math.mod(act_slot-i,15);
-			hist_arrG[i] =json.data[tempslot].values[4];
+			hist_arrG[i] = json.data[tempslot].values[4];
 			hist_arrP[i] = json.data[tempslot].values[0] + json.data[tempslot].values[1] - json.data[tempslot].values[2] - json.data[tempslot].values[3];
 		};
-		// 		console.log(hist_arrG);
-		// 		console.log(hist_arrP);
+// 		 		console.log("hist_arrG" + hist_arrG);
+// 		 		console.log("hist_arrP" + hist_arrP);
 
 	    hideSpinner();
 
