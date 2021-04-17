@@ -235,25 +235,27 @@ function UpdateDash()
 	fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
 	  .then(response => response.json())
 	  .then(json => {
+	  
 //  		console.log(json);
 //      	console.log("Dashupdate - delivered: " + json.power_delivered.value);
 //      	console.log("Dashupdate - returned: " + json.power_returned.value);
+		var HeeftGas = json.hasOwnProperty("gas_delivered");
+		console.log("Gasmeter aanwezig: " + HeeftGas);
 		for(let i=0;i<3;i++){
 			if (i==0) {
 				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - json.energy_returned_tariff1.value - json.energy_returned_tariff2.value- hist_arrP[i+1]).toFixed(3);
-				if (Parr[i] < 0) Parr[i] = 0;
-				Garr[i]=Number(json.gas_delivered.value - hist_arrG[i+1]).toFixed(3) ;
+				if (HeeftGas) Garr[i]=Number(json.gas_delivered.value - hist_arrG[i+1]).toFixed(3) ;
 			} else {
 				Parr[i]=Number(hist_arrP[i] - hist_arrP[i+1]).toFixed(3);
-				if (Parr[i] < 0) Parr[i] = 0;
-				Garr[i]=Number(hist_arrG[i] - hist_arrG[i+1]).toFixed(3);
-				if (Garr[i] < 0) Garr[i] = 0;
+				if (HeeftGas) Garr[i]=Number(hist_arrG[i] - hist_arrG[i+1]).toFixed(3);
 			}
+			if (Parr[i] < 0) Parr[i] = 0;
+			if (HeeftGas && (Garr[i] < 0)) Garr[i] = 0;
 		}
 
 		// maximale waarde bepalen voor de gauge
 		Pmax = math.max(Parr);
-		Gmax = math.max(Garr);
+		if (HeeftGas) Gmax = math.max(Garr);
 
 		// 		console.log(Pmax);
 		// 		console.log(Gmax);
@@ -261,13 +263,13 @@ function UpdateDash()
 		//data sets berekenen voor de gauges
 		for(let i=0;i<3;i++){
 			trend_p.data.datasets[i].data=[Number(Parr[i]).toFixed(1),Number(Pmax-Parr[i]).toFixed(1)];
-			trend_g.data.datasets[i].data=[Number(Garr[i]).toFixed(1),Number(Gmax-Garr[i]).toFixed(1)];
+			if (HeeftGas) trend_g.data.datasets[i].data=[Number(Garr[i]).toFixed(1),Number(Gmax-Garr[i]).toFixed(1)];
 		};
 		trend_p.update();
-		trend_g.update();
+		if (HeeftGas) trend_g.update();
 	
 		//check if gasmeter is available
-		 if (isNaN(json.gas_delivered.value)) document.getElementById("l4").style.display = "none";
+		 if (!HeeftGas) document.getElementById("l4").style.display = "none";
 		
 		 if (json.power_delivered.value > 0 || json.power_returned.value > 0) 
 		{	
@@ -311,7 +313,7 @@ function UpdateDash()
 
 			document.getElementById("power_delivered").innerHTML = TotalKW.toLocaleString();
 			document.getElementById("P").innerHTML = Number(Parr[0]).toLocaleString();
-			document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString();
+			if (HeeftGas) document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString();
 
 			//vermogen(P)
 			if (minKW == 0.0 || nvKW < minKW) { minKW = nvKW;}
@@ -330,8 +332,11 @@ function UpdateDash()
 			document.getElementById(`Pmin`).innerHTML = Math.min.apply(Math, Parr).toLocaleString();
 			
 			//verbruik G    
-			document.getElementById(`Gmax`).innerHTML = Number(Gmax).toLocaleString();
-			document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
+			if (HeeftGas) 
+			{ 
+				document.getElementById(`Gmax`).innerHTML = Number(Gmax).toLocaleString();
+				document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
+			}
 												
 		};//end if
 		hideSpinner();
