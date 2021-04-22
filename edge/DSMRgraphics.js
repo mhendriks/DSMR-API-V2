@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRgraphics.js, part of DSMRloggerAPI
-**  Version  : v1.2.1
+**  Version  : v2.3.5
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -29,6 +29,7 @@ actGasData.datasets     = [];     //  add 'datasets' array element to object
 
 
 var actElectrOptions = {
+		plugins: {labels: false},
         responsive: true,
         maintainAspectRatio: true,
         scales: {
@@ -45,6 +46,7 @@ var actElectrOptions = {
       }; // options
 
 var hourOptions = {
+		plugins: {labels: false},
         responsive: true,
         maintainAspectRatio: true,
         scales: {
@@ -61,6 +63,7 @@ var hourOptions = {
       }; // options
 
 var dayOptions = {
+		plugins: {labels: false},
         responsive: true,
         maintainAspectRatio: true,
         scales: {
@@ -77,7 +80,8 @@ var dayOptions = {
       }; // options
 
 var monthOptions = {
-        responsive: true,
+		plugins: {labels: false},
+		responsive: true,
         maintainAspectRatio: true,
         scales: {
           yAxes: [{
