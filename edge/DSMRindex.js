@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v2.3.4
+**  Version  : v2.3.5
 **
 **  Copyright (c) 2021 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
@@ -235,15 +235,21 @@ function UpdateDash()
 	fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
 	  .then(response => response.json())
 	  .then(json => {
-	  
+// 	  json = JSON.parse('{"timestamp":{"value":"210417094333S"},"energy_delivered_tariff1":{"value":11717.34,"unit":"kWh"},"energy_delivered_tariff2":{"value":13097.94,"unit":"kWh"},"energy_returned_tariff1":{"value":0,"unit":"kWh"},"energy_returned_tariff2":{"value":0,"unit":"kWh"},"power_delivered":{"value":2.015,"unit":"kW"},"power_returned":{"value":0,"unit":"kW"},"voltage_l1":{"value":227.7,"unit":"V"},"voltage_l2":{"value":224.2,"unit":"V"},"voltage_l3":{"value":226.8,"unit":"V"},"current_l1":{"value":2,"unit":"A"},"current_l2":{"value":6,"unit":"A"},"current_l3":{"value":1,"unit":"A"},"power_delivered_l1":{"value":0.388,"unit":"kW"},"power_delivered_l2":{"value":1.363,"unit":"kW"},"power_delivered_l3":{"value":0.258,"unit":"kW"},"power_returned_l1":{"value":0,"unit":"kW"},"power_returned_l2":{"value":0,"unit":"kW"},"power_returned_l3":{"value":0,"unit":"kW"}}');
+// 	
 //  		console.log(json);
 //      	console.log("Dashupdate - delivered: " + json.power_delivered.value);
 //      	console.log("Dashupdate - returned: " + json.power_returned.value);
-		var HeeftGas = json.hasOwnProperty("gas_delivered");
+
+		//check if gasmeter is available
+		
+		var HeeftGas = "gas_delivered" in json ? !isNaN(json.gas_delivered.value) : false ;
+		if (!HeeftGas) document.getElementById("l4").style.display = "none";
+		
 		console.log("Gasmeter aanwezig: " + HeeftGas);
 		for(let i=0;i<3;i++){
 			if (i==0) {
-				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - json.energy_returned_tariff1.value - json.energy_returned_tariff2.value- hist_arrP[i+1]).toFixed(3);
+				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - json.energy_returned_tariff1.value - json.energy_returned_tariff2.value - hist_arrP[i+1]).toFixed(3);
 				if (HeeftGas) Garr[i]=Number(json.gas_delivered.value - hist_arrG[i+1]).toFixed(3) ;
 			} else {
 				Parr[i]=Number(hist_arrP[i] - hist_arrP[i+1]).toFixed(3);
@@ -253,7 +259,7 @@ function UpdateDash()
 			if (HeeftGas && (Garr[i] < 0)) Garr[i] = 0;
 		}
 
-		// maximale waarde bepalen voor de gauge
+		// maximale waarde bepalen voor de meters
 		Pmax = math.max(Parr);
 		if (HeeftGas) Gmax = math.max(Garr);
 
@@ -268,9 +274,6 @@ function UpdateDash()
 		trend_p.update();
 		if (HeeftGas) trend_g.update();
 	
-		//check if gasmeter is available
-		 if (!HeeftGas) document.getElementById("l4").style.display = "none";
-		
 		 if (json.power_delivered.value > 0 || json.power_returned.value > 0) 
 		{	
 			var fases = 1;
@@ -278,8 +281,8 @@ function UpdateDash()
 			let nvKW= json.power_delivered.value; 
 			let nvA=  json.current_l1.value;
 			
-			if (!isNaN(json.current_l2.value)) fases++;
-			if (!isNaN(json.current_l3.value)) fases++;
+			if (!isNaN(json.voltage_l2.value)) fases++;
+			if (!isNaN(json.voltage_l3.value)) fases++;
 			
 			document.getElementById("fases").innerHTML = fases;
 			
@@ -287,16 +290,12 @@ function UpdateDash()
 				(isNaN(json.current_l2.value)?0:json.current_l2.value) + 
 				(isNaN(json.current_l3.value)?0:json.current_l3.value);
 
-			let TotalU = (isNaN(json.voltage_l1.value)?0:json.voltage_l1.value) + 
+			let TotalU = 0 +(isNaN(json.voltage_l1.value)?0:json.voltage_l1.value) + 
 				(isNaN(json.voltage_l2.value)?0:json.voltage_l2.value) + 
 				(isNaN(json.voltage_l3.value)?0:json.voltage_l3.value);
 
 			let Vgem=TotalU/fases;
 			let TotalKW = json.power_delivered.value;
-			
-			//debug 
-// 			if (Math.random() > 0.5 ) TotalKW = 0;
-			//
 						
 			if (json.power_returned.value > 0) { 
 				TotalKW = json.power_returned.value;
@@ -521,6 +520,7 @@ function UpdateDash()
        readGitHubVersion();
        UpdateDash();
        clearInterval(tabTimer);
+       clearInterval(actualTimer);  
        tabTimer = setInterval(UpdateDash, 10 * 1000); // repeat every 10s
     } else if (activeTab == "bFSexplorer") {
       FSExplorer();
@@ -649,12 +649,12 @@ function UpdateDash()
 	  firmwareVersion_dspl = tmpFW;
 	  tmpFW = tmpFW.replace("+", " ");
 	  tmpFW = tmpFW.replace("v", "");
-// 	  console.log("tmpFW: " + tmpFW);
+	  console.log("tmpFW: " + tmpFW);
 	  tmpX = tmpFW.substring(0, tmpFW.indexOf(' '));
 // 	  console.log("tmpX: " + tmpX);
 	  tmpN = tmpX.split(".");
 // 	  	  console.log("tmpN: " + tmpN);
-firmwareVersion = tmpN[0]*10000+tmpN[1]*100+tmpN[2]*1;
+	  firmwareVersion = tmpN[0]*10000+tmpN[1]*100+tmpN[2]*1;
 	  console.log("firmwareVersion["+firmwareVersion+"] >= GitHubVersion["+GitHubVersion+"]");
 	  if (GitHubVersion == 0 || firmwareVersion >= GitHubVersion)
 			newVersionMsg = "";
