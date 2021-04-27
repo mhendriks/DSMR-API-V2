@@ -241,12 +241,11 @@ function UpdateDash()
 //      	console.log("Dashupdate - delivered: " + json.power_delivered.value);
 //      	console.log("Dashupdate - returned: " + json.power_returned.value);
 
-		//check if gasmeter is available
-		
+		//check of gasmeter beschikbaar is	
 		var HeeftGas = "gas_delivered" in json ? !isNaN(json.gas_delivered.value) : false ;
-		if (!HeeftGas) document.getElementById("l4").style.display = "none";
-		
+		if (!HeeftGas) document.getElementById("l4").style.display = "none"; else document.getElementById("l4").style.display = "block";
 		console.log("Gasmeter aanwezig: " + HeeftGas);
+		
 		for(let i=0;i<3;i++){
 			if (i==0) {
 				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - json.energy_returned_tariff1.value - json.energy_returned_tariff2.value - hist_arrP[i+1]).toFixed(3);
@@ -261,29 +260,24 @@ function UpdateDash()
 
 		// maximale waarde bepalen voor de meters
 		Pmax = math.max(Parr);
-		if (HeeftGas) Gmax = math.max(Garr);
-
-		// 		console.log(Pmax);
-		// 		console.log(Gmax);
 
 		//data sets berekenen voor de gauges
 		for(let i=0;i<3;i++){
 			trend_p.data.datasets[i].data=[Number(Parr[i]).toFixed(1),Number(Pmax-Parr[i]).toFixed(1)];
-			if (HeeftGas) trend_g.data.datasets[i].data=[Number(Garr[i]).toFixed(1),Number(Gmax-Garr[i]).toFixed(1)];
 		};
 		trend_p.update();
-		if (HeeftGas) trend_g.update();
 	
 		 if (json.power_delivered.value > 0 || json.power_returned.value > 0) 
 		{	
-			var fases = 1;
+
 			let cvKW=document.getElementById("power_delivered").innerHTML;
 			let nvKW= json.power_delivered.value; 
 			let nvA=  json.current_l1.value;
 			
+			//#fases berekenen
+			var fases = 1;
 			if (!isNaN(json.voltage_l2.value)) fases++;
 			if (!isNaN(json.voltage_l3.value)) fases++;
-			
 			document.getElementById("fases").innerHTML = fases;
 			
 			TotalAmps = (isNaN(json.current_l1.value)?0:json.current_l1.value) + 
@@ -312,7 +306,6 @@ function UpdateDash()
 
 			document.getElementById("power_delivered").innerHTML = TotalKW.toLocaleString();
 			document.getElementById("P").innerHTML = Number(Parr[0]).toLocaleString();
-			if (HeeftGas) document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString();
 
 			//vermogen(P)
 			if (minKW == 0.0 || nvKW < minKW) { minKW = nvKW;}
@@ -330,9 +323,18 @@ function UpdateDash()
 			document.getElementById(`Pmax`).innerHTML = Number(Pmax).toLocaleString();
 			document.getElementById(`Pmin`).innerHTML = Math.min.apply(Math, Parr).toLocaleString();
 			
-			//verbruik G    
+			
+			//GAS
 			if (HeeftGas) 
-			{ 
+			{
+				Gmax = math.max(Garr);
+				for(let i=0;i<3;i++){
+			    	trend_g.data.datasets[i].data=[Number(Garr[i]).toFixed(1),Number(Gmax-Garr[i]).toFixed(1)];
+				};
+				trend_g.update();
+				document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString();
+			
+				//verbruik G    
 				document.getElementById(`Gmax`).innerHTML = Number(Gmax).toLocaleString();
 				document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
 			}

@@ -59,7 +59,6 @@ void startWiFi(const char* hostname, int timeOut)
   //--- useful to make it all retry or go to sleep in seconds
   //manageWiFi.setTimeout(240);  // 4 minuten
   manageWiFi.setTimeout(timeOut);  // in seconden ...
-  
   //--- fetches ssid and pass and tries to connect
   //--- if it does not connect it starts an access point with the specified name
   //--- here  "DSMR-WS-<MAC>"
@@ -76,9 +75,10 @@ void startWiFi(const char* hostname, int timeOut)
     DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
     return;
   }
-  
 //  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
-  
+    WiFi.hostname("p1-dongle");
+    DebugTf("Device name [%s]\n", "p1-dongle");
+
 
 #ifdef USE_UPDATE_SERVER
   httpUpdater.setup(&httpServer);
