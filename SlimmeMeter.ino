@@ -60,12 +60,6 @@ void processSlimmemeter()
         
     if (slimmeMeter.parse(&DSMRdata, &DSMRerror))   // Parse succesful, print result
     {
-      if (telegramCount > (UINT32_MAX - 10)) 
-      {
-        delay(1000);
-        ESP.reset();
-        delay(1000);
-      }
       if (DSMRdata.identification_present)
       {
         //--- this is a hack! The identification can have a backslash in it

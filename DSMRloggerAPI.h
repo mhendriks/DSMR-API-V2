@@ -193,6 +193,13 @@ void delayms(unsigned long);
   int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
   String    pTimestamp;
 
+
+#if defined(HAS_NO_SLIMMEMETER)
+  bool        forceBuildRingFiles = false;
+  enum runStates { SInit, SMonth, SDay, SHour, SNormal };
+  enum runStates runMode = SNormal;
+#endif
+
 //===========================================================================================
 // setup timers 
 DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);

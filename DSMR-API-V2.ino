@@ -16,7 +16,7 @@
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
     - Flash mode: "DOUT"
-    - Flash size: "1MB (FS: 64KB OAT:~470KB)" // or 2MB newer boards
+    - Flash size: "2MB (FS: 64KB OAT:~470KB)"
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -30,11 +30,11 @@
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
 */
+
 /******************** compiler options  ********************************************/
-#define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
-#define ALL_OPTIONS "[BLYNK][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
-#define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
-//#define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
+#define USE_MQTT                    // default ON : define if you want to use MQTT (configure through webinterface)
+#define USE_UPDATE_SERVER           // default ON : define if there is enough memory and updateServer to be used
+#define USE_BELGIUM_PROTOCOL        // define if Slimme Meter is a Belgium Smart Meter
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
@@ -45,8 +45,15 @@
 //#define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //#define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
 //#define USE_AUX                   // define if the aux port input should be used
-#define USE_BLYNK                 // define if the blynk app could be used
+#define USE_BLYNK                   // default ON : define if the blynk app could be used
 //#define USE_PUSHOVER              // define if the pushover app could be used
+
+//change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT][USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL][USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]
+#ifdef USE_BELGIUM_PROTOCOL
+  #define ALL_OPTIONS "[BELGIUM_PROTOCOL][BLYNK][MQTT][UPDATE_SERVER]" 
+#else 
+  #define ALL_OPTIONS "[DUTCH_PROTOCOL][BLYNK][MQTT][UPDATE_SERVER]"
+#endif
 
 #include "DSMRloggerAPI.h"
 
