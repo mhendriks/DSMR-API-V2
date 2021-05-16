@@ -484,12 +484,7 @@ body > div.bottom.right-0 {
 	height: 180px;
 }
 
-#container-3 {
-	margin-top:25px;
-	width:220px;
-}
-
-#container-4 {
+#container-3, #container-4, #container-5, #container-6 {
 	margin-top:25px;
 	width:220px;
 }

@@ -52,7 +52,7 @@
 const AMPS=35;
 var MaxAmps = 0.0;
 var TotalAmps=0.0,minKW = 0.0, maxKW = 0.0,minV = 0.0, maxV = 0.0, Pmax,Gmax;
-var hist_arrG=[4], hist_arrP=[4]; //berekening verbruik
+var hist_arrG=[4], hist_arrPa=[4], hist_arrPi=[4], hist_arrP=[4]; //berekening verbruik
 var day = 0;
 
 let GaugeOptions = {
@@ -132,22 +132,19 @@ let GaugeOptionsV = {
 let TrendG = {
     type: 'doughnut',
     data: {
-      labels: ["gasverbruik", "verschil met hoogste"],
+      labels: ["verbruik", "verschil met hoogste"],
       datasets: [
         {
           label: "vandaag",
           backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
-          data: [0,1],
         },
         {
           label: "gisteren",
           backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
-          data: [0,1]
         },
         {
           label: "eergisteren",
           backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
-          data: [0,1]
         }
       ]
     },
@@ -166,30 +163,7 @@ let TrendG = {
     legend: {display: false},
     }, //options
 };
-
-let TrendP = {
-    type: 'doughnut',
-    data: {
-      labels: ["stroomverbruik", "verschil met hoogste"],
-      datasets: [
-        {
-          label: "vandaag",
-          backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
-          data: [0,1],
-        },
-        {
-          label: "gisteren",
-          backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
-          data: [0,1]
-        },
-        {
-          label: "eergisteren",
-          backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
-          data: [0,1]
-        }
-      ]
-    },
-    options: {
+let optionsP = {
       circumference: Math.PI,
 		rotation:  - Math.PI,
       plugins: {
@@ -202,32 +176,93 @@ let TrendP = {
       },//labels      
     }, //plugins
       legend: {display: false},
-    } //options
+    }; //options
+    
+let dataP = {
+      labels: ["verbruik", "verschil met hoogste"],
+      datasets: [
+        {
+          label: "vandaag",
+          backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "gisteren",
+          backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "eergisteren",
+          backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
+        }
+      ]
 };
 
+let dataPi = {
+      labels: ["verbruik", "verschil met hoogste"],
+      datasets: [
+        {
+          label: "vandaag",
+          backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "gisteren",
+          backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "eergisteren",
+          backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
+        }
+      ]
+	};
+
+let dataPa = {
+      labels: ["verbruik", "verschil met hoogste"],
+      datasets: [
+        {
+          label: "vandaag",
+          backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
+
+        },
+        {
+          label: "gisteren",
+          backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
+
+        },
+        {
+          label: "eergisteren",
+          backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
+
+        }
+      ]
+    };
+
   window.onload=bootsTrapMain;
-  /*
-  window.onfocus = function() {
-    if (needBootsTrapMain) {
-      window.location.reload(true);
-    }
-  };
-  */
 
 //============================================================================  
   
 function UpdateDash()
 {	
-	var Parr=[3], Garr=[3];
+
+/*** 
+	Het dashboard toont verschillende kolommen, namelijk
+	- actueel*1	: actueel verbruik/teruglevering
+	- totaal*1 	: afname - injectie(teruglevering)
+	- afname*3 	: onttrokken van stroomnet
+	- injectie*3: teruglevering aan stroomnet
+	- gas*2 	: indien er een gasmeter aanwezig is
+	- spanning* 	: spanningsniveau + aantal fases
+	
+	*1 = altijd getoond
+	*2 = alleen getoond indien aanwezig
+	*3 = alleen getoond indien energy_returned_tariff1 > 0
+	*4 = alleen indien geen teruglevering
+*/
+	var Parr=[3],Parra=[3],Parri=[3], Garr=[3];
 	console.log("Update dash");
-// 	console.log("hist_arrP length: " + hist_arrP.length);
 	
 	//check new day = refresh
 	var DayEpochTemp = Math.floor(new Date().getTime() / 86400000.0);
-// 	console.log("DayEpochTemp: " + DayEpochTemp + " DayEpoch: " + DayEpoch );
 	if (DayEpoch != DayEpochTemp || hist_arrP.length < 4 ) {
 		refreshDays(); //load data first visit
-// 		location.reload(); //reload page
 		DayEpoch = DayEpochTemp;	
 	}
 	
@@ -235,111 +270,166 @@ function UpdateDash()
 	fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
 	  .then(response => response.json())
 	  .then(json => {
-// 	  json = JSON.parse('{"timestamp":{"value":"210417094333S"},"energy_delivered_tariff1":{"value":11717.34,"unit":"kWh"},"energy_delivered_tariff2":{"value":13097.94,"unit":"kWh"},"energy_returned_tariff1":{"value":0,"unit":"kWh"},"energy_returned_tariff2":{"value":0,"unit":"kWh"},"power_delivered":{"value":2.015,"unit":"kW"},"power_returned":{"value":0,"unit":"kW"},"voltage_l1":{"value":227.7,"unit":"V"},"voltage_l2":{"value":224.2,"unit":"V"},"voltage_l3":{"value":226.8,"unit":"V"},"current_l1":{"value":2,"unit":"A"},"current_l2":{"value":6,"unit":"A"},"current_l3":{"value":1,"unit":"A"},"power_delivered_l1":{"value":0.388,"unit":"kW"},"power_delivered_l2":{"value":1.363,"unit":"kW"},"power_delivered_l3":{"value":0.258,"unit":"kW"},"power_returned_l1":{"value":0,"unit":"kW"},"power_returned_l2":{"value":0,"unit":"kW"},"power_returned_l3":{"value":0,"unit":"kW"}}');
-// 	
-//  		console.log(json);
-//      	console.log("Dashupdate - delivered: " + json.power_delivered.value);
-//      	console.log("Dashupdate - returned: " + json.power_returned.value);
+//  	  json = JSON.parse('{"timestamp":{"value":"210417094333S"},"energy_delivered_tariff1":{"value":40,"unit":"kWh"},"energy_delivered_tariff2":{"value":40,"unit":"kWh"},"energy_returned_tariff1":{"value":48,"unit":"kWh"},"energy_returned_tariff2":{"value":0,"unit":"kWh"},"power_delivered":{"value":2.015,"unit":"kW"},"power_returned":{"value":1223,"unit":"kW"},"voltage_l1":{"value":227.7,"unit":"V"},"voltage_l2":{"value":224.2,"unit":"V"},"voltage_l3":{"value":226.8,"unit":"V"},"current_l1":{"value":2,"unit":"A"},"current_l2":{"value":6,"unit":"A"},"current_l3":{"value":1,"unit":"A"},"power_delivered_l1":{"value":0.388,"unit":"kW"},"power_delivered_l2":{"value":1.363,"unit":"kW"},"power_delivered_l3":{"value":0.258,"unit":"kW"},"power_returned_l1":{"value":1,"unit":"kW"},"power_returned_l2":{"value":0,"unit":"kW"},"power_returned_l3":{"value":0,"unit":"kW"},"gas_delivered":{"value":"5","unit":"m3"}}');
 
+		//-------CHECKS
 		//check of gasmeter beschikbaar is	
 		var HeeftGas = "gas_delivered" in json ? !isNaN(json.gas_delivered.value) : false ;
-		if (!HeeftGas) document.getElementById("l4").style.display = "none"; else document.getElementById("l4").style.display = "block";
-		console.log("Gasmeter aanwezig: " + HeeftGas);
-		
-		for(let i=0;i<3;i++){
-			if (i==0) {
-				Parr[i]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - json.energy_returned_tariff1.value - json.energy_returned_tariff2.value - hist_arrP[i+1]).toFixed(3);
-				if (HeeftGas) Garr[i]=Number(json.gas_delivered.value - hist_arrG[i+1]).toFixed(3) ;
-			} else {
-				Parr[i]=Number(hist_arrP[i] - hist_arrP[i+1]).toFixed(3);
-				if (HeeftGas) Garr[i]=Number(hist_arrG[i] - hist_arrG[i+1]).toFixed(3);
-			}
-			if (Parr[i] < 0) Parr[i] = 0;
-			if (HeeftGas && (Garr[i] < 0)) Garr[i] = 0;
+		//check of p1 gegevens via api binnen komen
+		if (json.timestamp.value == "-") {
+			console.log("timestamp missing : p1 gegevens correct?");
+			return;
 		}
+		
+		//check of teruglevering actief is 
+		var teruglevering = isNaN(json.energy_returned_tariff1.value)?false:json.energy_returned_tariff1.value;
 
-		// maximale waarde bepalen voor de meters
-		Pmax = math.max(Parr);
+		//-------TOON METERS
+		document.getElementById("w8api").style.display = "none"; //hide wait message
+		document.getElementById("l1").style.display = "block";
+		document.getElementById("l3").style.display = "block";		
+		if (teruglevering) {		
+			document.getElementById("l5").style.display = "block";
+			document.getElementById("l6").style.display = "block";
+			document.getElementById("Ph").innerHTML = "Afname-terugl.";
+		} else
+		{
+			document.getElementById("l2").style.display = "block";
+		}
+		if (HeeftGas) document.getElementById("l4").style.display = "block";
 
-		//data sets berekenen voor de gauges
-		for(let i=0;i<3;i++){
-			trend_p.data.datasets[i].data=[Number(Parr[i]).toFixed(1),Number(Pmax-Parr[i]).toFixed(1)];
-		};
-		trend_p.update();
-	
-		 if (json.power_delivered.value > 0 || json.power_returned.value > 0) 
-		{	
-
-			let cvKW=document.getElementById("power_delivered").innerHTML;
-			let nvKW= json.power_delivered.value; 
-			let nvA=  json.current_l1.value;
-			
-			//#fases berekenen
+		//-------SPANNING METER				
+		if (!teruglevering)
+		{
+			//aantal fases berekenen
 			var fases = 1;
 			if (!isNaN(json.voltage_l2.value)) fases++;
 			if (!isNaN(json.voltage_l3.value)) fases++;
 			document.getElementById("fases").innerHTML = fases;
 			
-			TotalAmps = (isNaN(json.current_l1.value)?0:json.current_l1.value) + 
-				(isNaN(json.current_l2.value)?0:json.current_l2.value) + 
-				(isNaN(json.current_l3.value)?0:json.current_l3.value);
-
 			let TotalU = 0 +(isNaN(json.voltage_l1.value)?0:json.voltage_l1.value) + 
-				(isNaN(json.voltage_l2.value)?0:json.voltage_l2.value) + 
-				(isNaN(json.voltage_l3.value)?0:json.voltage_l3.value);
+			(isNaN(json.voltage_l2.value)?0:json.voltage_l2.value) + 
+			(isNaN(json.voltage_l3.value)?0:json.voltage_l3.value);
 
 			let Vgem=TotalU/fases;
-			let TotalKW = json.power_delivered.value;
-						
-			if (json.power_returned.value > 0) { 
-				TotalKW = json.power_returned.value;
-				document.getElementById("power_delivered_l1h").style.backgroundColor = "green";
-				document.getElementById("power_delivered_l1h").innerHTML = "Teruglevering";
-				} else
-				{
-				document.getElementById("power_delivered_l1h").innerHTML = "Actueel";
-				document.getElementById("power_delivered_l1h").style.backgroundColor = "#314b77";
-				}
-
-			gauge.refresh(TotalAmps, AMPS * fases);
-			gauge_v.refresh(Vgem);
-
-			document.getElementById("power_delivered").innerHTML = TotalKW.toLocaleString();
-			document.getElementById("P").innerHTML = Number(Parr[0]).toLocaleString();
-
-			//vermogen(P)
-			if (minKW == 0.0 || nvKW < minKW) { minKW = nvKW;}
-			if (nvKW> maxKW){ maxKW = nvKW; }
-			document.getElementById(`power_delivered_1max`).innerHTML = Number(maxKW.toFixed(3)).toLocaleString();                    
-			document.getElementById(`power_delivered_1min`).innerHTML = Number(minKW.toFixed(3)).toLocaleString();                        
 			
-			//Spanning(V)
+			//min - max waarde
 			if (minV == 0.0 || Vgem < minV) { minV = Vgem; }
 			if (Vgem > maxV) { maxV = Vgem; }
 			document.getElementById(`power_delivered_2max`).innerHTML = Number(maxV.toFixed(0)).toLocaleString();
 			document.getElementById(`power_delivered_2min`).innerHTML = Number(minV.toFixed(0)).toLocaleString();   
-			
-			//verbruik P
-			document.getElementById(`Pmax`).innerHTML = Number(Pmax).toLocaleString();
-			document.getElementById(`Pmin`).innerHTML = Math.min.apply(Math, Parr).toLocaleString();
-			
-			
-			//GAS
-			if (HeeftGas) 
-			{
-				Gmax = math.max(Garr);
-				for(let i=0;i<3;i++){
-			    	trend_g.data.datasets[i].data=[Number(Garr[i]).toFixed(1),Number(Gmax-Garr[i]).toFixed(1)];
-				};
-				trend_g.update();
-				document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString();
-			
-				//verbruik G    
-				document.getElementById(`Gmax`).innerHTML = Number(Gmax).toLocaleString();
-				document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
+
+			//update gauge
+			gauge_v.refresh(Vgem);
+		}
+
+		//-------ACTUEEL METER		
+		//afname of teruglevering bepalen en signaleren
+		let TotalKW	= 0;
+		if (json.power_returned.value > 0) { 
+			TotalKW = json.power_returned.value;
+			document.getElementById("power_delivered_l1h").style.backgroundColor = "green";
+			document.getElementById("power_delivered_l1h").innerHTML = "Teruglevering";
+		} else
+		{
+			TotalKW = json.power_delivered.value;
+			document.getElementById("power_delivered_l1h").innerHTML = "Actueel";
+			document.getElementById("power_delivered_l1h").style.backgroundColor = "#314b77";
+		}
+		
+		//update gauge
+		TotalAmps = (isNaN(json.current_l1.value)?0:json.current_l1.value) + 
+			(isNaN(json.current_l2.value)?0:json.current_l2.value) + 
+			(isNaN(json.current_l3.value)?0:json.current_l3.value);
+		gauge.refresh(TotalAmps, AMPS * fases);
+
+		//update actuele vermogen			
+		document.getElementById("power_delivered").innerHTML = TotalKW.toLocaleString();
+
+		//vermogen min - max bepalen
+		let nvKW= json.power_delivered.value; 
+		if (minKW == 0.0 || nvKW < minKW) { minKW = nvKW;}
+		if (nvKW> maxKW){ maxKW = nvKW; }
+		document.getElementById(`power_delivered_1max`).innerHTML = Number(maxKW.toFixed(3)).toLocaleString();                    
+		document.getElementById(`power_delivered_1min`).innerHTML = Number(minKW.toFixed(3)).toLocaleString();                        
+		
+		//-------VERBRUIK METER	
+				//bereken verschillen afname, teruglevering en totaal
+		for(let i=0;i<3;i++){
+			if (i==0) {
+				Parra[0]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - hist_arrPa[1]).toFixed(3);
+				Parri[0]=Number(json.energy_returned_tariff1.value + json.energy_returned_tariff2.value - hist_arrPi[1]).toFixed(3);
+
+			} else {
+				Parra[i]=Number(hist_arrPa[i] - hist_arrPa[i+1]).toFixed(3);
+				Parri[i]=Number(hist_arrPi[i] - hist_arrPi[i+1]).toFixed(3);
 			}
+			Parr[i]=Number(Parra[i] - Parri[i]).toFixed(3);
+// 			if (Parr[i] < 0) Parr[i] = 0;
+		}
+
+		//dataset berekenen voor Ptotaal
+		Pmax = math.max(Parr);		// maximale waarde bepalen voor de meters
+		for(let i=0;i<3;i++){
+			trend_p.data.datasets[i].data=[Number(Parr[i]).toFixed(1),Number(Pmax-Parr[i]).toFixed(1)];
+		};
+		trend_p.update();
+
+		//vermogen vandaag, min - max bepalen
+		document.getElementById("P").innerHTML = Number(Parr[0]).toLocaleString();
+		document.getElementById(`Pmax`).innerHTML = Number(Pmax).toLocaleString();
+		document.getElementById(`Pmin`).innerHTML = Math.min.apply(Math, Parr).toLocaleString();
+		
+		if (teruglevering) 
+		{
+			//-------INTJECTIE METER	
+			//data sets berekenen voor de gauges
+			var Pmaxi = math.max(Parri);
+			for(let i=0;i<3;i++){
+				trend_pi.data.datasets[i].data=[Number(Parri[i]).toFixed(1),Number(Pmaxi-Parri[i]).toFixed(1)];
+			};
+			trend_pi.update();
+			//vermogen vandaag, min - max bepalen
+			document.getElementById("Pi").innerHTML = Number(Parri[0]).toLocaleString();
+			document.getElementById(`Pimax`).innerHTML = Number(Pmaxi).toLocaleString();
+			document.getElementById(`Pimin`).innerHTML = Math.min.apply(Math, Parri).toLocaleString();
+
+			//-------AFNAME METER	
+			//data sets berekenen voor de gauges
+			var Pmaxa = math.max(Parra);
+			for(let i=0;i<3;i++){
+				trend_pa.data.datasets[i].data=[Number(Parra[i]).toFixed(1),Number(Pmaxa-Parra[i]).toFixed(1)];
+			};
+			trend_pa.update();
+			//vermogen vandaag, min - max bepalen
+			document.getElementById("Pa").innerHTML = Number(Parra[0]).toLocaleString();
+			document.getElementById(`Pamax`).innerHTML = Number(Pmaxa).toLocaleString();
+			document.getElementById(`Pamin`).innerHTML = Math.min.apply(Math, Parra).toLocaleString();
+
+		}
+		
+		//-------GAS METER	
+		if (HeeftGas) 
+		{
+					//bereken verschillen gas, afname, teruglevering en totaal
+			for(let i=0;i<3;i++){
+				if (i==0) Garr[0]=Number(json.gas_delivered.value - hist_arrG[1]).toFixed(3) ;
+				else Garr[i]=Number(hist_arrG[i] - hist_arrG[i+1]).toFixed(3);
+				if (Garr[i] < 0) Garr[i] = 0;
+			}
+
+			Gmax = math.max(Garr);
+			for(let i=0;i<3;i++){
+				trend_g.data.datasets[i].data=[Number(Garr[i]).toFixed(1),Number(Gmax-Garr[i]).toFixed(1)];
+			};
+			trend_g.update();
+			document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString();
+		
+			//verbruik G    
+			document.getElementById(`Gmax`).innerHTML = Number(Gmax).toLocaleString();
+			document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
+		}
 												
-		};//end if
 		hideSpinner();
 		}); //end fetch fields
 }
@@ -353,7 +443,9 @@ function UpdateDash()
 	gauge = new JustGage(GaugeOptions); // initialize gauge
 	gauge_v = new JustGage(GaugeOptionsV); // initialize gauge
 	trend_g = new Chart(document.getElementById("container-4"), TrendG);
-	trend_p = new Chart(document.getElementById("container-3"), TrendP);
+	trend_p = new Chart(document.getElementById("container-3"), {type: 'doughnut', data:dataP, options: optionsP});
+	trend_pi = new Chart(document.getElementById("container-5"), {type: 'doughnut', data:dataPi, options: optionsP});
+	trend_pa = new Chart(document.getElementById("container-6"), {type: 'doughnut', data:dataPa, options: optionsP} );
 
 	//handle Clickevents - main-menu
 	var btns = document.getElementsByClassName("nav-item");
@@ -902,7 +994,9 @@ function UpdateDash()
 		for (let i=0;i<4;i++)
 		{	let tempslot = math.mod(act_slot-i,15);
 			hist_arrG[i] = json.data[tempslot].values[4];
-			hist_arrP[i] = json.data[tempslot].values[0] + json.data[tempslot].values[1] - json.data[tempslot].values[2] - json.data[tempslot].values[3];
+// 			hist_arrP[i] = json.data[tempslot].values[0] + json.data[tempslot].values[1] - json.data[tempslot].values[2] - json.data[tempslot].values[3];
+			hist_arrPa[i] = json.data[tempslot].values[0] + json.data[tempslot].values[1];
+			hist_arrPi[i] = json.data[tempslot].values[2] + json.data[tempslot].values[3];
 		};
 // 		 		console.log("hist_arrG" + hist_arrG);
 // 		 		console.log("hist_arrP" + hist_arrP);

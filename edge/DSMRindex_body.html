@@ -401,20 +401,21 @@
   <!-- START Dash Tab -->
   <section id="DashTab" class="tabName default">
         <h2>Dashboard</h2>
+    <h3 id=w8api style="margin-top:50%">Wacht op gegevens van Slimme Meter</h3>
     <div class=outer>
-        <div class=card id=l1>
+        <div class=card id=l1 style="display:none">
             <h1 id=power_delivered_l1h>Actueel</h1>
 	        <div class="chart-container" id="gauge"></div>
             <hr/>
-            <div style="text-align:center">Vandaag [kW]</div>
+            <div style="text-align:center">Actueel [kW]</div>
             <h2 id="power_delivered">0.0</h2>
             <h3>max: <span id="power_delivered_1max">0.0</span> kW</h3>
             <h3>min: <span id="power_delivered_1min">0.0</span> kW</h3>
         </div>
-        <div class=card id=l3>
-            <h1 id=Ph>Stroomverbruik</h1>
+        <div class=card id=l3 style="display:none">
+            <h1 id=Ph>Verbruik</h1>
             <canvas class="chart-container" id="container-3"></canvas>
-            <div class="label">STROOM</div>        
+            <div class="label">ELECTRA</div>        
 			<div id=legenda>
 				<div class="lblVerbuik vandaag">v<span class="tooltiptext">Vandaag</span></div>
 				<div class="lblVerbuik gisteren">g<span class="tooltiptext">Gisteren</span></div>
@@ -426,7 +427,37 @@
             <h3>max: <span id="Pmax">0.0</span></h3>
             <h3>min: <span id="Pmin">0.0</span></h3>
         </div>
-        <div class=card id=l4>
+        <div class=card id=l5 style="display:none">
+            <h1 id=Ph>Teruglevering</h1>
+            <canvas class="chart-container" id="container-5"></canvas>
+            <div class="label">ELECTRA</div>        
+			<div id=legenda>
+				<div class="lblVerbuik vandaag">v<span class="tooltiptext">Vandaag</span></div>
+				<div class="lblVerbuik gisteren">g<span class="tooltiptext">Gisteren</span></div>
+				<div class="lblVerbuik eergisteren">e<span class="tooltiptext">Eergisteren</span></div>
+			</div>
+    		<hr/>
+            <div style="text-align:center">Vandaag [kWh]</div>
+            <h2 id=Pi>0.0</h2>
+            <h3>max: <span id="Pimax">0.0</span></h3>
+            <h3>min: <span id="Pimin">0.0</span></h3>
+        </div>
+        <div class=card id=l6 style="display:none">
+            <h1 id=Ph>Afname</h1>
+            <canvas class="chart-container" id="container-6"></canvas>
+            <div class="label">ELECTRA</div>        
+			<div id=legenda>
+				<div class="lblVerbuik vandaag">v<span class="tooltiptext">Vandaag</span></div>
+				<div class="lblVerbuik gisteren">g<span class="tooltiptext">Gisteren</span></div>
+				<div class="lblVerbuik eergisteren">e<span class="tooltiptext">Eergisteren</span></div>
+			</div>
+    		<hr/>
+            <div style="text-align:center">Vandaag [kWh]</div>
+            <h2 id=Pa>0.0</h2>
+            <h3>max: <span id="Pamax">0.0</span></h3>
+            <h3>min: <span id="Pamin">0.0</span></h3>
+        </div>
+        <div class=card id=l4 style="display:none">
             <h1 id=Gh>Gasverbruik</h1>
             <canvas class="chart-container" id="container-4"></canvas>
 			<div class="label stroom">GAS</div>
@@ -441,7 +472,7 @@
             <h3>max: <span id="Gmax">0.0</span></h3>
             <h3>min: <span id="Gmin">0.0</span></h3>
         </div>
-        <div class=card id=l2>
+        <div class=card id=l2 style="display:none">
             <h1 id=power_delivered_l2h>Spanning</h1>
             <div class="chart-container" id="gauge-v"></div>
             <hr/>
