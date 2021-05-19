@@ -34,7 +34,7 @@
 /******************** compiler options  ********************************************/
 #define USE_MQTT                    // default ON : define if you want to use MQTT (configure through webinterface)
 #define USE_UPDATE_SERVER           // default ON : define if there is enough memory and updateServer to be used
-#define USE_BELGIUM_PROTOCOL        // define if Slimme Meter is a Belgium Smart Meter
+//#define USE_BELGIUM_PROTOCOL        // define if Slimme Meter is a Belgium Smart Meter
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
