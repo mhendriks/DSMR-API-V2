@@ -149,8 +149,6 @@ void readSettings(bool show)
     writeSettings();
     return;
   }
-
-
     SettingsFile = SPIFFS.open(SETTINGS_FILE, "r");
     if (!SettingsFile) DebugTf(" .. something went wrong opening [%s]\r\n", SETTINGS_FILE);
     else DebugTln(F("Reading settings:\r"));
