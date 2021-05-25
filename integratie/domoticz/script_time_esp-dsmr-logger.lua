@@ -174,7 +174,6 @@ commandArray[#commandArray+1] = {['UpdateDevice'] = ''..Energy_Delivered_Tariff2
 -- je ook stroom teruglevert). Je kunt zelf bepalen welke dummy switchen je wilt bijwerken 
 -- in Domoticz door de '--' ervoor te verwijderen.
 -------------------------------------------------------------------------------------------
---commandArray[#commandArray+1] = {['UpdateDevice'] = ''..Energy_Returned_IDX..'|0|'..Energy_Returned..''}
 --commandArray[#commandArray+1] = {['UpdateDevice'] = ''..Energy_Returned_Tariff1_IDX..'|0|'..Energy_Returned_Tariff1..''}
 --commandArray[#commandArray+1] = {['UpdateDevice'] = ''..Energy_Returned_Tariff2_IDX..'|0|'..Energy_Returned_Tariff2..''}
 --commandArray[#commandArray+1] = {['UpdateDevice'] = ''..Power_Returned_IDX..'|0|'..Power_Returned..''}
