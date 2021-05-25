@@ -89,8 +89,6 @@ Energy_Delivered_Tariff2_IDX = 5   -- Dummy = Counter Incremental --> Engergy
         Power_Delivered_l1 = jsonCPM.power_delivered_l1.value
         Power_Delivered_l2 = jsonCPM.power_delivered_l2.value
         Power_Delivered_l3 = jsonCPM.power_delivered_l3.value
-
-        Energy_Returned = jsonCPM.Energy_Returned.value
         Energy_Returned_Tariff1 = jsonCPM.energy_returned_tariff1.value
         Energy_Returned_Tariff2 = jsonCPM.energy_returned_tariff2.value
         Power_Returned = jsonCPM.power_returned.value

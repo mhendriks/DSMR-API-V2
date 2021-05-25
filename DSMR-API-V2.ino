@@ -24,7 +24,7 @@
     - Crystal Frequency: "26 MHz"
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
-    - CPU Frequency: "160MHz"
+    - CPU Frequency: "80MHz"
     - Buildin Led: 2        //(n/a)
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
