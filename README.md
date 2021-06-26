@@ -1,12 +1,12 @@
 # Slimmemeter P1 Dongel - DSMR-API - Hardware versie 3.1
 Eigenschappen
-- ESP-12S (4MB) als CPU Soc -> veel pullup weerstanden zijn al aanwezig waardoor het aantal extra componenten laag kan blijven
+- ESP-12S (4MB) als CPU Soc -> veel pull-up weerstanden zijn al aanwezig waardoor het aantal extra componenten laag kan blijven
 - gebruikt secundaire seriale interface (UART1)
 - P1 inversie via transistor, 1 weerstand minder werkt ook prima; Software serial is niet betrouwbaar genoeg
 - RJ11 socket voor gemakkelijke aansluiting
-- usb micro connector voor externe voeding (DSMR 4.x en sommige 5.x meters)
+- usb micro connector voor externe voeding (DSMR 4.x en sommige 5.x meters leveren te weinig vermogen voor de juiste werking)
 - Power MUX om automatisch van voedingsbron te wisselen. USB is primair.
-- Primaire functie op een kant van de pcb zodat deze in oven/hotplate gemaakt kan worden
+- Primaire componenten op bovenkant van de pcb zodat deze in oven/hotplate gemaakt kan worden
 - Secundaire componenten (MUX/usb) zitten op de onderkant
 - 6 pin aansluiting aan de zijkant voor eenvoudige flashing
 - nieuwe spanningsregelaar die een nog lagere spanningsval, meer stroom aan kan en al met al minder warmte af geeft
@@ -26,13 +26,13 @@ Alle modules samen zie je in het onderstaande schema.
 Omgezet naar een board ziet dit er zo uit:
 Bovenkant             |  Onderkant |  Eindresultaat
 :-------------------------:|:-------------------------:|:-------------------------:
-![hardware bovenkant](hardware/v3.1-print-boven.png)  |  ![hardware onderkant](hardware/v3.1-print-onder.png) | ![hardware onderkant](hardware/v3.1-eindresultaat.png)
+![hardware bovenkant](hardware/v3.1-print-boven.png)  |  ![hardware onderkant](hardware/v3.1-print-onder.png) | ![hardware eindresultaat](hardware/v3.1-eindresultaat.jpg)
 
-Afmeting van de print is ..........
+Afmeting van de print is 31.8 mm * 21.3 mm
 
 ## SOFTWARE
-Op basis van de DSMR API software van Willem aandeWiel is eerder al een doorvertaling gemaakt naar specifieke code voor deze hardware. Als je wilt zou ook Tasmota of andere firmware gebruikt kunnen worden.
-- DSMR API firmware : Json API, MQTT + web user interface (op basis van de Willem AandeWiel oplossing) [setup/dsmr-api](setup/dsmr-api/README.md)
+Op basis van de DSMR API software van Willem aandeWiel is eerder al een doorvertaling gemaakt naar specifieke code voor de V2 en V3 hardware. Voor de V3.1 versie zijn er wederom aanpassingen gedaan met name vanwege het ontbreken van het DTR signaal. De code is hiervoor geoptimaliseerd.
+Naar behoefte zou ook Tasmota of andere firmware gebruikt kunnen worden, dit is op de V3.1 versie verder niet uitgeprobeerd.
 
 Aanpassing ten opzichte van DSMR-API van Willem zijn:
 - alle statische pagina's komen uit een CDN (esp modules hebben maar een beperkte capaciteit en zijn geen hele goede webservers;)
@@ -42,8 +42,10 @@ Aanpassing ten opzichte van DSMR-API van Willem zijn:
 - opmaak is zo veel als mogelijk uit de html / js files gehaald en in de css gestopt
 - voor de extra input (deurbel) is functionele uitbreiding nodig (work in progress)
 - nieuw dashboard gemaakt
-- 
+- Front-end settings worden van de dongel gelezen (nog in pril stadium)
+- Gaatjes in het boardje om deze makkelijk in een 3D printed cases te kunnen monteren (deze komt als opensource ook beschikbaar)
+ 
 Instructie is te vinden in de [setup/dsmr-api](setup/dsmr-api/README.md) folder.
 
 # Hardware maken of aanschaffen
-Je kan je eigenhardware maken of deze aanschaffen. Wil je deze aanschaffen dan kan je mij altijd een DM sturen. De oplossing is ook Plug-and-play te koop inclusief firmware.
+Je kan je eigen hardware maken of deze aanschaffen. Wil je deze aanschaffen dan kan je mij altijd een DM sturen. De oplossing is ook Plug-and-play te koop inclusief firmware.
