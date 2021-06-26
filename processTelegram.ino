@@ -11,8 +11,7 @@
 //==================================================================================
 void processTelegram()
 {
-  DebugTf("Telegram[%d]=>DSMRdata.timestamp[%s]\r\n", telegramCount
-                                                    , DSMRdata.timestamp.c_str());  
+  DebugTf("Telegram[%d]=>DSMRdata.timestamp[%s]\r\n", telegramCount, DSMRdata.timestamp.c_str());  
                                                     
   strcpy(newTimestamp, DSMRdata.timestamp.c_str()); 
 
@@ -20,38 +19,25 @@ void processTelegram()
   actT = epoch(actTimestamp, strlen(actTimestamp), false);
   
   // Skip first 3 telegrams .. just to settle down a bit ;-)
-  
-  if ((int32_t)(telegramCount - telegramErrors) < 3) 
-  {
-    return;
-  }
+  if ((int32_t)(telegramCount - telegramErrors) < 3) return;
   
   strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);  // maar nog NIET actT!!!
-  DebugTf("actHour[%02d] -- newHour[%02d]\r\n", hour(actT), hour(newT));
+  if (Verbose1) DebugTf("actHour[%02d] -- newHour[%02d]\r\n", hour(actT), hour(newT));
   
   // has the hour changed (or the day or month)  
   // in production testing on hour only would
   // suffice, but in testing I need all three
   if (     (hour(actT) != hour(newT)  ) 
-       ||   (day(actT) != day(newT)   ) 
-       || (month(actT) != month(newT) ) )
+//       ||   (day(actT) != day(newT)   ) 
+//       || (month(actT) != month(newT) ) 
+    )
   {
-    writeToSysLog("Update RING-files");
+//    writeToSysLog("Update RING-files");
     writeRingFiles();
     writeLastStatus();
   }
-
-  if (DagSlot == 99) { //check of initiele vulling vorige dag ontbreekt, kan alleen indien datum bekend is ivm slots
-      DagSlot = CalcSlot(RINGDAYS, actTimestamp);
-      DebugT(F("DagSlot: ")); Debugln(DagSlot);
-      readRingDaySlot();
-      DebugTln(F("Update DagSlot gegevens"));
-  }
     
-  if ( DUE(publishMQTTtimer) )
-  {
-    sendMQTTData();      
-  }    
+  if ( DUE(publishMQTTtimer) ) sendMQTTData();  
 
 } // processTelegram()
 

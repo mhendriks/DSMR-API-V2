@@ -25,9 +25,9 @@ const PROGMEM char UpdateServerSuccess[] = {0X3C,0X68,0X74,0X6D,0X6C,0X20,0X63,0
 //      </form>
 //      <hr>
 //      <br/><font color='red'>LET OP!!!</font>
-//      <br/>Bij het flashen van SPIFFS raakt u de RING-bestanden kwijt. 
+//      <br/>Bij het flashen van LittleFS raakt u de RING-bestanden kwijt. 
 //      <br/>Maak daarom eerst een kopie van deze bestanden (via bestandsbeheer) 
-//      en zet de data-bestanden na het flashen van SPIFFS weer terug.
+//      en zet de data-bestanden na het flashen van LittleFS weer terug.
 //      <hr>
 //      <br/>
 //      <br/>Wacht nog <span style='font-size: 1.3em;' id="waitSeconds">120</span> seconden ..

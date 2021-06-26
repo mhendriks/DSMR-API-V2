@@ -136,6 +136,7 @@ void sendJson(const TSource &doc)
   sendJsonBuffer(buffer);
   DebugTln(F("sendJson: json sent .."));   
 }
+
 void sendJsonBuffer(char* buffer){
   httpServer.sendHeader("Access-Control-Allow-Origin", "*");
   httpServer.setContentLength(strlen(buffer));
@@ -184,8 +185,8 @@ void sendDeviceInfo()
   doc["flashchiprealsize"] ["value"] = formatFloat((ESP.getFlashChipRealSize() / 1024.0 / 1024.0), 3);
   doc["flashchiprealsize"]["unit"] = "MB";
 
-  SPIFFS.info(SPIFFSinfo);
-  doc["spiffssize"] ["value"] = formatFloat( (SPIFFSinfo.totalBytes / (1024.0 * 1024.0)), 0);
+  LittleFS.info(fs_info);
+  doc["spiffssize"] ["value"] = formatFloat( (fs_info.totalBytes / (1024.0 * 1024.0)), 0);
   doc["spiffssize"]["unit"] = "MB";
   doc["flashchipspeed"] ["value"] = formatFloat((ESP.getFlashChipSpeed() / 1000.0 / 1000.0), 0);
   doc["flashchipspeed"]["unit"] = "MHz";
@@ -202,7 +203,7 @@ void sendDeviceInfo()
   doc["wifirssi"] = WiFi.RSSI();
   doc["uptime"] = upTime();
   doc["smhasfaseinfo"] = (int)settingSmHasFaseInfo;
-  doc["telegraminterval"] = (int)settingTelegramInterval;
+  doc["telegraminterval"] = (int)settingTelegramInterval; 
   doc["telegramcount"] = (int)telegramCount;
   doc["telegramerrors"] = (int)telegramErrors;
 
@@ -213,12 +214,6 @@ void sendDeviceInfo()
   if (mqttIsConnected)
         doc["mqttbroker_connected"] = "yes";
   else  doc["mqttbroker_connected"] = "no";
-#endif
-
-#ifdef USE_MINDERGAS
-  snprintf(cMsg, sizeof(cMsg), "%s:%d", timeLastResponse, intStatuscodeMindergas);
-  doc["mindergas_response"] = txtResponseMindergas;
-  doc["mindergas_status"] = cMsg;
 #endif
 
   doc["reboots"] = (int)nrReboots;
@@ -280,7 +275,7 @@ void sendDeviceSettings()
   
   doc["tlgrm_interval"]["value"] = settingTelegramInterval;
   doc["tlgrm_interval"]["type"] = "i";
-  doc["tlgrm_interval"]["min"] = 2;
+  doc["tlgrm_interval"]["min"] = 1;
   doc["tlgrm_interval"]["max"] = 60;
   
   doc["IndexPage"]["value"] = settingIndexPage;
@@ -312,12 +307,6 @@ void sendDeviceSettings()
   doc["mqtt_interval"]["type"] = "i";
   doc["mqtt_interval"]["min"] = 0;
   doc["mqtt_interval"]["max"] = 600;
-  
-  #if defined (USE_MINDERGAS )
-    doc["mindergastoken"]["value"] = settingMindergasToken;
-    doc["mindergastoken"]["type"] = "s";
-    doc["mindergastoken"]["maxlen"] = sizeof(settingMindergasToken) -1;
-  #endif
 
   sendJson(doc);
 
@@ -378,6 +367,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     String buff = slimmeMeter.raw();
     if (buff.length() == 0) 
     {
+      httpServer.setContentLength(20);
       httpServer.send(200, "application/plain", "no telegram received");
       return;
     }

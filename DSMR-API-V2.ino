@@ -10,13 +10,24 @@
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
+*      √ versioning fix
+*      √ aanpassing dsmr lees interval naar default 2 sec
+*      √ fix listfiles 
+*      √ AUX | MinderGas | Blynk verwijderd
+*      √ FileExplorer SPIFFS verwijderen (FE code)
+*      √ refactor telegram capture/receiving 
+*      √ LED blink on each telegram
+*      - zonder refresh settings tonen (update)
+*      - universal smr 
+*      √ QIO Flash mode
+*      - aanpassen Telnet plugin ivm crash
+*      √ LED config in the settings
 *      
-
-  Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
+  Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
-    - Flash mode: "DOUT"
-    - Flash size: "2MB (FS: 64KB OAT:~470KB)"
+    - Flash mode: "QIO"
+    - Flash size: "4MB (FS: 1MB OAT:~1019KB)"
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -24,13 +35,12 @@
     - Crystal Frequency: "26 MHz"
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
-    - CPU Frequency: "80MHz"
-    - Buildin Led: 2        //(n/a)
+    - CPU Frequency: "160MHz"
+    - Buildin Led: 2
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
 */
-
 /******************** compiler options  ********************************************/
 #define USE_MQTT                    // default ON : define if you want to use MQTT (configure through webinterface)
 #define USE_UPDATE_SERVER           // default ON : define if there is enough memory and updateServer to be used
@@ -38,21 +48,17 @@
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
-//#define HIST_CONV
 
 //----- EXTENSIONS
 //#define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //#define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
-//#define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
-//#define USE_AUX                   // define if the aux port input should be used
-#define USE_BLYNK                   // default ON : define if the blynk app could be used
 //#define USE_PUSHOVER              // define if the pushover app could be used
 
-//change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT][USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL][USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]
+//change manual -> possible values [NL][BE][USE_MQTT][USE_UPDATE_SERVER][USE_SYSLOGGER][USE_NTP_TIME]
 #ifdef USE_BELGIUM_PROTOCOL
-  #define ALL_OPTIONS "[BELGIUM_PROTOCOL][BLYNK][MQTT][UPDATE_SERVER]" 
+  #define ALL_OPTIONS "[BE][MQTT][UPDATE_SERVER][LITTLEFS]" 
 #else 
-  #define ALL_OPTIONS "[DUTCH_PROTOCOL][BLYNK][MQTT][UPDATE_SERVER]"
+  #define ALL_OPTIONS "[NL][MQTT][UPDATE_SERVER][LITTLEFS]"
 #endif
 
 #include "DSMRloggerAPI.h"
@@ -60,16 +66,8 @@
 #ifdef USE_SYSLOGGER
 void openSysLog(bool empty)
 {
-  if (sysLog.begin(500, 100, empty))  // 500 lines use existing sysLog file
-  {   
-    DebugTln(F("Succes opening sysLog!"));
-    
-  }
-  else
-  {
-    DebugTln(F("Error opening sysLog!"));
-    
-  }
+  if (sysLog.begin(500, 100, empty)) DebugTln(F("Succes opening sysLog!"));  // 500 lines use existing sysLog file
+  else DebugTln(F("Error opening sysLog!"));
 
   sysLog.setDebugLvl(1);
   sysLog.setOutput(&TelnetStream);
@@ -80,10 +78,7 @@ void openSysLog(bool empty)
     sysLog.write("******************************************************************************************************");
   }
   writeToSysLog(F("Last Reset Reason [%s]"), ESP.getResetReason().c_str());
-  writeToSysLog("actTimestamp[%s], nrReboots[%u], Errors[%u]", actTimestamp
-                                                             , nrReboots
-                                                             , slotErrors);
-
+  writeToSysLog("actTimestamp[%s], nrReboots[%u], Errors[%u]", actTimestamp, nrReboots, slotErrors);
   sysLog.write(" ");
 
 } // openSysLog()
@@ -93,27 +88,27 @@ void openSysLog(bool empty)
 void setup() 
 {
   Serial.begin(115200, SERIAL_8N1);
-  pinMode(AUX_IN, INPUT); //optocoopler input
-  pinMode(FLASH_BUTTON, INPUT);
-  pinMode(DTR_ENABLE, OUTPUT);
+//  pinMode(DTR_ENABLE, OUTPUT);
+  pinMode(LED, OUTPUT); //LED ESP12S
   //--- setup randomseed the right way
   //--- This is 8266 HWRNG used to seed the Random PRNG
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
   randomSeed(RANDOM_REG32); 
+  for(int b=0; b<4; b++) { digitalWrite(LED, !digitalRead(LED)); delay(300);} //some delay
   Debug("\n\n ----> BOOTING....[" _VERSION "] <-----\n\n");
   DebugTln("The board name is: " ARDUINO_BOARD);
 
   lastReset = ESP.getResetReason();
   DebugT(F("Last reset reason: ")); Debugln(lastReset);
-
+  
   startTelnet();
   
-//================ SPIFFS ===========================================
-  if (SPIFFS.begin()) 
+//================ FS ===========================================
+  if (LittleFS.begin()) 
   {
-    DebugTln(F("SPIFFS Mount succesfull"));
-    SPIFFSmounted = true;   
-  } else DebugTln(F("!!!SPIFFS Mount failed"));   // Serious problem with SPIFFS 
+    DebugTln(F("File System Mount succesful"));
+    FSmounted = true;   
+  } else DebugTln(F("!!!File System Mount failed!!!"));   // Serious problem with LittleFS 
 
 
 //------ read status file for last Timestamp --------------------
@@ -141,7 +136,7 @@ void setup()
   Debug (F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
   Debugln();
 
-  delay(1000);
+  for(int b=0; b<3; b++) { digitalWrite(LED, !digitalRead(LED)); delay(300);} //some delay
 //-----------------------------------------------------------------
 #ifdef USE_SYSLOGGER
   openSysLog(false);
@@ -176,17 +171,17 @@ void setup()
   snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTln(cMsg);
 
-//============= now test if SPIFFS is correct populated!============
+//============= now test if LittleFS is correct populated!============
   if (!DSMRfileExist(settingIndexPage, false) )
   {
-    spiffsNotPopulated = true;   
+    FSNotPopulated = true;   
   }
     
-//=============end SPIFFS =========================================
+//=============end FS =========================================
 #ifdef USE_SYSLOGGER
-  if (spiffsNotPopulated)
+  if (FSNotPopulated)
   {
-    sysLog.write(F("SPIFFS is not correct populated (files are missing)"));
+    sysLog.write(F("File System is not correct populated (files are missing)"));
   }
 #endif
   
@@ -209,19 +204,19 @@ void setup()
 //================ End of Start MQTT  ===============================
 //================ Start HTTP Server ================================
 
-  if (!spiffsNotPopulated) {
-    DebugTln(F("SPIFFS correct populated -> normal operation!\r"));
-    httpServer.serveStatic("/",                 SPIFFS, settingIndexPage);
-    httpServer.serveStatic("/DSMRindex.html",   SPIFFS, settingIndexPage);
-    httpServer.serveStatic("/DSMRindexEDGE.html",SPIFFS, settingIndexPage);
-    httpServer.serveStatic("/index",            SPIFFS, settingIndexPage);
-    httpServer.serveStatic("/index.html",       SPIFFS, settingIndexPage);
+  if (!FSNotPopulated) {
+    DebugTln(F("File System correct populated -> normal operation!\r"));
+    httpServer.serveStatic("/",                 LittleFS, settingIndexPage);
+    httpServer.serveStatic("/DSMRindex.html",   LittleFS, settingIndexPage);
+    httpServer.serveStatic("/DSMRindexEDGE.html",LittleFS, settingIndexPage);
+    httpServer.serveStatic("/index",            LittleFS, settingIndexPage);
+    httpServer.serveStatic("/index.html",       LittleFS, settingIndexPage);
   } else {
-    DebugTln(F("Oeps! not all files found on SPIFFS -> present FSexplorer!\r"));
-    spiffsNotPopulated = true;
+    DebugTln(F("Oeps! not all files found on LittleFS -> present FSexplorer!\r"));
+    FSNotPopulated = true;
   }
   
-  //httpServer.serveStatic("/FSexplorer",      SPIFFS, "/FSexplorer.html"); //for version 2.0.0 firmware
+  //httpServer.serveStatic("/FSexplorer",      LittleFS, "/FSexplorer.html"); //for version 2.0.0 firmware
   
   setupFSexplorer();
   httpServer.on("/api", HTTP_GET, processAPI); // all other api calls are catched in FSexplorer onNotFounD!
@@ -232,10 +227,6 @@ void setup()
   
 //================ Start HTTP Server ================================
   
-#ifdef USE_MINDERGAS
-    handleMindergas();
-#endif
-
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
   writeToSysLog("Startup complete! actTimestamp[%s]", actTimestamp);  
 
@@ -244,15 +235,6 @@ void setup()
 
   
 //================ Start Slimme Meter ===============================
-#ifdef USE_AUX
-  DebugTln(F("Enable Aux interrupt..."));
-  attachInterrupt(digitalPinToInterrupt(2), isrAux, CHANGE);       // interrupt program when signal to pin 2 detected call ISR function when happens
-#endif
-
-#ifdef HIST_CONV
-  hist_conv(); 
-#endif
-
 
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
   DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
@@ -260,9 +242,9 @@ void setup()
   Debug (WiFi.localIP());
   Debugln(F("' voor verdere debugging"));
   DebugFlush();
-  delay(100);
+  delay(200);
   Serial.swap();
-  delay(100);
+  delay(200);
   DebugTln(F("Enable slimmeMeter...\n"));
   slimmeMeter.enable(true);
 #else
@@ -296,15 +278,11 @@ void doTaskTelegram()
   #else
     //-- enable DTR to read a telegram from the Slimme Meter
     slimmeMeter.enable(true); 
-    slimmeMeter.loop();
-    handleSlimmemeter();
   #endif
   if (WiFi.status() != WL_CONNECTED)
   {
-    //for(int b=0; b<10; b++) { digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); delay(75);}
-    delay(750);
+    for(int b=0; b<10; b++) { digitalWrite(LED, !digitalRead(LED)); delay(100);}
   }
-  //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
 
 //===[ Do System tasks ]=============================================================
@@ -312,6 +290,7 @@ void doSystemTasks()
 {
   #ifndef HAS_NO_SLIMMEMETER
     slimmeMeter.loop();
+    handleSlimmemeter();
   #endif
   #ifdef USE_MQTT
     MQTTclient.loop();
@@ -326,38 +305,20 @@ void doSystemTasks()
   
 void loop () 
 {  
-  //--- do the tasks that has to be done 
-  //--- as often as possible
-  doSystemTasks();
-
-  loopCount++;
-
-  //--- verwerk volgend telegram
-  if DUE(nextTelegram)
-  {
-    doTaskTelegram();
-    #ifdef USE_BLYNK
-      UpdateDayStats();
-      Blynk.run();
-      handleBlynk();
-    #endif
-  }
+  doSystemTasks(); //--- do the tasks that has to be done as often as possible
 
   //--- update upTime counter
-  if DUE(updateSeconds)
-  {
-    upTimeSeconds++;
-  }
-
+  if DUE(updateSeconds) upTimeSeconds++;
   
+  //--- verwerk volgend telegram
+  if DUE(nextTelegram) doTaskTelegram();
 
-//--- if mindergas then check
-#ifdef USE_MINDERGAS
-  if ( DUE(minderGasTimer) )
+  //--- update statusfile + ringfiles
+  if (DUE(antiWearTimer))
   {
-    handleMindergas();
+    writeRingFiles();
+    writeLastStatus();
   }
-#endif
 
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
@@ -387,10 +348,6 @@ void loop ()
 #endif                                                              //USE_NTP
 
   yield();
-  
-#ifdef USE_AUX
-  if DUE(AuxTimer) handleAux(); //manage Aux interupt
-#endif
 
 } // loop()
 

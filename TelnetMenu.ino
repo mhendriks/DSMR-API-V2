@@ -29,12 +29,12 @@ void displayBoardInfo()
         snprintf(cMsg, sizeof(cMsg), "%08X (PUYA)", ESP.getFlashChipId());
   else  snprintf(cMsg, sizeof(cMsg), "%08X", ESP.getFlashChipId());
 
-  SPIFFS.info(SPIFFSinfo);
+  LittleFS.info(fs_info);
 
   Debug(F("]\r\n         Flash Chip ID ["));  Debug( cMsg );
   Debug(F("]\r\n  Flash Chip Size (kB) ["));  Debug( ESP.getFlashChipSize() / 1024 );
   Debug(F("]\r\n   Chip Real Size (kB) ["));  Debug( ESP.getFlashChipRealSize() / 1024 );
-  Debug(F("]\r\n      SPIFFS Size (kB) ["));  Debug( SPIFFSinfo.totalBytes / 1024 );
+  Debug(F("]\r\n          FS Size (kB) ["));  Debug( fs_info.totalBytes / 1024 );
 
   Debug(F("]\r\n      Flash Chip Speed ["));  Debug( ESP.getFlashChipSpeed() / 1000 / 1000 );
   FlashMode_t ideMode = ESP.getFlashChipMode();
@@ -127,15 +127,10 @@ void handleKeyInput()
                     ESP.reset();
                     delay(2000);
                     break;
-#ifdef USE_MINDERGAS
-      case 't':
-      case 'T':     forceMindergasUpdate();  //skip waiting for (midnight||countdown) 
-                    break;
-#endif
       case 'p':
       case 'P':     showRaw = !showRaw;
-                    if (showRaw)  digitalWrite(DTR_ENABLE, HIGH);
-                    else          digitalWrite(DTR_ENABLE, LOW);
+                    if (showRaw)  digitalWrite(LED, HIGH);
+                    else          digitalWrite(LED, LOW);
                     showRawCount = 0;
                     break;
       case 'R':     DebugT(F("Reboot in 3 seconds ... \r\n"));
@@ -146,7 +141,7 @@ void handleKeyInput()
                     ESP.reset();
                     break;
       case 's':
-      case 'S':     listSPIFFS();
+      case 'S':     listFS();
                     break;
       case 'v':
       case 'V':     if (Verbose2) 
@@ -186,11 +181,11 @@ void handleKeyInput()
                     break;
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   B - Board Info\r"));
-                    Debugln(F("  *E - erase file from SPIFFS\r"));
+                    Debugln(F("  *E - erase file from File System\r"));
                     Debugln(F("   L - list Settings\r"));
-                    Debugln(F("   D - Display Day table from SPIFFS\r"));
-                    Debugln(F("   H - Display Hour table from SPIFFS\r"));
-                    Debugln(F("   M - Display Month table from SPIFFS\r"));
+                    Debugln(F("   D - Display Day table from FS\r"));
+                    Debugln(F("   H - Display Hour table from FS\r"));
+                    Debugln(F("   M - Display Month table from FS\r"));
                   #if defined(HAS_NO_SLIMMEMETER)
                     Debugln(F("  *F - Force build RING files\r"));
                   #endif
@@ -208,15 +203,13 @@ void handleKeyInput()
                     Debugln(F("   Q - dump sysLog file\r"));
 #endif
                     Debugln(F("  *R - Reboot\r"));
-                    Debugln(F("   S - File info on SPIFFS\r"));
-                    Debugln(F("  *U - Update SPIFFS (save Data-files)\r"));
+                    Debugln(F("   S - File info on FS\r"));
+                    Debugln(F("  *U - Update FS (save Data-files)\r"));
                     Debugln(F("  *Z - Zero counters\r\n"));
                     if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));
                     else if (Verbose1)        Debugln(F("   V - Toggle Verbose 2\r"));
                     else                      Debugln(F("   V - Toggle Verbose 1\r"));
-                    #ifdef USE_MINDERGAS
-                    Debugln(F("   T - Force update mindergas.nl\r"));
-                    #endif
+                    
 
     } // switch()
     while (TelnetStream.available() > 0) 

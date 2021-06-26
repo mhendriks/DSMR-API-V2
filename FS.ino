@@ -1,6 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : SPIFFSstuff, part of DSMRloggerAPI
+**  Program  : FSstuff, part of DSMRloggerAPI
 **  Version  : v2.3.1
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
@@ -14,16 +14,14 @@ int32_t freeSpace()
 {
    int32_t space;
   
-  SPIFFS.info(SPIFFSinfo);
-
-  space = (int32_t)(SPIFFSinfo.totalBytes - SPIFFSinfo.usedBytes);
-
+  LittleFS.info(fs_info);
+  space = (int32_t)(fs_info.totalBytes - fs_info.usedBytes);
   return space;
   
 } // freeSpace()
 
 //===========================================================================================
-void listSPIFFS() 
+void listFS() 
 {
    typedef struct _fileMeta {
     char    Name[20];     
@@ -33,11 +31,13 @@ void listSPIFFS()
   _fileMeta dirMap[30];
   int fileNr = 0;
   
-  Dir dir = SPIFFS.openDir("/");         // List files on SPIFFS
+  Dir dir = LittleFS.openDir("/");         // List files on LittleFS
   while (dir.next())  
   {
     dirMap[fileNr].Name[0] = '\0';
-    strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 19); // remove leading '/'
+    //strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 19); // remove leading '/' aangepast voor LittleFS
+     strcpy( dirMap[fileNr].Name, dir.fileName().c_str() ); //littlefs
+
     dirMap[fileNr].Size = dir.fileSize();
     fileNr++;
   }
@@ -64,19 +64,19 @@ void listSPIFFS()
     yield();
   }
 
-  SPIFFS.info(SPIFFSinfo);
+  LittleFS.info(fs_info);
 
   Debugln(F("\r"));
-  if (freeSpace() < (10 * SPIFFSinfo.blockSize))
-        Debugf("Available SPIFFS space [%6d]kB (LOW ON SPACE!!!)\r\n", (freeSpace() / 1024));
-  else  Debugf("Available SPIFFS space [%6d]kB\r\n", (freeSpace() / 1024));
-  Debugf("           SPIFFS Size [%6d]kB\r\n", (SPIFFSinfo.totalBytes / 1024));
-  Debugf("     SPIFFS block Size [%6d]bytes\r\n", SPIFFSinfo.blockSize);
-  Debugf("      SPIFFS page Size [%6d]bytes\r\n", SPIFFSinfo.pageSize);
-  Debugf(" SPIFFS max.Open Files [%6d]\r\n\r\n", SPIFFSinfo.maxOpenFiles);
+  if (freeSpace() < (10 * fs_info.blockSize))
+        Debugf("Available FS space [%6d]kB (LOW ON SPACE!!!)\r\n", (freeSpace() / 1024));
+  else  Debugf("Available FS space [%6d]kB\r\n", (freeSpace() / 1024));
+  Debugf("           FS Size [%6d]kB\r\n", (fs_info.totalBytes / 1024));
+  Debugf("     FS block Size [%6d]bytes\r\n", fs_info.blockSize);
+  Debugf("      FS page Size [%6d]bytes\r\n", fs_info.pageSize);
+  Debugf(" FS max.Open Files [%6d]\r\n\r\n", fs_info.maxOpenFiles);
 
 
-} // listSPIFFS()
+} // listFS()
 
 
 //===========================================================================================
@@ -106,10 +106,10 @@ bool eraseFile()
   //--- add leading slash on position 0
   eName[0] = '/';
 
-  if (SPIFFS.exists(eName))
+  if (LittleFS.exists(eName))
   {
-    Debugf("\r\nErasing [%s] from SPIFFS\r\n\n", eName);
-    SPIFFS.remove(eName);
+    Debugf("\r\nErasing [%s] from LittleFS\r\n\n", eName);
+    LittleFS.remove(eName);
   }
   else
   {
@@ -138,7 +138,7 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
   DebugTf("check if [%s] exists .. ", fName);
  
 
-  if (!SPIFFS.exists(fName) )
+  if (!LittleFS.exists(fName) )
   {
     if (doDisplay)
     {

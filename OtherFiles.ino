@@ -7,13 +7,12 @@
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
-* 1.0.11 added Mindergas Authtoken setting
 */
 
 template <typename TSource>
 void writeToJsonFile(const TSource &doc, File &_file) 
 {
-  if (!SPIFFSmounted) return;
+  if (!FSmounted) return;
   if (serializeJson(doc, _file) == 0) {
       DebugTln(F("write(): Failed to write to json file"));  
   } 
@@ -38,8 +37,8 @@ void readLastStatus()
   StaticJsonDocument<110> doc;  
   DeserializationError error;
   
-  if (!SPIFFSmounted) return;
-  File statusFile = SPIFFS.open("/DSMRstatus.json", "r");
+  if (!FSmounted) return;
+  File statusFile = LittleFS.open("/DSMRstatus.json", "r");
   if (statusFile) error = deserializeJson(doc, statusFile);
 
   if (!statusFile || error) {
@@ -62,10 +61,10 @@ void readLastStatus()
 //====================================================================
 void writeLastStatus()
 { 
-  if (bailout() || !SPIFFSmounted ) return;
+  if (bailout() || !FSmounted ) return;
   DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, nrReboots, slotErrors);
   
-  File statusFile = SPIFFS.open("/DSMRstatus.json", "w");
+  File statusFile = LittleFS.open("/DSMRstatus.json", "w");
   if (!statusFile) DebugTln(F("write(): No /DSMRstatus.json found"));
 
   char buffer[74];
@@ -83,12 +82,12 @@ void writeLastStatus()
 //=======================================================================
 void writeSettings() 
 {
-  StaticJsonDocument<600> doc; 
-  if (!SPIFFSmounted) return;
+  StaticJsonDocument<700> doc; 
+  if (!FSmounted) return;
   
   DebugT(F("Writing to [")); Debug(SETTINGS_FILE); Debugln(F("] ..."));
   
-  File SettingsFile = SPIFFS.open(SETTINGS_FILE, "w"); // open for reading and writing
+  File SettingsFile = LittleFS.open(SETTINGS_FILE, "w"); // open for reading and writing
   
   if (!SettingsFile) 
   {
@@ -98,7 +97,7 @@ void writeSettings()
   yield();
 
   if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), _DEFAULT_HOMEPAGE);
-  if (settingTelegramInterval < 2)  settingTelegramInterval = 10;
+  if (settingTelegramInterval < 2)  settingTelegramInterval = 2;
   if (settingMQTTbrokerPort < 1)    settingMQTTbrokerPort = 1883;
     
   DebugTln(F("Start writing setting data to json settings file"));
@@ -121,13 +120,8 @@ void writeSettings()
   doc["MQTTpasswd"] = settingMQTTpasswd;
   doc["MQTTinterval"] = settingMQTTinterval;
   doc["MQTTtopTopic"] = settingMQTTtopTopic;
-  
 #endif
-  
-#ifdef USE_MINDERGAS
-  doc["MindergasAuthtoken"] = settingMQTTtsettingMindergasTokenopTopic;
-
-#endif
+  doc["LED"] = LEDenabled;
 
   writeToJsonFile(doc, SettingsFile);
   
@@ -137,19 +131,19 @@ void writeSettings()
 //=======================================================================
 void readSettings(bool show) 
 {
-  StaticJsonDocument<600> doc; 
+  StaticJsonDocument<700> doc; 
   File SettingsFile;
-  if (!SPIFFSmounted) return;
+  if (!FSmounted) return;
   
   DebugTf(" %s ..\r\n", SETTINGS_FILE);
  
-   if (!SPIFFS.exists(SETTINGS_FILE)) 
+   if (!LittleFS.exists(SETTINGS_FILE)) 
   {
     DebugTln(F(" .. DSMRsettings.json file not found! --> created file!"));
     writeSettings();
     return;
   }
-    SettingsFile = SPIFFS.open(SETTINGS_FILE, "r");
+    SettingsFile = LittleFS.open(SETTINGS_FILE, "r");
     if (!SettingsFile) DebugTf(" .. something went wrong opening [%s]\r\n", SETTINGS_FILE);
     else DebugTln(F("Reading settings:\r"));
 
@@ -161,8 +155,9 @@ void readSettings(bool show)
     return;
   }
   
-  //strcpy(spiffsTimestamp, doc["Timestamp"]);
+  //strcpy(LittleFSTimestamp, doc["Timestamp"]);
   strcpy(settingHostname, doc["Hostname"] | _DEFAULT_HOSTNAME );
+  strcpy(settingIndexPage, doc["IndexPage"] | _DEFAULT_HOMEPAGE);
   settingEDT1 = doc["EnergyDeliveredT1"];
   settingEDT2 = doc["EnergyDeliveredT2"];
   settingERT1 = doc["EnergyReturnedT1"];
@@ -171,11 +166,10 @@ void readSettings(bool show)
   settingENBK = doc["EnergyVasteKosten"];
   settingGNBK = doc["GasVasteKosten"];
   settingSmHasFaseInfo = doc["SmHasFaseInfo"];
+
   settingTelegramInterval = doc["TelegramInterval"];
-  strcpy(settingIndexPage, doc["IndexPage"] | _DEFAULT_HOMEPAGE);
-  
   CHANGE_INTERVAL_SEC(nextTelegram, settingTelegramInterval);
- 
+  
 #ifdef USE_MQTT
   //sprintf(settingMQTTbroker, "%s:%d", MQTTbroker, MQTTbrokerPort);
   strcpy(settingMQTTbroker, doc["MQTTbroker"]);
@@ -189,11 +183,7 @@ void readSettings(bool show)
   CHANGE_INTERVAL_MIN(reconnectMQTTtimer, 1);
   
 #endif
-  
-#ifdef USE_MINDERGAS
-  strcpy(settingMQTTtsettingMindergasTokenopTopic, doc["MindergasAuthtoken"]);
-#endif
- 
+  LEDenabled = doc["LED"];
   SettingsFile.close();
   //end json
 
@@ -203,9 +193,8 @@ void readSettings(bool show)
 
   DebugTln(F(" .. done\r"));
 
-
   if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindexEDGE.html");
-  if (settingTelegramInterval  < 2) settingTelegramInterval = 10;
+  if (settingTelegramInterval  < 2) settingTelegramInterval = 2; 
   if (settingMQTTbrokerPort    < 1) settingMQTTbrokerPort   = 1883;
 
   if (!show) return;
@@ -238,11 +227,7 @@ void readSettings(bool show)
   Debugf("          MQTT send Interval : %d\r\n", settingMQTTinterval);
   Debugf("              MQTT top Topic : %s\r\n", settingMQTTtopTopic);
 #endif  // USE_MQTT
-#ifdef USE_MINDERGAS
-  Debugln(F("\r\n==== Mindergas settings ==============================================\r"));
-  Debugf("         Mindergas Authtoken : %s\r\n", settingMindergasToken);
-#endif  
-  
+  Debug(F("                 LED enabled : ")); Debugln(LEDenabled);
   Debugln(F("-\r"));
 
 } // readSettings()
@@ -252,7 +237,7 @@ void readSettings(bool show)
 void updateSetting(const char *field, const char *newValue)
 {
   DebugTf("-> field[%s], newValue[%s]\r\n", field, newValue);
-  if (!SPIFFSmounted) return;
+  if (!FSmounted) return;
   if (!stricmp(field, "Hostname")) {
     strCopy(settingHostname, 29, newValue); 
     if (strlen(settingHostname) < 1) strCopy(settingHostname, 29, _DEFAULT_HOSTNAME); 
@@ -285,13 +270,11 @@ void updateSetting(const char *field, const char *newValue)
   {
     settingTelegramInterval     = String(newValue).toInt();  
     CHANGE_INTERVAL_SEC(nextTelegram, settingTelegramInterval);
+// v3.1 fixed
+  DebugT(F("TelegramIntegram not changed ... v3.1 fixed value"));
   }
 
   if (!stricmp(field, "IndexPage"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  
-
-#ifdef USE_MINDERGAS
-  if (!stricmp(field, "MindergasToken"))    strCopy(settingMindergasToken, 20, newValue);  
-#endif //USE_MINDERGAS
 
 #ifdef USE_MQTT
   if (!stricmp(field, "mqtt_broker"))  {
@@ -330,8 +313,8 @@ void updateSetting(const char *field, const char *newValue)
 
 //=======================================================================
 void Rebootlog(){
-  if (!SPIFFSmounted) return;
-  File RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
+  if (!FSmounted) return;
+  File RebootFile = LittleFS.open("/Reboot.log", "a"); // open for appending  
   if (!RebootFile) {
     DebugTln(F("open RebootLog file FAILED!!!--> Bailout\r\n"));
     return;
@@ -340,12 +323,12 @@ void Rebootlog(){
   //log rotate
   if (RebootFile.size() > 1500){ 
 //    DebugT(F("RebootLog filesize: "));Debugln(RebootFile.size());
-    SPIFFS.remove("/Rebootlog.old");     //remove .old if existing 
+    LittleFS.remove("/Rebootlog.old");     //remove .old if existing 
     //rename file
     DebugTln(F("RebootLog: rename file"));
     RebootFile.close(); 
-    SPIFFS.rename("/Reboot.log", "/Rebootlog.old");
-    RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
+    LittleFS.rename("/Reboot.log", "/Rebootlog.old");
+    RebootFile = LittleFS.open("/Reboot.log", "a"); // open for appending  
     }
   
     //make one record : {"time":"2020-09-23 17:03:25","reason":"Software/System restart","reboots":42}

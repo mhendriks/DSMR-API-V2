@@ -1,51 +1,49 @@
-# Slimmemeter MQTT interface - DSMR-API - Hardware versie 3
-Gebaseerd op versie 1 met een aantal verbeteringen en aanvullingen
-- ESP-M2 als CPU Soc
-- gebruikt secundaire seriale interface (sneller en geen extra library meer nodig)
-- 2 SMD optocouplers; 1 voor de P1 en een extra voor externe input (bijvoorbeeld deurbel)
-- mogelijkheid om ook iets te kunnen doen met I2C ... meer experimenteel
-- toevoeging van een RJ11 socket
+# Slimmemeter P1 Dongel - DSMR-API - Hardware versie 3.1
+Eigenschappen
+- ESP-12S (4MB) als CPU Soc -> veel pullup weerstanden zijn al aanwezig waardoor het aantal extra componenten laag kan blijven
+- gebruikt secundaire seriale interface (UART1)
+- P1 inversie via transistor, 1 weerstand minder werkt ook prima; Software serial is niet betrouwbaar genoeg
+- RJ11 socket voor gemakkelijke aansluiting
+- usb micro connector voor externe voeding (DSMR 4.x en sommige 5.x meters)
+- Power MUX om automatisch van voedingsbron te wisselen. USB is primair.
+- Primaire functie op een kant van de pcb zodat deze in oven/hotplate gemaakt kan worden
+- Secundaire componenten (MUX/usb) zitten op de onderkant
+- 6 pin aansluiting aan de zijkant voor eenvoudige flashing
+- nieuwe spanningsregelaar die een nog lagere spanningsval, meer stroom aan kan en al met al minder warmte af geeft
+- GEEN optocoupler meer ... DTR signaal is altijd hoog. Werkt ook prima ... echter met DTR komen er minder telegram errors voor. In de praktijk ca 0,1% errors is acceptabel
 
 ## SCHEMA
-Gekozen voor iets compactere ESP-M2 (ESP8285) vooral omdat de secundaire seriele interface van de ESP bereikbaar is op de M2 en niet op de M3. 
 Op het printje zitten de volgende modules:
 - signaal inverter om het P1 signaal te inverteren (level shifter)
-- optocoupler voor het aansturen van de P1 (DTR : data request)
-- optocoupler voor extra input; bv. een deurbel die vaak in de buurt van de slimme meter zit
 - spanningsregulator voor het naar 3.3Volt brengen van de P1 spanning.
-- de ESP-M2 natuurlijk
-- I2C aansluiting mogelijk (experimenteel)
+- ESP-12S CPU SoC
+- Power Mux
 
 Alle modules samen zie je in het onderstaande schema.
-![Kicad schema](hardware/v2-kicad-schema.png) 
+![Kicad schema](hardware/v3.1-kicad-schema.png) 
 
-In het schema is rekening gehouden met het aansluiten van een deurbel van 12 of 8 Volt AC. De weerstanden zorgen dan voor een juiste werking van de optocoupler. Er kan ook een andere digitale of analoge bron worden aangesloten. Zorg dan even voor de juiste weerstanden. De diode in de optocoupler heeft 1.2V en 20mA typical nodig.
 
 Omgezet naar een board ziet dit er zo uit:
 Bovenkant             |  Onderkant |  Eindresultaat
 :-------------------------:|:-------------------------:|:-------------------------:
-![hardware bovenkant](hardware/v2-print-boven.png)  |  ![hardware onderkant](hardware/v2-print-onder.png) | ![hardware onderkant](hardware/v2-eindresultaat.png)
+![hardware bovenkant](hardware/v3.1-print-boven.png)  |  ![hardware onderkant](hardware/v3.1-print-onder.png) | ![hardware onderkant](hardware/v3.1-eindresultaat.png)
 
-Afmeting van de print is 19 x 35mm (iets compacter dan de v1)
+Afmeting van de print is ..........
 
 ## SOFTWARE
-Er is veel software online te vinden. Keuze voor de gebruiker vind ik belangrijk daarom gekozen voor twee mogelijkheden, namelijk:
-- Tasmota : Out of the box (MQTT) [setup/tasmota](setup/tastmota/README.md)
+Op basis van de DSMR API software van Willem aandeWiel is eerder al een doorvertaling gemaakt naar specifieke code voor deze hardware. Als je wilt zou ook Tasmota of andere firmware gebruikt kunnen worden.
 - DSMR API firmware : Json API, MQTT + web user interface (op basis van de Willem AandeWiel oplossing) [setup/dsmr-api](setup/dsmr-api/README.md)
 
-### Tasmota
-Zelf ben ik een groot fan van de Tasmota software voor de ESP8266 familie. Deze is dan ook als eerste gebruikt om de oplossing werkend te krijgen. Tasmota kan out of the box op de module geflasht worden (vanaf versie 8.5.0). Instructie is te vinden in de [setup/tasmota](setup/tastmota/README.md) folder.
-
-### REST-API DSMR Logger van Willem AandeWiel
-Veel dank aan Willem AandeWiel voor zijn oplossing. Deze oplossing is als basis genomen en diverse veranderingen aan doorgevoerd. Oplossing van Willem is gemaakt voor een 4MB esp module en de M2 heeft er maar 1. Meer dan genoeg als alle extra functionaliteit verwijderd wordt en de overige compacter wordt gemaakt.
-Aanpassingen zijn:
+Aanpassing ten opzichte van DSMR-API van Willem zijn:
 - alle statische pagina's komen uit een CDN (esp modules hebben maar een beperkte capaciteit en zijn geen hele goede webservers;)
 - alle plaatjes zijn nu iconen geworden, ook van cdn
 - files zijn omgezet naar Json zodat dit makkelijk te onderhouden is en compacter wordt
 - json API communicatie is ook gewijzigd (compacter en als een burst ipv gesegmenteerd)
 - opmaak is zo veel als mogelijk uit de html / js files gehaald en in de css gestopt
 - voor de extra input (deurbel) is functionele uitbreiding nodig (work in progress)
+- nieuw dashboard gemaakt
+- 
 Instructie is te vinden in de [setup/dsmr-api](setup/dsmr-api/README.md) folder.
 
 # Hardware maken of aanschaffen
-Je kan je eigenhardware maken of deze los / compleet aanschaffen. Wil je deze aanschaffen dan kan je mij altijd een DM sturen. De oplossing is ook Plug-and-play te koop met Tasmota of DSMR-API firmware.
+Je kan je eigenhardware maken of deze aanschaffen. Wil je deze aanschaffen dan kan je mij altijd een DM sturen. De oplossing is ook Plug-and-play te koop inclusief firmware.

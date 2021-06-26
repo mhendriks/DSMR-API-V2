@@ -18,10 +18,9 @@
 #include <ArduinoJson.h>
 #include "Debug.h"
 #include "Network.h"
+#include "LittleFS.h"
 
-#ifdef USE_BLYNK
-  #include <BlynkSimpleEsp8266.h>
-#endif
+static      FSInfo fs_info;
 
 #ifdef USE_SYSLOGGER
   #include "ESP_SysLogger.h"      // https://github.com/mrWheel/ESP_SysLogger
@@ -46,13 +45,12 @@
 #define _DEFAULT_HOSTNAME   "DSMR-API" 
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
-#define DTR_ENABLE          14
-#define AUX_IN               2
-#define FLASH_BUTTON          0
-#define JSON_BUFF_MAX       255
-#define MQTT_BUFF_MAX       200
+//#define DTR_ENABLE          14
+//#define JSON_BUFF_MAX       255
+//#define MQTT_BUFF_MAX       200
+#define LED                 2
 
-P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
+P1Reader    slimmeMeter(&Serial, 0); //no DTR
 
 enum { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 enum E_ringfiletype {RINGHOURS, RINGDAYS, RINGMONTHS};
@@ -164,28 +162,23 @@ void delayms(unsigned long);
   byte        DagSlot = 99; // geen geldige slot waarde
   float       GDT_G = 0, EDT1_G = 0,  EDT2_G = 0,ERT1_G = 0,ERT2_G = 0; //eindstand teller gisteren ivm dagberekening
   uint32_t    nrReboots  = 0;
-  uint32_t    loopCount = 0;
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw = false;
   int8_t      showRawCount = 0;
-#ifdef USE_MINDERGAS
-  static char      settingMindergasToken[21] = "";
-  static uint16_t  intStatuscodeMindergas    = 0; 
-  static char      txtResponseMindergas[30]  = "";
-  static char      timeLastResponse[16]      = "";  
-#endif
+  bool        LEDenabled = true;
+
   char      cMsg[150];
   String    lastReset           = "";
-  bool      spiffsNotPopulated  = false;
+  bool      FSNotPopulated  = false;
   bool      mqttIsConnected     = false;
-  bool      doLog = false, Verbose1 = false, Verbose2 = false;
+  bool      Verbose1 = false, Verbose2 = false;
   int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
-  uint32_t  unixTimestamp;
+  //uint32_t  unixTimestamp;
   uint64_t  upTimeSeconds;
   IPAddress ipDNS, ipGateWay, ipSubnet;
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
   float     settingENBK = 15.15, settingGNBK = 11.11;
-  uint8_t   settingTelegramInterval = 10; //seconden
+  uint8_t   settingTelegramInterval = 2; //seconden 10 pre v3.1 ... 1 second v3.1
   uint8_t   settingSmHasFaseInfo = 1;
   char      settingHostname[30] = _DEFAULT_HOSTNAME;
   char      settingIndexPage[50] = _DEFAULT_HOMEPAGE;
@@ -205,12 +198,10 @@ void delayms(unsigned long);
 DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
 DECLARE_TIMER_MIN(reconnectWiFi,      30);
 DECLARE_TIMER_SEC(synchrNTP,          30);
-DECLARE_TIMER_SEC(nextTelegram,       10);
+DECLARE_TIMER_SEC(nextTelegram,        2);
 DECLARE_TIMER_MIN(reconnectMQTTtimer,  2); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
-DECLARE_TIMER_MIN(minderGasTimer,     10, CATCH_UP_MISSED_TICKS); 
-DECLARE_TIMER_SEC(antiWearTimer,      61);
-DECLARE_TIMER_MS(AuxTimer,           500);
+DECLARE_TIMER_SEC(antiWearTimer,      301); //write files every ±5min
 
 #endif
 /***************************************************************************
