@@ -11,6 +11,7 @@ Eigenschappen
 - 6 pin aansluiting aan de zijkant voor eenvoudige flashing
 - nieuwe spanningsregelaar die een nog lagere spanningsval, meer stroom aan kan en al met al minder warmte af geeft
 - GEEN optocoupler meer ... DTR signaal is altijd hoog. Werkt ook prima ... echter met DTR komen er minder telegram errors voor. In de praktijk ca 0,1% errors is acceptabel
+- Gaatjes in het boardje om deze makkelijk in een 3D printed cases te kunnen monteren (deze komt als opensource ook beschikbaar)
 
 ## SCHEMA
 Op het printje zitten de volgende modules:
@@ -34,7 +35,7 @@ Afmeting van de print is 31.8 mm * 21.3 mm
 Op basis van de DSMR API software van Willem aandeWiel is eerder al een doorvertaling gemaakt naar specifieke code voor de V2 en V3 hardware. Voor de V3.1 versie zijn er wederom aanpassingen gedaan met name vanwege het ontbreken van het DTR signaal. De code is hiervoor geoptimaliseerd.
 Naar behoefte zou ook Tasmota of andere firmware gebruikt kunnen worden, dit is op de V3.1 versie verder niet uitgeprobeerd.
 
-Aanpassing ten opzichte van DSMR-API van Willem zijn:
+Aanpassing (tot nu toe) ten opzichte van DSMR-API van Willem zijn:
 - alle statische pagina's komen uit een CDN (esp modules hebben maar een beperkte capaciteit en zijn geen hele goede webservers;)
 - alle plaatjes zijn nu iconen geworden, ook van cdn
 - files zijn omgezet naar Json zodat dit makkelijk te onderhouden is en compacter wordt
@@ -42,9 +43,9 @@ Aanpassing ten opzichte van DSMR-API van Willem zijn:
 - opmaak is zo veel als mogelijk uit de html / js files gehaald en in de css gestopt
 - voor de extra input (deurbel) is functionele uitbreiding nodig (work in progress)
 - nieuw dashboard gemaakt
-- Front-end settings worden van de dongel gelezen (nog in pril stadium)
-- Gaatjes in het boardje om deze makkelijk in een 3D printed cases te kunnen monteren (deze komt als opensource ook beschikbaar)
- 
+- Front-end settings worden van de dongel gelezen (een eerste aanzet)
+- LittleFS in plaats van SPIFFS als bestandssysteem
+
 Instructie is te vinden in de [setup/dsmr-api](setup/dsmr-api/README.md) folder.
 
 # Hardware maken of aanschaffen
