@@ -1,3 +1,13 @@
+/*
+***************************************************************************  
+**  Program  : ntpStuff, part of DSMRloggerAPI
+**  Version  : v3.0.0
+**
+**  Copyright (c) 2021 Martijn Hendriks
+**
+**  TERMS OF USE: MIT License. See bottom of file.                                                            
+***************************************************************************      
+*/
 #ifdef USE_UPDATE_SERVER
 
 // minified code based on https://github.com/Gheotic/ESP-HTML-Compressor
@@ -76,3 +86,27 @@ const PROGMEM char UpdateServerSuccess[] = {0X3C,0X68,0X74,0X6D,0X6C,0X20,0X63,0
 //         }, 1000);
 //     </script>
 //     </html>)";
+
+
+/***************************************************************************
+*
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to permit
+* persons to whom the Software is furnished to do so, subject to the
+* following conditions:
+*
+* The above copyright notice and this permission notice shall be included
+* in all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+* OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+* THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+* 
+***************************************************************************/

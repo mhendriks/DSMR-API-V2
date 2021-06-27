@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : Time, part of DSMRloggerAPI
-**  Version  : v2.3.1
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **

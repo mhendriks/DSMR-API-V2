@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : RingFiles, part of DSMRloggerAPI
-**  Version  : v2.3.3
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2021 Martijn Hendriks
 **
@@ -136,7 +136,7 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
 //    DebugTln("actslot: "+actSlot);
 //    DebugT(F("update date: "));Debugln(key);
     //create record
-    snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1, (float)DSMRdata.energy_delivered_tariff2, (float)DSMRdata.energy_returned_tariff1, (float)DSMRdata.energy_returned_tariff2, (float)DSMRdata.gas_delivered);
+    snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1, (float)DSMRdata.energy_delivered_tariff2, (float)DSMRdata.energy_returned_tariff1, (float)DSMRdata.energy_returned_tariff2, (float)gasDelivered);
   }
   //DebugT("update timeslot: ");Debugln(slot);
   //goto writing starting point  

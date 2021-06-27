@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : JsonCalls, part of DSMRloggerAPI
-**  Version  : v2.3.2
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2021 Martijn Hendriks
 **
@@ -17,8 +17,8 @@ byte fieldsElements = 0;
 char Onefield[25];
 bool onlyIfPresent = false;
 
-const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","gas_device_type","gas_equipment_id" };
-const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3","gas_delivered"};
+const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","mbus1_device_type","mbus1_equipment" };
+const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3","mbus1_delivered"};
 
 DynamicJsonDocument jsonDoc(4000);  // generic doc to return, clear() before use!
 
@@ -26,7 +26,7 @@ struct buildJson {
     
     template<typename Item>
     void apply(Item &i) {
-      String Name = Item::name;
+      String Name = String(Item::name);
       if (isInFieldsArray(Name.c_str())) {
         if (i.present()) 
         {          
@@ -34,7 +34,11 @@ struct buildJson {
           jsonDoc[Name]["value"] = value_to_json(i.val());
           if (Unit.length() > 0) jsonDoc[Name]["unit"]  = Unit;
         }  else if (!onlyIfPresent) jsonDoc[Name]["value"] = "-";
- 
+        if (Name == "mbus1_delivered") 
+        {
+          jsonDoc["gas_delivered"]["value"] =  value_to_json(i.val());
+          jsonDoc["gas_delivered"]["unit"]  = "m3";
+        }
     } //infielsarrayname
   }
   
@@ -158,6 +162,7 @@ void sendDeviceInfo()
   doc["fwversion"] = _VERSION;
   snprintf(cMsg, sizeof(cMsg), "%s %s", __DATE__, __TIME__);
   doc["compiled"] = cMsg;
+  doc["smr_version"] = SMRVERSION;
   doc["hostname"] = settingHostname;
   doc["ipaddress"] = WiFi.localIP().toString();
   doc["indexfile"] = settingIndexPage;
@@ -216,8 +221,8 @@ void sendDeviceInfo()
   else  doc["mqttbroker_connected"] = "no";
 #endif
 
-  doc["reboots"] = (int)nrReboots;
-  doc["lastreset"] = lastReset;  
+  doc["reboots"]      = (int)nrReboots;
+  doc["lastreset"]    = lastReset;  
 
   sendJson(doc);
  
@@ -306,8 +311,7 @@ void sendDeviceSettings()
   doc["mqtt_interval"]["value"] = settingMQTTinterval;
   doc["mqtt_interval"]["type"] = "i";
   doc["mqtt_interval"]["min"] = 0;
-  doc["mqtt_interval"]["max"] = 600;
-
+  doc["mqtt_interval"]["max"] = 600;  
   sendJson(doc);
 
 } // sendDeviceSettings()
@@ -368,7 +372,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     if (buff.length() == 0) 
     {
       httpServer.setContentLength(20);
-      httpServer.send(200, "application/plain", "no telegram received");
+      httpServer.send(200, "application/plain", F("empty telegram buffer, try again"));
       return;
     }
     sendJsonBuffer(&buff[0]);

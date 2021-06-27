@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : ntpStuff, part of DSMRloggerAPI
-**  Version  : v2.3.1
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **

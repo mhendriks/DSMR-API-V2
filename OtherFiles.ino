@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : OtherFiles, part of DSMRloggerAPI (status/settings/log files locally stored)
-**  Version  : v2.3.2
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2021 Martijn Hendriks
 **

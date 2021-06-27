@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v2.3.5
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2021 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
@@ -49,7 +49,7 @@
   const spinner = document.getElementById("loader");
 
 // ---- DASH
-const AMPS=35;
+var AMPS=35, ShowVoltage=true, UseCDN=true, Injection=false, Phases=1;
 var MaxAmps = 0.0;
 var TotalAmps=0.0,minKW = 0.0, maxKW = 0.0,minV = 0.0, maxV = 0.0, Pmax,Gmax;
 var hist_arrG=[4], hist_arrPa=[4], hist_arrPi=[4], hist_arrP=[4]; //berekening verbruik
@@ -176,7 +176,7 @@ let optionsP = {
       },//labels      
     }, //plugins
       legend: {display: false},
-    }; //options
+}; 
     
 let dataP = {
       labels: ["verbruik", "verschil met hoogste"],
@@ -220,22 +220,26 @@ let dataPa = {
         {
           label: "vandaag",
           backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
-
         },
         {
           label: "gisteren",
           backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
-
         },
         {
           label: "eergisteren",
           backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
-
         }
       ]
     };
 
   window.onload=bootsTrapMain;
+  /*
+  window.onfocus = function() {
+    if (needBootsTrapMain) {
+      window.location.reload(true);
+    }
+  };
+  */
 
 //============================================================================  
   
@@ -291,10 +295,10 @@ function UpdateDash()
 		if (teruglevering) {		
 			document.getElementById("l5").style.display = "block";
 			document.getElementById("l6").style.display = "block";
-			document.getElementById("Ph").innerHTML = "Afname-terugl.";
+			document.getElementById("Ph").innerHTML = "Afname-Terug";
 		} else
 		{
-			document.getElementById("l2").style.display = "block";
+			if (ShowVoltage) document.getElementById("l2").style.display = "block";
 		}
 		if (HeeftGas) document.getElementById("l4").style.display = "block";
 
@@ -377,8 +381,8 @@ function UpdateDash()
 
 		//vermogen vandaag, min - max bepalen
 		document.getElementById("P").innerHTML = Number(Parr[0]).toLocaleString();
-		document.getElementById(`Pmax`).innerHTML = Number(Pmax).toLocaleString();
-		document.getElementById(`Pmin`).innerHTML = Math.min.apply(Math, Parr).toLocaleString();
+// 		document.getElementById(`Pmax`).innerHTML = Number(Pmax).toLocaleString();
+// 		document.getElementById(`Pmin`).innerHTML = Math.min.apply(Math, Parr).toLocaleString();
 		
 		if (teruglevering) 
 		{
@@ -391,8 +395,8 @@ function UpdateDash()
 			trend_pi.update();
 			//vermogen vandaag, min - max bepalen
 			document.getElementById("Pi").innerHTML = Number(Parri[0]).toLocaleString();
-			document.getElementById(`Pimax`).innerHTML = Number(Pmaxi).toLocaleString();
-			document.getElementById(`Pimin`).innerHTML = Math.min.apply(Math, Parri).toLocaleString();
+// 			document.getElementById(`Pimax`).innerHTML = Number(Pmaxi).toLocaleString();
+// 			document.getElementById(`Pimin`).innerHTML = Math.min.apply(Math, Parri).toLocaleString();
 
 			//-------AFNAME METER	
 			//data sets berekenen voor de gauges
@@ -403,9 +407,8 @@ function UpdateDash()
 			trend_pa.update();
 			//vermogen vandaag, min - max bepalen
 			document.getElementById("Pa").innerHTML = Number(Parra[0]).toLocaleString();
-			document.getElementById(`Pamax`).innerHTML = Number(Pmaxa).toLocaleString();
-			document.getElementById(`Pamin`).innerHTML = Math.min.apply(Math, Parra).toLocaleString();
-
+// 			document.getElementById(`Pamax`).innerHTML = Number(Pmaxa).toLocaleString();
+// 			document.getElementById(`Pamin`).innerHTML = Math.min.apply(Math, Parra).toLocaleString();
 		}
 		
 		//-------GAS METER	
@@ -426,8 +429,8 @@ function UpdateDash()
 			document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString();
 		
 			//verbruik G    
-			document.getElementById(`Gmax`).innerHTML = Number(Gmax).toLocaleString();
-			document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
+	// 		document.getElementById(`Gmax`).innerHTML = Number(Gmax).toLocaleString();
+// 			document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
 		}
 												
 		hideSpinner();
@@ -473,7 +476,7 @@ function UpdateDash()
 			openTab();  	
   		});
 	}
- 
+	FrontendConfig();
     refreshDevTime();
     clearInterval(timeTimer);  
     timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
@@ -521,8 +524,7 @@ function UpdateDash()
 			window.location.replace("/");
 		}
 	}, 1000);
-  	
-  }
+}
   
   //============================================================================  
 
@@ -634,6 +636,11 @@ function UpdateDash()
       refreshSettings();
       getDevSettings();
       activeTab = "bEditSettings";
+    } else if (activeTab == "bSysInfoTab") {
+	  data = {};
+	  clearInterval(actualTimer); //otherwise the data blok is overwritten bij actual data
+      refreshDevInfo();
+	  tabTimer = setInterval(refreshDevInfo, 10 * 1000); // repeat every 10s
     } 
   } // openTab()
   
@@ -679,7 +686,7 @@ function UpdateDash()
 			 });
 	   });
 	   main.insertAdjacentHTML('beforeend', '</table>');
-	   main.insertAdjacentHTML('beforeend', `<p id="FSFree"><b>SPIFFS</b> gebruikt ${json[i].usedBytes} van ${json[i].totalBytes}`);
+	   main.insertAdjacentHTML('beforeend', `<p id="FSFree">Opslag: <b>${json[i].usedBytes} gebruikt</b> | ${json[i].totalBytes} totaal`);
 	   free = json[i].freeBytes;
 	   fileSize.innerHTML = "<b> &nbsp; </b><p>";    // spacer                
 	   hideSpinner();
@@ -736,6 +743,14 @@ function UpdateDash()
 			   devVersion = obj[k];
            }
         } //for loop
+		var newRow=tableRef.insertRow(-1);
+		var MyCell1 = newRow.insertCell(0);
+		var MyCell2 = newRow.insertCell(1);
+		var MyCell3 = newRow.insertCell(2);
+        MyCell1.innerHTML="Zekeringwaarde per groep";
+		MyCell2.innerHTML=AMPS;
+		MyCell3.innerHTML="Ampere";
+// 		MyCell2.style.textAlign = "right";
       
 	  //new fwversion detection
   	  document.getElementById('devVersion').innerHTML = obj.fwversion;
@@ -763,39 +778,57 @@ function UpdateDash()
       })
       .catch(function(error) {
         var p = document.createElement('p');
-        p.appendChild(
-          document.createTextNode('Error: ' + error.message)
-        );
+        p.appendChild(   document.createTextNode('Error: ' + error.message)  );
       });
   } // refreshDevInfo()
 
-
+//============================================================================  
+  function FrontendConfig()  {
+    console.log("Read Frontend config");
+	showSpinner();
+	fetch(APIGW+"../Frontend.json", {"setTimeout": 5000})
+      .then(response => response.json())
+      .then(json => {
+          //console.log("parsed frontend config: ["+ JSON.stringify(json)+"]");
+          //{"ShowVoltage":true,"Injection":false,"Phases":1,"Fuse":35,"cdn":true}
+          AMPS=json.Fuse;
+          ShowVoltage=json.ShowVoltage;
+          UseCDN=json.cdn;
+          Injection=json.Injection;
+          Phases=json.Phases;
+         hideSpinner();
+      }) //json
+  }
 
   //============================================================================  
   function refreshDevTime()
   {
-    //console.log("Refresh api/v2/dev/time ..");
-    fetch(APIGW+"v2/dev/time", {"setTimeout": 5000})
+	alert_message("");
+
+    console.log("Refresh api/v2/dev/time ..");
+    
+	let controller = new AbortController();
+	setTimeout(() => controller.abort(), 5000);    
+    fetch(APIGW+"v2/dev/time", { signal: controller.signal})
       .then(response => response.json())
       .then(json => {
               document.getElementById('theTime').innerHTML = json.time;
-              //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
+              console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
 
 	  //after reboot checks of the server is up and running and redirects to home
       if ((document.querySelector('#counter').textContent < 40) && (document.querySelector('#counter').textContent > 0)) window.location.replace("/");
       })
-      .catch(function(error) {
-        var p = document.createElement('p');
-        p.appendChild(
-          document.createTextNode('Error: ' + error.message)
-        );
+      .catch(function(error) {    
+		if (error.name === "AbortError") {console.log("time abort error")}
+//         var p = document.createElement('p');
+//         p.appendChild( document.createTextNode('Error: ' + error.message) );
+        alert_message("Datum/tijd kan niet opgehaald worden");
       });     
       
     document.getElementById('message').innerHTML = newVersionMsg;
 
   } // refreshDevTime()
-  
-  
+    
   //============================================================================  
   function refreshSmActual()
   { showSpinner();
@@ -810,13 +843,11 @@ function UpdateDash()
           else  showActualGraph(data);
         //console.log("-->done..");
          hideSpinner();
-      })
+      }) //json
       .catch(function(error) {
         var p = document.createElement('p');
-        p.appendChild(
-          document.createTextNode('Error: ' + error.message)
-        );
-      }); 
+        p.appendChild( document.createTextNode('Error: ' + error.message) );
+      }); //catch
   };  // refreshSmActual()
   
   
@@ -950,13 +981,29 @@ function UpdateDash()
   } // expandData()
   
   //============================================================================  
+  function alert_message(msg) {
+  	if (msg==""){
+  		document.getElementById('messages').style="display:none";
+	
+  	} else {  
+	document.getElementById('messages').style="display:block";
+	document.getElementById('messages').innerHTML = msg;
+	} 
+  }
+  //============================================================================  
   function refreshHours()
   { showSpinner();
-    console.log("fetch("+APIGW+"v2/hist/hours)");
+    console.log("fetch("+APIGW+"../RINGhours.json)");
 
-    fetch(APIGW+"v2/hist/hours", {"setTimeout": 5000})
-      .then(response => response.json())
-      .then(json => {
+    fetch(APIGW+"../RINGhours.json", {"setTimeout": 5000})
+      .then(function (response) {
+		if (response.status !== 200) {
+			throw new Error(response.status);
+		} else {
+			return response.json();
+		}
+	})
+	.then(function (json) {
         //console.log(json);
         data = json;
         expandData(data);
@@ -968,9 +1015,8 @@ function UpdateDash()
       })
       .catch(function(error) {
         var p = document.createElement('p');
-        p.appendChild(
-          document.createTextNode('Error: ' + error.message)
-        );
+        p.appendChild( document.createTextNode('Error: ' + error.message) );
+    	alert_message("Fout bij ophalen van de historische uurgegevens");
       }); 
   } // resfreshHours()
   
@@ -979,10 +1025,16 @@ function UpdateDash()
   function refreshDays()
   {
   	showSpinner();
-    console.log("fetch("+APIGW+"v2/hist/days)");
-    fetch(APIGW+"v2/hist/days", {"setTimeout": 5000})
-      .then(response => response.json())
-      .then(json => {
+    console.log("fetch("+APIGW+"../RINGdays.json)");
+    fetch(APIGW+"../RINGdays.json", {"setTimeout": 5000})
+    .then(function (response) {
+		if (response.status !== 200) {
+			throw new Error(response.status);
+		} else {
+			return response.json();
+		}
+	})
+	.then(function (json) {
 		data = json;
         expandData(data);
         if (presentationType == "TAB")
@@ -994,21 +1046,19 @@ function UpdateDash()
 		for (let i=0;i<4;i++)
 		{	let tempslot = math.mod(act_slot-i,15);
 			hist_arrG[i] = json.data[tempslot].values[4];
-// 			hist_arrP[i] = json.data[tempslot].values[0] + json.data[tempslot].values[1] - json.data[tempslot].values[2] - json.data[tempslot].values[3];
+
 			hist_arrPa[i] = json.data[tempslot].values[0] + json.data[tempslot].values[1];
 			hist_arrPi[i] = json.data[tempslot].values[2] + json.data[tempslot].values[3];
 		};
-// 		 		console.log("hist_arrG" + hist_arrG);
-// 		 		console.log("hist_arrP" + hist_arrP);
-
 	    hideSpinner();
-
       })
       .catch(function(error) {
         var p = document.createElement('p');
         p.appendChild(
           document.createTextNode('Error: ' + error.message)
         );
+    	console.log(error);
+    	alert_message("Fout bij ophalen van de historische daggegevens");
       });
   } // resfreshDays()
   
@@ -1017,10 +1067,16 @@ function UpdateDash()
   function refreshMonths()
   {
   	showSpinner();
-    console.log("fetch("+APIGW+"v2/hist/months)");
-    fetch(APIGW+"v2/hist/months", {"setTimeout": 5000})
-      .then(response => response.json())
-      .then(json => {
+    console.log("fetch("+APIGW+"../RINGmonths.json)");
+    fetch(APIGW+"../RINGmonths.json", {"setTimeout": 5000})
+      .then(function (response) {
+		if (response.status !== 200) {
+			throw new Error(response.status);
+		} else {
+			return response.json();
+		}
+	})
+	.then(function (json) {
         //console.log(response);
         data = json;
         expandData(data);
@@ -1038,6 +1094,8 @@ function UpdateDash()
         p.appendChild(
           document.createTextNode('Error: ' + error.message)
         );
+    	alert_message("Fout bij ophalen van de historische maandgegevens");
+
       });
   } // resfreshMonths()
 
@@ -2358,7 +2416,8 @@ function UpdateDash()
           ,[ "flashchipid",               "Flash Chip ID" ]
           ,[ "flashchipsize",             "Flash Chip Size" ]
           ,[ "flashchiprealsize",         "Flash Chip Real Size" ]
-          ,[ "spiffssize",                "SPIFFS Size" ]
+          ,[ "spiffssize",                "Spiffs Size" ]
+          ,[ "FSsize", 					  "File System Size" ]
           ,[ "flashchipspeed",            "Flash Chip Speed" ]
           ,[ "flashchipmode",             "Flash Chip Mode" ]
           ,[ "boardtype",                 "Board Type" ]
@@ -2368,6 +2427,7 @@ function UpdateDash()
           ,[ "uptime",                    "Up Time [dagen] - [hh:mm]" ]
           ,[ "reboots",                   "Aantal keer opnieuw opgestart" ]
           ,[ "lastreset",                 "Laatste Reset reden" ]
+          ,[ "smr_version",               "NL of BE Slimme Meter" ]
 ];
 
 /*

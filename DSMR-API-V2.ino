@@ -10,18 +10,20 @@
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
-*      √ versioning fix
-*      √ aanpassing dsmr lees interval naar default 2 sec
-*      √ fix listfiles 
+*      √ aanpassing dsmr lees interval naar default 2 sec (ipv 10)
+*      √ fix listfiles ivm LittleFS
 *      √ AUX | MinderGas | Blynk verwijderd
+*      √ LITTLEFS ipv SPIFFS <-- breaking change
 *      √ FileExplorer SPIFFS verwijderen (FE code)
-*      √ refactor telegram capture/receiving 
-*      √ LED blink on each telegram
-*      - zonder refresh settings tonen (update)
-*      - universal smr 
+*      √ refactor telegram capture/receiving
+*      √ LED blink on each telegram (vanaf v3.1 hardware)
+*      √ zonder refresh settings tonen (update)
+*      √ universal smr (dank Willem en Matthijs)
 *      √ QIO Flash mode
-*      - aanpassen Telnet plugin ivm crash
-*      √ LED config in the settings
+*      √ LED config ON/OFF in the settings
+*      √ Frontend.json om enkele frontend instellingen te kunnen doen (eerste aanzet)
+*      - aanpassen Telnet plugin ivm crash na x minuten
+*      - herzien javascript navigate
 *      
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 
@@ -44,7 +46,6 @@
 /******************** compiler options  ********************************************/
 #define USE_MQTT                    // default ON : define if you want to use MQTT (configure through webinterface)
 #define USE_UPDATE_SERVER           // default ON : define if there is enough memory and updateServer to be used
-//#define USE_BELGIUM_PROTOCOL        // define if Slimme Meter is a Belgium Smart Meter
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
@@ -54,13 +55,7 @@
 //#define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //#define USE_PUSHOVER              // define if the pushover app could be used
 
-//change manual -> possible values [NL][BE][USE_MQTT][USE_UPDATE_SERVER][USE_SYSLOGGER][USE_NTP_TIME]
-#ifdef USE_BELGIUM_PROTOCOL
-  #define ALL_OPTIONS "[BE][MQTT][UPDATE_SERVER][LITTLEFS]" 
-#else 
-  #define ALL_OPTIONS "[NL][MQTT][UPDATE_SERVER][LITTLEFS]"
-#endif
-
+#define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS]"
 #include "DSMRloggerAPI.h"
 
 #ifdef USE_SYSLOGGER
@@ -88,7 +83,7 @@ void openSysLog(bool empty)
 void setup() 
 {
   Serial.begin(115200, SERIAL_8N1);
-//  pinMode(DTR_ENABLE, OUTPUT);
+  pinMode(DTR_ENABLE, OUTPUT);
   pinMode(LED, OUTPUT); //LED ESP12S
   //--- setup randomseed the right way
   //--- This is 8266 HWRNG used to seed the Random PRNG

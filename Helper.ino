@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : helper, part of DSMRloggerAPI
-**  Version  : v2.3.3
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -302,22 +302,6 @@ float typecastValue(TimestampedFixedValue i)
 float typecastValue(FixedValue i) 
 {
   return i;
-}
-
-//=======================================================================
-void UpdateDayStats()
-{
-  byte tempSlot = CalcSlot(RINGDAYS, actTimestamp);
-  if (DagSlot < 99 && tempSlot != DagSlot) {
-    GDT_G  = DSMRdata.gas_delivered;
-    EDT1_G = DSMRdata.energy_delivered_tariff1;
-    EDT2_G = DSMRdata.energy_delivered_tariff2;
-    ERT1_G = DSMRdata.energy_returned_tariff1;
-    ERT2_G = DSMRdata.energy_returned_tariff2;
-    DagSlot = tempSlot;
-    DebugTln(F("Dagslot Main update"));
-    yield();
-  }
 }
 
 /***************************************************************************

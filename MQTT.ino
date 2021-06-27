@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : MQTT, part of DSMRloggerAPI
-**  Version  : v2.3.2
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
@@ -167,7 +167,7 @@ struct buildJsonMQTT {
     void apply(Item &i) {
       if (i.present()) 
       {
-        String Name = Item::name;
+        String Name = String(Item::name);
         String Unit = Item::unit();
         strcpy(topicId,settingMQTTtopTopic);
         strConcat(topicId, sizeof(topicId), Name.c_str());

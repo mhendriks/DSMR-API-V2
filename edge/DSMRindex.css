@@ -462,6 +462,14 @@ body > div.bottom.right-0 {
   color: white;
 }
 
+#messages {
+	background : orange;
+	text-align: center;
+	display: none;
+}
+
+#messages::before {padding-right:5px}
+
 .card {
 	margin: 1rem;
 	background: white;

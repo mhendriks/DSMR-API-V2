@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : TelnetMenu, part of DSMRloggerAPI
-**  Version  : v2.3.1
+**  
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **

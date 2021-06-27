@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : processTelegram, part of DSMRloggerAPI
-**  Version  : v2.3.3
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
 **
