@@ -2,15 +2,15 @@
 Eigenschappen
 - ESP-12S (4MB) als CPU Soc -> veel pull-up weerstanden zijn al aanwezig waardoor het aantal extra componenten laag kan blijven
 - gebruikt secundaire seriale interface (UART1)
-- P1 inversie via transistor, 1 weerstand minder werkt ook prima; Software serial is niet betrouwbaar genoeg
+- P1 inversie via transistor, 1 weerstand minder dan V3 werkt ook prima; Software serial is niet betrouwbaar genoeg
 - RJ11 socket voor gemakkelijke aansluiting
-- usb micro connector voor externe voeding (DSMR 4.x en sommige 5.x meters leveren te weinig vermogen voor de juiste werking)
+- usb micro connector voor externe voeding. Sommige DSMR 5.x en de DSMR leveren te weinig vermogen
 - Power MUX om automatisch van voedingsbron te wisselen. USB is primair.
 - Primaire componenten op bovenkant van de pcb zodat deze in oven/hotplate gemaakt kan worden
 - Secundaire componenten (MUX/usb) zitten op de onderkant
 - 6 pin aansluiting aan de zijkant voor eenvoudige flashing
-- nieuwe spanningsregelaar die een nog lagere spanningsval, meer stroom aan kan en al met al minder warmte af geeft
-- GEEN optocoupler meer ... DTR signaal is altijd hoog. Werkt ook prima ... echter met DTR komen er minder telegram errors voor. In de praktijk ca 0,1% errors is acceptabel
+- nieuwe spanningsregelaar met een nog lagere spanningsval, meer stroom aan kan. Resultaat minder warmte afgifte en hogere betrouwbaarheid
+- GEEN optocoupler meer ... DTR signaal is altijd hoog. Werkt ook prima ... echter met DTR komen er minder telegram errors voor. In de praktijk  <0,1% errors -> is acceptabel
 - Gaatjes in het boardje om deze makkelijk in een 3D printed cases te kunnen monteren (deze komt als opensource ook beschikbaar)
 
 ## SCHEMA
