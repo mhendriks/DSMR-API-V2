@@ -2,16 +2,16 @@
 Eigenschappen
 - ESP-12S (4MB) als CPU Soc -> veel pull-up weerstanden zijn al aanwezig waardoor het aantal extra componenten laag kan blijven
 - gebruikt secundaire seriale interface (UART1)
-- P1 inversie via transistor, 1 weerstand minder dan V3 werkt ook prima; Software serial is niet betrouwbaar genoeg
+- P1 signaal inversie via transistor, 1 weerstand minder dan V3 werkt ook prima; Software serial is niet betrouwbaar genoeg
 - RJ11 socket voor gemakkelijke aansluiting
-- usb micro connector voor externe voeding. Sommige DSMR 5.x en de DSMR leveren te weinig vermogen
+- usb micro connector voor externe voeding. Sommige DSMR 5.x en de DSMR 4.x leveren te weinig vermogen
 - Power MUX om automatisch van voedingsbron te wisselen. USB is primair.
 - Primaire componenten op bovenkant van de pcb zodat deze in oven/hotplate gemaakt kan worden
 - Secundaire componenten (MUX/usb) zitten op de onderkant
 - 6 pin aansluiting aan de zijkant voor eenvoudige flashing
 - nieuwe spanningsregelaar met een nog lagere spanningsval, meer stroom aan kan. Resultaat minder warmte afgifte en hogere betrouwbaarheid
-- GEEN optocoupler meer ... DTR signaal is altijd hoog. Werkt ook prima ... echter met DTR komen er minder telegram errors voor. In de praktijk  <0,1% errors -> is acceptabel
-- Gaatjes in het boardje om deze makkelijk in een 3D printed cases te kunnen monteren (deze komt als opensource ook beschikbaar)
+- GEEN optocoupler meer ... DTR signaal is altijd hoog. Werkt prima ... echter met iets meer errors. In de praktijk minder dan 0,1% errors = acceptabel
+- Gaatjes in het boardje om deze makkelijk in een 3D printed case te kunnen monteren (work in progress als opensource ook beschikbaar)
 
 ## SCHEMA
 Op het printje zitten de volgende modules:
@@ -24,7 +24,7 @@ Alle modules samen zie je in het onderstaande schema.
 ![Kicad schema](hardware/v3.1-kicad-schema.png) 
 
 
-Omgezet naar een board ziet dit er zo uit:
+Omgezet naar een pcb ziet dit er zo uit:
 Bovenkant             |  Onderkant |  Eindresultaat
 :-------------------------:|:-------------------------:|:-------------------------:
 ![hardware bovenkant](hardware/v3.1-print-boven.png)  |  ![hardware onderkant](hardware/v3.1-print-onder.png) | ![hardware eindresultaat](hardware/v3.1-eindresultaat.jpg)
@@ -37,11 +37,10 @@ Naar behoefte zou ook Tasmota of andere firmware gebruikt kunnen worden, dit is 
 
 Aanpassing (tot nu toe) ten opzichte van DSMR-API van Willem zijn:
 - alle statische pagina's komen uit een CDN (esp modules hebben maar een beperkte capaciteit en zijn geen hele goede webservers;)
-- alle plaatjes zijn nu iconen geworden, ook van cdn
-- files zijn omgezet naar Json zodat dit makkelijk te onderhouden is en compacter wordt
+- alle plaatjes zijn  iconen geworden en komen van een cdn
+- files zijn omgezet naar Json zodat dit makkelijk te onderhouden en compacter is
 - json API communicatie is ook gewijzigd (compacter en als een burst ipv gesegmenteerd)
 - opmaak is zo veel als mogelijk uit de html / js files gehaald en in de css gestopt
-- voor de extra input (deurbel) is functionele uitbreiding nodig (work in progress)
 - nieuw dashboard gemaakt
 - Front-end settings worden van de dongel gelezen (een eerste aanzet)
 - LittleFS in plaats van SPIFFS als bestandssysteem
