@@ -64,13 +64,12 @@ void startWiFi(const char* hostname, int timeOut)
   if (!manageWiFi.autoConnect(thisAP.c_str())) 
   {
     DebugTln(F("failed to connect and hit timeout"));
-    
-
+   
     //reset and try again, or maybe put it to deep sleep
-    //delay(3000);
-    //ESP.reset();
-    //delay(2000);
-    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
+    delay(3000);
+    ESP.reset();
+    delay(2000);
+//    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
     return;
   }
 //  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
@@ -80,8 +79,9 @@ void startWiFi(const char* hostname, int timeOut)
 
 #ifdef USE_UPDATE_SERVER
   httpUpdater.setup(&httpServer);
-  httpUpdater.setIndexPage(UpdateServerIndex);
-  httpUpdater.setSuccessPage(UpdateServerSuccess);
+//  httpUpdater.setIndexPage(UpdateServerIndex);
+  httpUpdater.setIndexPage(UpdateHTML);
+//  httpUpdater.setSuccessPage(UpdateServerSuccess);
 #endif
   DebugTf(" took [%d] seconds => OK!\n", (millis() - lTime) / 1000);
   

@@ -53,6 +53,12 @@ uint8_t CalcSlot(E_ringfiletype ringfiletype, char* Timestamp)
   return slot;
 }
 
+void createRingFile(String filename) 
+{
+  if (filename=="/RINGhours.json") createRingFile(RINGHOURS);
+  else if (filename=="/RINGdays.json") createRingFile(RINGDAYS);
+  else if (filename=="/RINGmonths.json") createRingFile(RINGMONTHS);
+  }
 //---------
 void RingFileTo(E_ringfiletype ringfiletype, bool toFile) 
 {  

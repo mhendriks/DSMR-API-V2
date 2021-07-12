@@ -13,6 +13,7 @@
   "use strict";
 
   let activeTab             = "bDashTab";
+  let PauseAPI				= false; //pause api call when browser is inactive
   let presentationType      = "TAB";
   let tabTimer              = 0;
   let actualTimer           = 0;
@@ -23,7 +24,6 @@
   var firmwareVersion       = 0;
   var firmwareVersion_dspl  = "-";
   var newVersionMsg         = "";
-  let MainNav				= true;
   
   var tlgrmInterval         = 10;
   var ed_tariff1            = 0;
@@ -33,24 +33,26 @@
   var gd_tariff             = 0;
   var electr_netw_costs     = 0;
   var gas_netw_costs        = 0;
-  var hostName            	=  "-";  
+  var hostName            	= "-";  
   var data       			= [];
   var DayEpoch				= 0;
-                  
-  let monthType        = "ED";
-  let settingFontColor = 'white'
+  let monthType        		= "ED";
+  let settingFontColor 		= 'white'
                     
-  var monthNames = [ "indxNul","Januari","Februari","Maart","April","Mei","Juni"
-                    ,"Juli","Augustus","September","Oktober","November","December"
-                    ,"\0"
-                   ];
-                   
-  var FS_no_delete = [ "FSexplorer.html", "DSMRindex.html","DSMRsettings.json","DSMRindexEDGE.html","\0"];
-  const spinner = document.getElementById("loader");
+  var monthNames 			= [ "indxNul","Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December","\0"];
+  var FS_no_delete 			= [ "FSexplorer.html", "DSMRindex.html","DSMRsettings.json","DSMRindexEDGE.html","\0"];
+  const spinner 			= document.getElementById("loader");
+
+//---- frontend settings
+  var AMPS					= 35 	//waarde zekering (meestal 35 of 25 ampere)
+  var ShowVoltage			= true 	//toon spannningsverloop op dashboard
+  var UseCDN				= true	//ophalen van hulpbestanden lokaal of via cdn //nog niet geimplementeerd
+  var Injection				= false	//teruglevering energie false = bepaalt door de data uit slimme meter, true = altijd aan
+  var Phases				= 1		//aantal fases (1,2,3) voor de berekening van de totale maximale stroom Imax = fases * AMPS
+  var HeeftGas				= false	//gasmeter aanwezig. default=false => door de slimme meter te bepalen -> true door Frontend.json = altijd aan
 
 // ---- DASH
-var AMPS=35, ShowVoltage=true, UseCDN=true, Injection=false, Phases=1;
-var MaxAmps = 0.0;
+// var MaxAmps = 0.0;
 var TotalAmps=0.0,minKW = 0.0, maxKW = 0.0,minV = 0.0, maxV = 0.0, Pmax,Gmax;
 var hist_arrG=[4], hist_arrPa=[4], hist_arrPi=[4], hist_arrP=[4]; //berekening verbruik
 var day = 0;
@@ -149,6 +151,16 @@ let TrendG = {
       ]
     },
     options: {
+    title: {
+            display: true,
+            text: 'GAS',
+            position: "bottom",
+            padding: -18,
+            fontSize: 17,
+            fontColor: "#000",
+            fontFamily:"Dosis",
+        },
+      responsive:true,
       circumference: Math.PI,
 			rotation: -Math.PI,
       plugins: {
@@ -164,6 +176,16 @@ let TrendG = {
     }, //options
 };
 let optionsP = {
+title: {
+            display: true,
+            text: 'ELECTRA',
+            position: "bottom",
+            padding: -18,
+            fontSize: 17,
+            fontColor: "#000",
+            fontFamily:"Dosis",
+        },
+      responsive:true,
       circumference: Math.PI,
 		rotation:  - Math.PI,
       plugins: {
@@ -233,19 +255,34 @@ let dataPa = {
     };
 
   window.onload=bootsTrapMain;
-  /*
-  window.onfocus = function() {
-    if (needBootsTrapMain) {
-      window.location.reload(true);
-    }
-  };
-  */
+  
+  // Handle page visibility change events
+function visibilityListener() {
+  switch(document.visibilityState) {
+    case "hidden":
+//       console.log("visibilityState: hidden");
+    clearInterval(tabTimer);  
+    clearInterval(actualTimer);
+	clearInterval(timeTimer);  
+      PauseAPI=true;
+      break;
+    case "visible":
+//       console.log("visibilityState: visable");
+	  PauseAPI=false;
+	  timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
+	  openTab();
+      break;
+  }
+	alert_message("Connectie met Dongle stond op pauze...nieuwe data ophalen");
+}
+
+document.addEventListener("visibilitychange", visibilityListener);
 
 //============================================================================  
   
 function UpdateDash()
 {	
-
+	// if (PauseAPI) return;
 /*** 
 	Het dashboard toont verschillende kolommen, namelijk
 	- actueel*1	: actueel verbruik/teruglevering
@@ -269,16 +306,15 @@ function UpdateDash()
 		refreshDays(); //load data first visit
 		DayEpoch = DayEpochTemp;	
 	}
-	
-	showSpinner();
+	Spinner(true);
 	fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
 	  .then(response => response.json())
 	  .then(json => {
 //  	  json = JSON.parse('{"timestamp":{"value":"210417094333S"},"energy_delivered_tariff1":{"value":40,"unit":"kWh"},"energy_delivered_tariff2":{"value":40,"unit":"kWh"},"energy_returned_tariff1":{"value":48,"unit":"kWh"},"energy_returned_tariff2":{"value":0,"unit":"kWh"},"power_delivered":{"value":2.015,"unit":"kW"},"power_returned":{"value":1223,"unit":"kW"},"voltage_l1":{"value":227.7,"unit":"V"},"voltage_l2":{"value":224.2,"unit":"V"},"voltage_l3":{"value":226.8,"unit":"V"},"current_l1":{"value":2,"unit":"A"},"current_l2":{"value":6,"unit":"A"},"current_l3":{"value":1,"unit":"A"},"power_delivered_l1":{"value":0.388,"unit":"kW"},"power_delivered_l2":{"value":1.363,"unit":"kW"},"power_delivered_l3":{"value":0.258,"unit":"kW"},"power_returned_l1":{"value":1,"unit":"kW"},"power_returned_l2":{"value":0,"unit":"kW"},"power_returned_l3":{"value":0,"unit":"kW"},"gas_delivered":{"value":"5","unit":"m3"}}');
 
 		//-------CHECKS
-		//check of gasmeter beschikbaar is	
-		var HeeftGas = "gas_delivered" in json ? !isNaN(json.gas_delivered.value) : false ;
+		//check of gasmeter beschikbaar is	(indien HeeftGas = true uit Frontend,json of eerdere meeting dan niet meer checken uit meterdata, bij false wel checken in meterdata)
+		if (!HeeftGas) HeeftGas = "gas_delivered" in json ? !isNaN(json.gas_delivered.value) : false ;
 		//check of p1 gegevens via api binnen komen
 		if (json.timestamp.value == "-") {
 			console.log("timestamp missing : p1 gegevens correct?");
@@ -286,7 +322,8 @@ function UpdateDash()
 		}
 		
 		//check of teruglevering actief is 
-		var teruglevering = isNaN(json.energy_returned_tariff1.value)?false:json.energy_returned_tariff1.value;
+		var teruglevering = Injection;
+		if (!teruglevering) isNaN(json.energy_returned_tariff1.value)?false:json.energy_returned_tariff1.value;
 
 		//-------TOON METERS
 		document.getElementById("w8api").style.display = "none"; //hide wait message
@@ -303,18 +340,22 @@ function UpdateDash()
 		if (HeeftGas) document.getElementById("l4").style.display = "block";
 
 		//-------SPANNING METER				
-		if (!teruglevering)
+		if (!teruglevering || !ShowVoltage)
 		{
 			//aantal fases berekenen
 			var fases = 1;
-			if (!isNaN(json.voltage_l2.value)) fases++;
-			if (!isNaN(json.voltage_l3.value)) fases++;
-			document.getElementById("fases").innerHTML = fases;
+			if (Phases) fases = Phases;
+			else {
+				//bereken het aantal fases aan de hand van de slimme meter data
+				if (!isNaN(json.voltage_l2.value)) fases++;
+				if (!isNaN(json.voltage_l3.value)) fases++;
+				document.getElementById("fases").innerHTML = fases;
+			}
 			
 			let TotalU = 0 +(isNaN(json.voltage_l1.value)?0:json.voltage_l1.value) + 
 			(isNaN(json.voltage_l2.value)?0:json.voltage_l2.value) + 
 			(isNaN(json.voltage_l3.value)?0:json.voltage_l3.value);
-
+	
 			let Vgem=TotalU/fases;
 			
 			//min - max waarde
@@ -433,13 +474,62 @@ function UpdateDash()
 // 			document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
 		}
 												
-		hideSpinner();
+		Spinner(false);
 		}); //end fetch fields
 }
 	
-// -------------- END DASH
-    
   //============================================================================  
+    
+function menu() {
+  var x = document.getElementById("myTopnav");
+  if (x.className === "main-navigation") {
+    x.className += " responsive";
+    
+  } else {
+    x.className = "main-navigation";
+  }
+//change menu icon
+    var menu = document.getElementById("menuid");
+	menu.classList.toggle("mdi-close");
+	menu.classList.toggle("mdi-menu");
+}
+   
+  //============================================================================  
+
+function handle_menu_click()
+{	
+	var btns = document.getElementsByClassName("nav-item");
+	for (let i = 0; i < btns.length; i++) {
+  		btns[i].addEventListener("click", function() {
+			//reset hamburger menu icon
+			var menu = document.getElementById("menuid");
+			menu.classList.remove("mdi-close");
+			menu.classList.add("mdi-menu");
+	
+			//remove active classes
+			let current = document.getElementById("myTopnav").getElementsByClassName("active");	
+			for (let j=current.length-1; j>=0; j--) {
+	// 					console.log("remove active ["+j+"] current:"+current[j]);
+				current[j].classList.remove("active");
+		}
+		//add new active classes
+			var closest = this.closest("ul");
+			if (closest && !closest.previousElementSibling.classList.contains("active","topcorner","mdi")) {
+				console.log("contains: subnav, closest:" +closest.className);
+				closest.previousElementSibling.classList.add("active");
+			}
+			if(!this.classList.contains("active","nav-img")) 
+			this.classList.add("active");
+
+			activeTab = this.id;
+			//console.log("ActiveID - " + activeTab );
+			openTab();  		
+  		});
+	}
+}
+
+  //============================================================================  
+  
   function bootsTrapMain() {
     console.log("bootsTrapMain()");
 // 	console.log("hash:"+ location.hash);
@@ -449,33 +539,7 @@ function UpdateDash()
 	trend_p = new Chart(document.getElementById("container-3"), {type: 'doughnut', data:dataP, options: optionsP});
 	trend_pi = new Chart(document.getElementById("container-5"), {type: 'doughnut', data:dataPi, options: optionsP});
 	trend_pa = new Chart(document.getElementById("container-6"), {type: 'doughnut', data:dataPa, options: optionsP} );
-
-	//handle Clickevents - main-menu
-	var btns = document.getElementsByClassName("nav-item");
-	for (let i = 0; i < btns.length; i++) {
-  		btns[i].addEventListener("click", function() {
-			activeTab = this.id;
-			var current = document.getElementsByClassName("nav-item active");
-			if (current.length > 0) { current[0].className = current[0].className.replace(" active", ""); }
-			//console.log("ActiveID - " + activeTab );
-			this.className += " active";
-			MainNav = true;
-			openTab();  		
-  		});
-	}
-	//handle Clickevents - sub-menu's
-	var btns = document.getElementsByClassName("subnav-item");
-	for (let i = 0; i < btns.length; i++) {
-  		btns[i].addEventListener("click", function() {
-			activeTab = this.id;
-			var current = document.getElementsByClassName("subnav-item active");
-			for (let i = current.length;i > 0;i--) { current[i-1].className = current[i-1].className.replace(" active", ""); }
-			//console.log("Subnav ActiveID - " + activeTab );
-			this.className += " active";
-			MainNav = false;	
-			openTab();  	
-  		});
-	}
+	handle_menu_click();
 	FrontendConfig();
     refreshDevTime();
     clearInterval(timeTimer);  
@@ -499,6 +563,7 @@ function UpdateDash()
 	//reselect Dash when Home icon has been clicked
  	document.getElementById("Home").addEventListener("click", function() { document.getElementById('bDashTab').click(); });
   } // bootsTrapMain()
+  
   
   //============================================================================  
   function handleRedirect(){
@@ -525,49 +590,23 @@ function UpdateDash()
 		}
 	}, 1000);
 }
+
+  //============================================================================  
   
-  //============================================================================  
-
-  function showSpinner() {
-	document.getElementById("loader").removeAttribute('hidden');
-	setTimeout(() => { document.getElementById("loader").setAttribute('hidden', '');}, 5000);
+  function Spinner(show) {
+	if (show) {
+		document.getElementById("loader").removeAttribute('hidden');
+		setTimeout(() => { document.getElementById("loader").setAttribute('hidden', '');}, 5000);
+	} else document.getElementById("loader").setAttribute('hidden', '');
   }
-  //============================================================================  
-
- function hideSpinner() {
-  document.getElementById("loader").setAttribute('hidden', '');
- }
-
-  //============================================================================  
-
-  function update_nav(){
-  	//hide all submenu's
-	if (MainNav) { 
-		document.getElementById("nav-settings").style.display = "none";
-		document.getElementById("nav-info").style.display = "none";
-		//reset subnav active
-		var current = document.getElementsByClassName("subnav-item active");
-		for (let i = current.length;i > 0;i--) { current[i-1].className = current[i-1].className.replace(" active", ""); }
-	}
-	//activate submenu when applicable
-	if (activeTab == "bSettings" ) {
-		document.getElementById("nav-settings").style.display = "flex";  
-		document.getElementById("bEditSettings").className += " active"
-	}
-	if (activeTab == "bSysInfoTab") {
-		document.getElementById("nav-info").style.display = "flex";  
-		document.getElementById("bInfo_SysInfo").className += " active"
-	}
-  } // update_nav()
 
   //============================================================================  
   function openTab() {
-	if (activeTab == "Home") activeTab = "bDashTab";
+
     console.log("openTab : " + activeTab );
-  	update_nav();
+   document.getElementById("myTopnav").className = "main-navigation"; //close dropdown menu 
     clearInterval(tabTimer);  
     clearInterval(actualTimer);  
-	
 	//--- hide canvas -------
     document.getElementById("dataChart").style.display = "none";
     document.getElementById("gasChart").style.display  = "none";
@@ -641,6 +680,10 @@ function UpdateDash()
 	  clearInterval(actualTimer); //otherwise the data blok is overwritten bij actual data
       refreshDevInfo();
 	  tabTimer = setInterval(refreshDevInfo, 10 * 1000); // repeat every 10s
+    } else if (activeTab == "bInfo_frontend") {
+	  data = {};
+	  clearInterval(actualTimer); //otherwise the data blok is overwritten bij actual data
+      FrontendConfig();
     } 
   } // openTab()
   
@@ -650,8 +693,8 @@ function UpdateDash()
 	 let span = document.querySelector('span');
 	 let main = document.querySelector('main');
 	 let fileSize = document.querySelector('fileSize');
-	showSpinner();
 
+	 Spinner(true);
 	 fetch('api/listfiles', {"setTimeout": 5000}).then(function (response) {
 		 return response.json();
 	 }).then(function (json) {
@@ -689,7 +732,7 @@ function UpdateDash()
 	   main.insertAdjacentHTML('beforeend', `<p id="FSFree">Opslag: <b>${json[i].usedBytes} gebruikt</b> | ${json[i].totalBytes} totaal`);
 	   free = json[i].freeBytes;
 	   fileSize.innerHTML = "<b> &nbsp; </b><p>";    // spacer                
-	   hideSpinner();
+	   Spinner(false);
 	 });	// function(json)
 	 
 	 document.getElementById('Ifile').addEventListener('change', () => {
@@ -713,12 +756,12 @@ function UpdateDash()
   
   //============================================================================  
   function refreshDevInfo()
-  { showSpinner();
+  { Spinner(true);
     fetch(APIGW+"v2/dev/info", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
         console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
-		hideSpinner();
+		Spinner(false);
         obj = json;
         var tableRef = document.getElementById('tb_info');
         //clear table
@@ -742,16 +785,7 @@ function UpdateDash()
 			   console.log("fwversion: " + obj[k] );
 			   devVersion = obj[k];
            }
-        } //for loop
-		var newRow=tableRef.insertRow(-1);
-		var MyCell1 = newRow.insertCell(0);
-		var MyCell2 = newRow.insertCell(1);
-		var MyCell3 = newRow.insertCell(2);
-        MyCell1.innerHTML="Zekeringwaarde per groep";
-		MyCell2.innerHTML=AMPS;
-		MyCell3.innerHTML="Ampere";
-// 		MyCell2.style.textAlign = "right";
-      
+        } //for loop      
 	  //new fwversion detection
   	  document.getElementById('devVersion').innerHTML = obj.fwversion;
 	  var tmpFW = devVersion;
@@ -785,18 +819,44 @@ function UpdateDash()
 //============================================================================  
   function FrontendConfig()  {
     console.log("Read Frontend config");
-	showSpinner();
+	Spinner(true);
 	fetch(APIGW+"../Frontend.json", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
+		  data = json;
           //console.log("parsed frontend config: ["+ JSON.stringify(json)+"]");
           //{"ShowVoltage":true,"Injection":false,"Phases":1,"Fuse":35,"cdn":true}
           AMPS=json.Fuse;
           ShowVoltage=json.ShowVoltage;
           UseCDN=json.cdn;
           Injection=json.Injection;
-          Phases=json.Phases;
-         hideSpinner();
+          Phases=json.Phases;   
+          HeeftGas=json.GasAvailable;
+          
+          for (var item in data) 
+          {
+//           	console.log("config item: " +item);
+//           	console.log("config data[item].value: " +data[item].value);
+            var tableRef = document.getElementById('frontendTable').getElementsByTagName('tbody')[0];
+            if( ( document.getElementById("frontendTable_"+item)) == null )
+            {
+              var newRow   = tableRef.insertRow();
+              newRow.setAttribute("id", "frontendTable_"+item, 0);
+              // Insert a cell in the row at index 0
+              var newCell  = newRow.insertCell(0);                  // name
+              var newText  = document.createTextNode('');
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(1);                      // humanName
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(2);                      // value
+              newCell.appendChild(newText);
+            }
+            tableCells = document.getElementById("frontendTable_"+item).cells;
+            tableCells[0].innerHTML = item;
+            tableCells[1].innerHTML = translateToHuman(item);
+            tableCells[2].innerHTML = data[item];
+          }
+         Spinner(false);
       }) //json
   }
 
@@ -804,7 +864,6 @@ function UpdateDash()
   function refreshDevTime()
   {
 	alert_message("");
-
     console.log("Refresh api/v2/dev/time ..");
     
 	let controller = new AbortController();
@@ -831,7 +890,8 @@ function UpdateDash()
     
   //============================================================================  
   function refreshSmActual()
-  { showSpinner();
+  { 
+  	Spinner(true);
     fetch(APIGW+"v2/sm/actual", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
@@ -842,7 +902,7 @@ function UpdateDash()
                 showActualTable(data);
           else  showActualGraph(data);
         //console.log("-->done..");
-         hideSpinner();
+         Spinner(false);
       }) //json
       .catch(function(error) {
         var p = document.createElement('p');
@@ -853,7 +913,7 @@ function UpdateDash()
   
   //============================================================================  
   function refreshSmFields()
-  { showSpinner();
+  { Spinner(true);
     fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
       .then(response => response.json())
       .then(json => {
@@ -908,7 +968,7 @@ function UpdateDash()
             }
           }
           //console.log("-->done..");
-        hideSpinner();
+        Spinner(false);
 
       })
       .catch(function(error) {
@@ -992,7 +1052,7 @@ function UpdateDash()
   }
   //============================================================================  
   function refreshHours()
-  { showSpinner();
+  { Spinner(true);
     console.log("fetch("+APIGW+"../RINGhours.json)");
 
     fetch(APIGW+"../RINGhours.json", {"setTimeout": 5000})
@@ -1010,7 +1070,7 @@ function UpdateDash()
         if (presentationType == "TAB")
               showHistTable(data, "Hours");
         else  showHistGraph(data, "Hours");
-	 hideSpinner();
+	 Spinner(false);
 
       })
       .catch(function(error) {
@@ -1024,7 +1084,8 @@ function UpdateDash()
   //============================================================================  
   function refreshDays()
   {
-  	showSpinner();
+	// if (PauseAPI) return;
+	Spinner(true);
     console.log("fetch("+APIGW+"../RINGdays.json)");
     fetch(APIGW+"../RINGdays.json", {"setTimeout": 5000})
     .then(function (response) {
@@ -1050,7 +1111,7 @@ function UpdateDash()
 			hist_arrPa[i] = json.data[tempslot].values[0] + json.data[tempslot].values[1];
 			hist_arrPi[i] = json.data[tempslot].values[2] + json.data[tempslot].values[3];
 		};
-	    hideSpinner();
+	    Spinner(false);
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -1066,7 +1127,7 @@ function UpdateDash()
   //============================================================================  
   function refreshMonths()
   {
-  	showSpinner();
+  	Spinner(true);
     console.log("fetch("+APIGW+"../RINGmonths.json)");
     fetch(APIGW+"../RINGmonths.json", {"setTimeout": 5000})
       .then(function (response) {
@@ -1087,7 +1148,7 @@ function UpdateDash()
           else  showMonthsHist(data);
         }
         else  showMonthsGraph(data);
-        hideSpinner();
+        Spinner(false);
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -1102,7 +1163,7 @@ function UpdateDash()
     
   //============================================================================  
   function refreshSmTelegram()
-  { showSpinner();
+  { Spinner(true);
     fetch(APIGW+"v2/sm/telegram")
       .then(response => response.text())
       .then(response => {
@@ -1120,7 +1181,7 @@ function UpdateDash()
         }
         preT = document.getElementById("TelData");
         preT.textContent = response;
-        hideSpinner();
+        Spinner(false);
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -1457,7 +1518,7 @@ function UpdateDash()
   
   //============================================================================  
   function getDevSettings()
-  { showSpinner();
+  { Spinner(true);
     fetch(APIGW+"v2/dev/settings")
       .then(response => response.json())
       .then(json => {
@@ -1471,7 +1532,7 @@ function UpdateDash()
         electr_netw_costs = json.electr_netw_costs.value;
         gas_netw_costs = json.gas_netw_costs.value;
         hostName = json.hostName.value;
-        hideSpinner();
+        Spinner(false);
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -1555,7 +1616,7 @@ function UpdateDash()
   function refreshSettings()
   {
     console.log("refreshSettings() ..");
-    showSpinner();
+    Spinner(true);
     data = {};
     fetch(APIGW+"v2/dev/settings")
       .then(response => response.json())
@@ -1618,7 +1679,7 @@ function UpdateDash()
           }
         }
         //console.log("-->done..");
-         hideSpinner();
+         Spinner(false);
 
       })
       .catch(function(error) {
@@ -1634,7 +1695,7 @@ function UpdateDash()
   
   //============================================================================  
   function getMonths()
-  {	showSpinner();
+  {	Spinner(true);
     console.log("fetch("+APIGW+"v2/hist/months)");
     fetch(APIGW+"v2/hist/months", {"setTimeout": 5000})
       .then(response => response.json())
@@ -1643,7 +1704,7 @@ function UpdateDash()
         data = json;
         expandDataSettings(data);
         showMonths(data, monthType);
-        hideSpinner();
+        Spinner(false);
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -1955,7 +2016,7 @@ function UpdateDash()
         //aangepast cors -> no-cors
         mode : "no-cors"
     };
-	showSpinner();
+	Spinner(true);
     fetch(APIGW+"v2/dev/settings", other_params)
       .then(function(response) {
             //console.log(response.status );    //=> number 100–599
@@ -1964,7 +2025,7 @@ function UpdateDash()
             //console.log(response.url);        //=> String
             //console.log(response.text());
             //return response.text()
-            hideSpinner();
+            Spinner(false);
       }, function(error) {
         console.log("Error["+error.message+"]"); //=> String
       });      
@@ -2113,10 +2174,10 @@ function UpdateDash()
         method : "POST",
         mode : "cors"
     };
-    showSpinner();
+    Spinner(true);
     fetch(APIGW+"v2/hist/months", other_params)
       .then(function(response) {
-      hideSpinner();
+      Spinner(false);
       }, function(error) {
         console.log("Error["+error.message+"]"); //=> String
       });
@@ -2428,6 +2489,12 @@ function UpdateDash()
           ,[ "reboots",                   "Aantal keer opnieuw opgestart" ]
           ,[ "lastreset",                 "Laatste Reset reden" ]
           ,[ "smr_version",               "NL of BE Slimme Meter" ]
+          ,[ "ShowVoltage",               "Toon spanningmeter in Dashboard" ]
+          ,[ "Injection",                 "Wordt er stroom opgewekt (bv zonnecellen)" ]
+          ,[ "Phases",                    "Hoeveel Fases heeft de meter [0-3]<br>[0=check op basis van meterdata]" ]
+          ,[ "Fuse",                      "Wat is de waarde van de hoofdzekering(en)" ]
+          ,[ "cdn",               		  "Frontend html/css uit de cloud" ]
+          ,["GasAvailable",				  "Gasmeter beschikbaar? <br>[True = geen check op basis van meterdata]<br>[False = wel checken]"]
 ];
 
 /*

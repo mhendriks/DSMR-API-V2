@@ -41,8 +41,6 @@ static      FSInfo fs_info;
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
 #define DTR_ENABLE          14
-//#define JSON_BUFF_MAX       255
-//#define MQTT_BUFF_MAX       200
 #define LED                 2
 
 P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
@@ -150,10 +148,8 @@ using MyData = ParsedData<
 
 enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
 
-const PROGMEM char *weekDayName[]  { "Unknown", "Zondag", "Maandag", "Dinsdag", "Woensdag"
-                            , "Donderdag", "Vrijdag", "Zaterdag", "Unknown" };
-const PROGMEM char *monthName[]    { "00", "Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli"
-                            , "Augustus", "September", "Oktober", "November", "December", "13" };
+const PROGMEM char *weekDayName[]  { "Unknown", "Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Unknown" };
+const PROGMEM char *monthName[]    { "00", "Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December", "13" };
 const PROGMEM char *flashMode[]    { "QIO", "QOUT", "DIO", "DOUT", "Unknown" };
 
 //===========================prototype's=======================================
@@ -168,7 +164,7 @@ void delayms(unsigned long);
 #endif
   
   MyData      DSMRdata;
-  uint32_t    readTimer;
+//  uint32_t    readTimer;
   time_t      actT, newT;
   char        actTimestamp[20] = "";
   char        newTimestamp[20] = "";
@@ -177,18 +173,17 @@ void delayms(unsigned long);
   float       GDT_G = 0, EDT1_G = 0,  EDT2_G = 0,ERT1_G = 0,ERT2_G = 0; //eindstand teller gisteren ivm dagberekening
   uint32_t    nrReboots  = 0;
   uint32_t    telegramCount = 0, telegramErrors = 0;
-  bool        showRaw = false;
-  int8_t      showRawCount = 0;
-  bool        LEDenabled = true;
-  char        SMRVERSION[3] = "NL";
+  bool        showRaw       = false;
+  int8_t      showRawCount  = 0;
+  bool        LEDenabled    = true;
+  bool        DSMR_NL       = true;
 
   char      cMsg[150];
   String    lastReset           = "";
-  bool      FSNotPopulated  = false;
+  bool      FSNotPopulated      = false;
   bool      mqttIsConnected     = false;
   bool      Verbose1 = false, Verbose2 = false;
   int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
-  //uint32_t  unixTimestamp;
   uint64_t  upTimeSeconds;
   IPAddress ipDNS, ipGateWay, ipSubnet;
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
@@ -206,10 +201,6 @@ void delayms(unsigned long);
   String    pTimestamp;
   float     gasDelivered;
   
-
-
-
-
 #if defined(HAS_NO_SLIMMEMETER)
   bool        forceBuildRingFiles = false;
   enum runStates { SInit, SMonth, SDay, SHour, SNormal };

@@ -76,7 +76,7 @@ void processSlimmemeter()
         DSMRdata.p1_version = DSMRdata.p1_version_be;
         DSMRdata.p1_version_be_present  = false;
         DSMRdata.p1_version_present     = true;
-        strncpy(SMRVERSION,"BE",sizeof(SMRVERSION));
+        DSMR_NL = false;
       }
 
       modifySmFaseInfo();

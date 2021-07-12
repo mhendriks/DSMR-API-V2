@@ -10,20 +10,18 @@
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
-*      √ aanpassing dsmr lees interval naar default 2 sec (ipv 10)
-*      √ fix listfiles ivm LittleFS
-*      √ AUX | MinderGas | Blynk verwijderd
-*      √ LITTLEFS ipv SPIFFS <-- breaking change
-*      √ FileExplorer SPIFFS verwijderen (FE code)
-*      √ refactor telegram capture/receiving
-*      √ LED blink on each telegram (vanaf v3.1 hardware)
-*      √ zonder refresh settings tonen (update)
-*      √ universal smr (dank Willem en Matthijs)
-*      √ QIO Flash mode
-*      √ LED config ON/OFF in the settings
-*      √ Frontend.json om enkele frontend instellingen te kunnen doen (eerste aanzet)
 *      - aanpassen Telnet plugin ivm crash na x minuten
-*      - herzien javascript navigate
+*      √ herzien navigate
+*      √ webclient GEEN FOCUS -> stop met uitvragen api
+*      √ verplaatsen update/reset/restart
+*      √ nieuwe update scherm
+*      - indien api niet beschikbaar (chck time) dan overige calls ook niet meer doen
+*      √ instellingen FrontEnd zichtbaar in webpagina read only
+*      - frontend instellingen mutabel in webpagina
+*      √ fix sm data gas data indien deze niet aanwezig is
+*      √ bugfix: niet aanmaken van nieuwe ring file bij file not found
+*      √ reboot after 4 min AP mode
+*      √ bugfix: pulldown menu icon toggle
 *      
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 

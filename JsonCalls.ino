@@ -32,12 +32,14 @@ struct buildJson {
         {          
           String Unit = Item::unit();
           jsonDoc[Name]["value"] = value_to_json(i.val());
+          if (Name == "mbus1_delivered") {
+            jsonDoc["gas_delivered"]["value"] =  value_to_json(i.val());
+            jsonDoc["gas_delivered"]["unit"]  = "m3";
+          }
           if (Unit.length() > 0) jsonDoc[Name]["unit"]  = Unit;
-        }  else if (!onlyIfPresent) jsonDoc[Name]["value"] = "-";
-        if (Name == "mbus1_delivered") 
-        {
-          jsonDoc["gas_delivered"]["value"] =  value_to_json(i.val());
-          jsonDoc["gas_delivered"]["unit"]  = "m3";
+        }  else if (!onlyIfPresent) {
+          jsonDoc[Name]["value"] = "-";
+          if (Name == "mbus1_delivered") jsonDoc["gas_delivered"]["value"]  = "-";
         }
     } //infielsarrayname
   }
@@ -162,7 +164,7 @@ void sendDeviceInfo()
   doc["fwversion"] = _VERSION;
   snprintf(cMsg, sizeof(cMsg), "%s %s", __DATE__, __TIME__);
   doc["compiled"] = cMsg;
-  doc["smr_version"] = SMRVERSION;
+  doc["smr_version"] = DSMR_NL?"NL":"BE";
   doc["hostname"] = settingHostname;
   doc["ipaddress"] = WiFi.localIP().toString();
   doc["indexfile"] = settingIndexPage;
@@ -371,7 +373,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     String buff = slimmeMeter.raw();
     if (buff.length() == 0) 
     {
-      httpServer.setContentLength(20);
+      httpServer.setContentLength(33);
       httpServer.send(200, "application/plain", F("empty telegram buffer, try again"));
       return;
     }
