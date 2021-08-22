@@ -370,14 +370,18 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
   break;  
   case 't': //telegramm 
   {
+    byte i = 0;
+    if (!slimmeMeter.available()){
+      slimmeMeter.enable(true);
+    while (!slimmeMeter.loop() && (i < 12)){ delay(100); i++;}
+    }
     String buff = slimmeMeter.raw();
-    if (buff.length() == 0) 
+    if (buff.length() < 50) 
     {
       httpServer.setContentLength(33);
       httpServer.send(200, "application/plain", F("empty telegram buffer, try again"));
       return;
-    }
-    sendJsonBuffer(&buff[0]);
+    } else sendJsonBuffer(&buff[0]);
     break; 
     } 
   default:

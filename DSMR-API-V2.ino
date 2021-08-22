@@ -11,13 +11,15 @@
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
 *      - aanpassen Telnet plugin ivm crash na x minuten
+*      - indien api niet beschikbaar (chck time) dan overige calls ook niet meer doen
+*      - frontend instellingen mutabel in webpagina
+*      - mqtt broker benaderen via host name http://www.iotsharing.com/2017/06/how-to-get-ip-address-from-mdns-host-name-in-arduino-esp32.html 
+*      √ telegram tonen verbeteren (buffer is te vaak leeg)
 *      √ herzien navigate
 *      √ webclient GEEN FOCUS -> stop met uitvragen api
 *      √ verplaatsen update/reset/restart
 *      √ nieuwe update scherm
-*      - indien api niet beschikbaar (chck time) dan overige calls ook niet meer doen
 *      √ instellingen FrontEnd zichtbaar in webpagina read only
-*      - frontend instellingen mutabel in webpagina
 *      √ fix sm data gas data indien deze niet aanwezig is
 *      √ bugfix: niet aanmaken van nieuwe ring file bij file not found
 *      √ reboot after 4 min AP mode
