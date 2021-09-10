@@ -210,10 +210,10 @@ void delayms(unsigned long);
 //===========================================================================================
 // setup timers 
 DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
-DECLARE_TIMER_MIN(reconnectWiFi,      30);
+DECLARE_TIMER_SEC(reconnectWiFi,      10);
 DECLARE_TIMER_SEC(synchrNTP,          30);
 DECLARE_TIMER_SEC(nextTelegram,        2);
-DECLARE_TIMER_MIN(reconnectMQTTtimer,  2); // try reconnecting cyclus timer
+DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_SEC(antiWearTimer,      301); //write files every ±5min
 

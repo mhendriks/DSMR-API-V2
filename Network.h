@@ -8,7 +8,6 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-
 #include <ESP8266WiFi.h>        //ESP8266 Core WiFi Library         
 #include <ESP8266WebServer.h>   // Version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
 #include <ESP8266mDNS.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
@@ -26,6 +25,8 @@ ESP8266WebServer        httpServer (80);
 
 bool        FSmounted = false; 
 bool        isConnected = false;
+
+void LogFile(const char*);
 
 //gets called when WiFiManager enters configuration mode
 //===========================================================================================
@@ -45,8 +46,10 @@ void startWiFi(const char* hostname, int timeOut)
   WiFiManager manageWiFi;
   uint32_t lTime = millis();
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
-
+  
   DebugTln("start ...");
+  LogFile("Wifi Starting");
+  digitalWrite(2, HIGH); //OFF
   
   manageWiFi.setDebugOutput(false);
   
@@ -66,6 +69,7 @@ void startWiFi(const char* hostname, int timeOut)
     DebugTln(F("failed to connect and hit timeout"));
    
     //reset and try again, or maybe put it to deep sleep
+    LogFile("Wifi Timeout");
     delay(3000);
     ESP.reset();
     delay(2000);
@@ -75,7 +79,8 @@ void startWiFi(const char* hostname, int timeOut)
 //  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
     WiFi.hostname("p1-dongle");
     DebugTf("Device name [%s]\n", "p1-dongle");
-
+    LogFile("Wifi Connected");
+    digitalWrite(2, LOW); //ON
 
 #ifdef USE_UPDATE_SERVER
   httpUpdater.setup(&httpServer);

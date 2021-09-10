@@ -24,6 +24,10 @@
 *      √ bugfix: niet aanmaken van nieuwe ring file bij file not found
 *      √ reboot after 4 min AP mode
 *      √ bugfix: pulldown menu icon toggle
+*      √ reconnectMQTTtimer
+*      √ reconnectWiFi
+*      √ LED sequence: sign of life (1.5 sec), Alleen aan wanneer Wifi Connected, tijdens aan kort uit als indicatie dat telegram is gelezen.
+*      
 *      
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 
@@ -85,11 +89,17 @@ void setup()
   Serial.begin(115200, SERIAL_8N1);
   pinMode(DTR_ENABLE, OUTPUT);
   pinMode(LED, OUTPUT); //LED ESP12S
+  
+  // sign off life
+  digitalWrite(LED, LOW); //ON
+  delay(1500);
+  digitalWrite(LED, HIGH); //OFF
+  
   //--- setup randomseed the right way
   //--- This is 8266 HWRNG used to seed the Random PRNG
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
   randomSeed(RANDOM_REG32); 
-  for(int b=0; b<4; b++) { digitalWrite(LED, !digitalRead(LED)); delay(300);} //some delay
+  
   Debug("\n\n ----> BOOTING....[" _VERSION "] <-----\n\n");
   DebugTln("The board name is: " ARDUINO_BOARD);
 
@@ -131,7 +141,7 @@ void setup()
   Debug (F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
   Debugln();
 
-  for(int b=0; b<3; b++) { digitalWrite(LED, !digitalRead(LED)); delay(300);} //some delay
+  //for(int b=0; b<3; b++) { digitalWrite(LED, !digitalRead(LED)); delay(300);} //some delay
 //-----------------------------------------------------------------
 #ifdef USE_SYSLOGGER
   openSysLog(false);
@@ -193,7 +203,8 @@ void setup()
 //================ Start MQTT  ======================================
 
 #ifdef USE_MQTT                                                 //USE_MQTT
-  connectMQTT();                                                //USE_MQTT
+  //connectMQTT();
+  if ( (strlen(settingMQTTbroker) > 3) && (settingMQTTinterval != 0)) connectMQTT();
 #endif                                                          //USE_MQTT
 
 //================ End of Start MQTT  ===============================
@@ -274,10 +285,10 @@ void doTaskTelegram()
     //-- enable DTR to read a telegram from the Slimme Meter
     slimmeMeter.enable(true); 
   #endif
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    for(int b=0; b<10; b++) { digitalWrite(LED, !digitalRead(LED)); delay(100);}
-  }
+//  if (WiFi.status() != WL_CONNECTED)
+//  {
+//    for(int b=0; b<10; b++) { digitalWrite(LED, !digitalRead(LED)); delay(100);}
+//  }
 }
 
 //===[ Do System tasks ]=============================================================
@@ -318,11 +329,13 @@ void loop ()
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
   {
+    LogFile("Wifi connection lost");  
     writeToSysLog("Restart wifi with [%s]...", settingHostname);
     startWiFi(settingHostname, 10);
-    if (WiFi.status() != WL_CONNECTED)
+    if (WiFi.status() != WL_CONNECTED){
           writeToSysLog("%s", "Wifi still not connected!");
-    else {
+          LogFile("Wifi connection still lost");  
+    } else {
           snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str()
                                                               , WiFi.gatewayIP().toString().c_str());
           writeToSysLog("%s", cMsg);
@@ -341,7 +354,6 @@ void loop ()
     }
   }
 #endif                                                              //USE_NTP
-
   yield();
 
 } // loop()

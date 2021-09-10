@@ -321,7 +321,7 @@ void Rebootlog(){
   }
   
   //log rotate
-  if (RebootFile.size() > 1500){ 
+  if (RebootFile.size() > 2500){ 
 //    DebugT(F("RebootLog filesize: "));Debugln(RebootFile.size());
     LittleFS.remove("/Rebootlog.old");     //remove .old if existing 
     //rename file
@@ -336,6 +336,33 @@ void Rebootlog(){
   
     //closing the file
     RebootFile.close(); 
+}
+
+//=======================================================================
+void LogFile(const char* payload) {
+  if (!FSmounted) return;
+  File LogFile = LittleFS.open("/P1.log", "a"); // open for appending  
+  if (!LogFile) {
+    DebugTln(F("open P1.log FAILED!!!--> Bailout\r\n"));
+    return;
+  }
+  
+  //log rotate
+  if (LogFile.size() > 2500){ 
+//    DebugT(F("LogFile filesize: "));Debugln(RebootFile.size());
+    LittleFS.remove("/P1_log.old");     //remove .old if existing 
+    //rename file
+    DebugTln(F("RebootLog: rename file"));
+    LogFile.close(); 
+    LittleFS.rename("/P1.log", "/P1_log.old");
+    LogFile = LittleFS.open("/P1.log", "a"); // open for appending  
+    }
+  
+    //make one record : {"time":"2020-09-23 17:03:25","log":"Software/System restart"}
+    LogFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"log\":\"" + payload + "\"}");
+  
+    //closing the file
+    LogFile.close(); 
 }
 
 /***************************************************************************

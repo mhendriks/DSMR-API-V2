@@ -42,6 +42,7 @@ void handleSlimmemeter()
       Debugf("Telegram Raw (%d)\n%s\n" ,l,slimmeMeter.raw().c_str()); 
     } 
     else processSlimmemeter();
+    if (LEDenabled) digitalWrite(LED, !digitalRead(LED)); //toggle LED when telegram available
   } //available
 } // handleSlimmemeter()
 
@@ -120,7 +121,7 @@ void processSlimmemeter()
   
 } // handleSlimmeMeter()
 
-#endif
+
 
 //==================================================================================
 void modifySmFaseInfo()
@@ -210,6 +211,8 @@ float modifyMbusDelivered()
   return tmpGasDelivered;
     
 } //  modifyMbusDelivered()
+
+#endif
 
 /***************************************************************************
 *

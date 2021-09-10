@@ -55,7 +55,7 @@ void connectMQTT()
                                               , MQTTclient.connected()
                                               , mqttIsConnected, stateMQTT);
 
-  CHANGE_INTERVAL_MIN(reconnectMQTTtimer, 5);
+  CHANGE_INTERVAL_SEC(reconnectMQTTtimer, 5);
 
 #endif
 }
@@ -69,6 +69,7 @@ bool connectMQTT_FSM()
   {
     case MQTT_STATE_INIT:  
           DebugTln(F("MQTT State: MQTT Initializing"));
+          LogFile("MQTT Starting");
           WiFi.hostByName(settingMQTTbroker, MQTTbrokerIP);  // lookup the MQTTbroker convert to IP
           snprintf(MQTTbrokerIPchar, sizeof(MQTTbrokerIPchar), "%d.%d.%d.%d", MQTTbrokerIP[0]
                                                                             , MQTTbrokerIP[1]
@@ -95,6 +96,7 @@ bool connectMQTT_FSM()
 
     case MQTT_STATE_TRY_TO_CONNECT:
           DebugTln(F("MQTT State: MQTT try to connect"));
+          LogFile("MQTT State: MQTT try to connect");
           DebugTf("MQTT server is [%s], IP[%s]\r\n", settingMQTTbroker, MQTTbrokerIPchar);
       
           DebugTf("Attempting MQTT connection as [%s] .. \r\n", MQTTclientId.c_str());
@@ -116,6 +118,7 @@ bool connectMQTT_FSM()
           {
             reconnectAttempts = 0;  
             Debugf(" .. connected -> MQTT status, rc=%d\r\n", MQTTclient.state());
+            LogFile("MQTT connected");
             MQTTclient.loop();
             stateMQTT = MQTT_STATE_IS_CONNECTED;
             return true;
@@ -132,20 +135,23 @@ bool connectMQTT_FSM()
           break;
           
     case MQTT_STATE_IS_CONNECTED:
+          LogFile("MQTT Connected");
           MQTTclient.loop();
           return true;
 
     case MQTT_STATE_ERROR:
-          DebugTln(F("MQTT State: MQTT ERROR, wait for 10 minutes, before trying again"));
-          //--- next retry in 10 minutes.
-          CHANGE_INTERVAL_MIN(reconnectMQTTtimer, 10);
+          DebugTln(F("MQTT State: MQTT ERROR, wait for 5 seconds, before trying again"));
+          LogFile("MQTT Error: retry in 5 seconds");
+
+          //--- next retry in 5 sec.
+          CHANGE_INTERVAL_SEC(reconnectMQTTtimer, 5);
           break;
 
     default:
           DebugTln(F("MQTT State: default, this should NEVER happen!"));
           //--- do nothing, this state should not happen
           stateMQTT = MQTT_STATE_INIT;
-          CHANGE_INTERVAL_MIN(reconnectMQTTtimer, 10);
+          CHANGE_INTERVAL_SEC(reconnectMQTTtimer, 5);
           DebugTln(F("Next State: MQTT_STATE_INIT"));
           break;
   }
@@ -226,7 +232,7 @@ void sendMQTTData()
     }
     else
     {
-      DebugTf("trying to reconnect in less than %d minutes\r\n", (TIME_LEFT_MIN(reconnectMQTTtimer) +1) );
+      DebugTf("trying to reconnect in less than %d seconds\r\n", (TIME_LEFT_SEC(reconnectMQTTtimer) +1) );
     }
     if ( !mqttIsConnected ) 
     {
