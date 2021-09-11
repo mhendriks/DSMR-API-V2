@@ -32,6 +32,7 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   httpServer.on("/upload", HTTP_POST, []() {}, handleFileUpload);
   httpServer.on("/ReBoot", reBootESP);
   httpServer.on("/update", updateFirmware);
+  httpServer.on("/remote-update", RemoteUpdate);
   httpServer.on("/ResetWifi", resetWifi);
   httpServer.onNotFound([]() 
   {
@@ -112,6 +113,28 @@ void APIlistFiles()             // Senden aller Daten an den Client
   httpServer.send(200, "application/json", temp);
   
 } // APIlistFiles()
+
+
+//---------------
+void RemoteUpdate(){
+/*
+ * nodig bij de update:
+ * - Flashsize
+ * - versienummer + land 
+ * voorbeeld : invoer 2.3.7BE -> DMSR-API-V2.3.7BE_<FLASHSIZE>Mb.bin.gz
+ * voorbeeld : invoer 2.3.7 -> DMSR-API-V2.3.7_<FLASHSIZE>Mb.bin.gz
+ */
+  int flashSize = (ESP.getFlashChipRealSize() / 1024.0 / 1024.0);
+  const char* otaUrl = "http://192.168.0.1/fota/";
+  String versie = httpServer.arg(0);
+  
+  if (httpServer.argName(0) == "version") {
+    DebugT("RemoteUpdate: versie ");Debugln(versie);
+    DebugT("RemoteUpdate: flashsize ");Debugln(flashSize);
+    httpServer.send(200, "text/html", "Update in progress filename : DSMR-API-V"+versie+"_"+flashSize+".bin.gz");
+  } else httpServer.send(200, "text/html", "ERROR: Update Failed!");
+  
+} //RemoteUpdate
 
 //=====================================================================================
 bool handleFile(String&& path) 

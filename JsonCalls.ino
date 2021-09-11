@@ -437,7 +437,8 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
   else if (strcmp(word4, "debug") == 0)
   {
     sendDeviceDebug(URI, word5);
-  }
+  } 
+  
   else sendApiNotFound(URI);
   
 } // handleDevApi()
