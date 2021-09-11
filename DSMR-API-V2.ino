@@ -15,12 +15,12 @@
 *      - frontend instellingen mutabel in webpagina
 *      - mqtt broker benaderen via host name http://www.iotsharing.com/2017/06/how-to-get-ip-address-from-mdns-host-name-in-arduino-esp32.html 
 *      √ telegram tonen verbeteren (buffer is te vaak leeg)
-*      √ herzien navigate
-*      √ webclient GEEN FOCUS -> stop met uitvragen api
-*      √ verplaatsen update/reset/restart
-*      √ nieuwe update scherm
-*      √ instellingen FrontEnd zichtbaar in webpagina read only
-*      √ fix sm data gas data indien deze niet aanwezig is
+*      - herzien navigate
+*      - webclient GEEN FOCUS -> stop met uitvragen api
+*      - verplaatsen update/reset/restart
+*      - nieuwe update scherm
+*      - instellingen FrontEnd zichtbaar in webpagina read only
+*      - fix sm data gas data indien deze niet aanwezig is
 *      √ bugfix: niet aanmaken van nieuwe ring file bij file not found
 *      √ reboot after 4 min AP mode
 *      √ bugfix: pulldown menu icon toggle

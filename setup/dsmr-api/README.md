@@ -1,10 +1,18 @@
 # **Slimmemeter DSMR-API adapter**
 
-Dit document beschrijft de installatie en configuratie van de DSMR API op hardware versie 2.0. De hardware komt normaal gesproken met werkende software. Wil je deze aanpassen ga dan naar het onderdeel software.
+Dit document beschrijft de installatie en configuratie van de DSMR API op hardware versie 2.x en 3.x. De hardware komt met werkende software. Wil je deze aanpassen ga dan naar het onderdeel software.
 
 Dit project is een doorontwikkeling op basis van het pionierswerk van Willem Aandewiel. Er zijn aanpassingen doorgevoerd in de weblayout, het laden van de pagina's en interface. MQTT interface is ongewijzigd. API interface is versie 2.x en daarmee aangepast (andere structuur).
 
 Zie voor meer informatie [https://mrwheel-docs.gitbook.io/dsmrloggerapi/](https://mrwheel-docs.gitbook.io/dsmrloggerapi/)
+
+**LED functie (vanaf hardware V3.1 en firmware v3.0.3)**
+
+De laatste dongels zijn uitgerust met een blauwe LED. Deze heeft meerdere functies. Hieronder meer.
+- na inpluggen zal de LED 1.5 seconde oplichten. Is dit niet het geval dan is er een probleem met stroom of met de dongel
+- Zodra de dongel WiFi connectie heeft zal de LED blijven branden.
+- Tijdens het lezen van een Telegram zal de LED kortstondig uit of aan gaan. Indien er Wifi verbinding is gaat de LED kort uit. Indien er geen Wifi is zal de LED kort aan gaan.
+
 
 **Configuratie Wifi**
 
