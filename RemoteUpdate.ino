@@ -58,12 +58,14 @@ void RemoteUpdate(){
     
     //check of de file bestaat
     HTTPClient httpClient;
-    httpClient.begin( BaseOTAurl + otaFile, otaFingerprint );
+    if (strlen(otaFingerprint) == 0) httpClient.begin( BaseOTAurl + otaFile );
+    else httpClient.begin( BaseOTAurl + otaFile, otaFingerprint );
     int httpCode = httpClient.GET();
     if( httpCode == 200 ) { 
       //start update proces
       DebugTln("OTA file found --> start update proces");
-      t_httpUpdate_return ret = ESPhttpUpdate.update( BaseOTAurl + otaFile );
+      if (strlen(otaFingerprint) == 0) t_httpUpdate_return ret = ESPhttpUpdate.update(BaseOTAurl + otaFile );
+      else t_httpUpdate_return ret = ESPhttpUpdate.update(BaseOTAurl + otaFile, "", otaFingerprint );
     } else {
       DebugTln("Remote update ERROR: OTA file missing");
       LogFile("Remote update ERROR: OTA file missing");      
