@@ -82,7 +82,7 @@ void writeLastStatus()
 //=======================================================================
 void writeSettings() 
 {
-  StaticJsonDocument<700> doc; 
+  StaticJsonDocument<800> doc; 
   if (!FSmounted) return;
   
   DebugT(F("Writing to [")); Debug(SETTINGS_FILE); Debugln(F("] ..."));
@@ -122,7 +122,8 @@ void writeSettings()
   doc["MQTTtopTopic"] = settingMQTTtopTopic;
 #endif
   doc["LED"] = LEDenabled;
-
+  doc["ota"] = BaseOTAurl;
+  doc["otafingerprint"] = otaFingerprint;
   writeToJsonFile(doc, SettingsFile);
   
 } // writeSettings()
@@ -131,7 +132,7 @@ void writeSettings()
 //=======================================================================
 void readSettings(bool show) 
 {
-  StaticJsonDocument<700> doc; 
+  StaticJsonDocument<800> doc; 
   File SettingsFile;
   if (!FSmounted) return;
   
@@ -150,6 +151,7 @@ void readSettings(bool show)
   DeserializationError error = deserializeJson(doc, SettingsFile);
   if (error) {
     DebugTln(F("read():Failed to read DSMRsettings.json file"));
+    LogFile(F("read():Failed to read DSMRsettings.json file"));
     SettingsFile.close();
     writeSettings();
     return;
@@ -184,8 +186,8 @@ void readSettings(bool show)
   
 #endif
   LEDenabled = doc["LED"];
-  strcpy(BaseOTAurl, doc["ota"] | "");
-  strcpy(otaFingerprint, doc["otafingerprint"] | "");
+  strcpy(BaseOTAurl, doc["ota"]);
+  strcpy(otaFingerprint, doc["otafingerprint"]);
   SettingsFile.close();
   //end json
 
@@ -323,7 +325,7 @@ void Rebootlog(){
   }
   
   //log rotate
-  if (RebootFile.size() > 2500){ 
+  if (RebootFile.size() > 5000){ 
 //    DebugT(F("RebootLog filesize: "));Debugln(RebootFile.size());
     LittleFS.remove("/Rebootlog.old");     //remove .old if existing 
     //rename file
@@ -350,7 +352,7 @@ void LogFile(String payload) {
   }
   
   //log rotate
-  if (LogFile.size() > 2500){ 
+  if (LogFile.size() > 5000){ 
 //    DebugT(F("LogFile filesize: "));Debugln(RebootFile.size());
     LittleFS.remove("/P1_log.old");     //remove .old if existing 
     //rename file
