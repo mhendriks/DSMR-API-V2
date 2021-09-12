@@ -24,7 +24,7 @@ void update_progress(int cur, int total) {
 
 void update_error(int err) {
   DebugTf("CALLBACK:  HTTP update fatal error code %d\n", err);
-  LogFile("Firmware update ERROR: " + err);  
+  LogFile("Firmware update ERROR");  
 }
 
 //---------------
