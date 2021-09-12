@@ -184,6 +184,8 @@ void readSettings(bool show)
   
 #endif
   LEDenabled = doc["LED"];
+  strcpy(BaseOTAurl, doc["ota"] | "");
+  strcpy(otaFingerprint, doc["otafingerprint"] | "");
   SettingsFile.close();
   //end json
 
@@ -339,7 +341,7 @@ void Rebootlog(){
 }
 
 //=======================================================================
-void LogFile(const char* payload) {
+void LogFile(String payload) {
   if (!FSmounted) return;
   File LogFile = LittleFS.open("/P1.log", "a"); // open for appending  
   if (!LogFile) {

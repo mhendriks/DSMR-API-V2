@@ -10,6 +10,7 @@
 */
 #include <ESP8266WiFi.h>        //ESP8266 Core WiFi Library         
 #include <ESP8266WebServer.h>   // Version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
+#include <ESP8266HTTPClient.h>
 #include <ESP8266mDNS.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
 #include <WiFiUdp.h>            // part of ESP8266 Core https://github.com/esp8266/Arduino
 #ifdef USE_UPDATE_SERVER
@@ -26,7 +27,7 @@ ESP8266WebServer        httpServer (80);
 bool        FSmounted = false; 
 bool        isConnected = false;
 
-void LogFile(const char*);
+void LogFile(String);
 
 //gets called when WiFiManager enters configuration mode
 //===========================================================================================

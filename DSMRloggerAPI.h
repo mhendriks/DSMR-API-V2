@@ -177,6 +177,8 @@ void delayms(unsigned long);
   int8_t      showRawCount  = 0;
   bool        LEDenabled    = true;
   bool        DSMR_NL       = true;
+  char        BaseOTAurl[75]; 
+  char        otaFingerprint[75];
 
   char      cMsg[150];
   String    lastReset           = "";
