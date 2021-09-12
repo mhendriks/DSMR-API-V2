@@ -64,8 +64,23 @@ void RemoteUpdate(){
     if( httpCode == 200 ) { 
       //start update proces
       DebugTln("OTA file found --> start update proces");
-      if (strlen(otaFingerprint) == 0) t_httpUpdate_return ret = ESPhttpUpdate.update(BaseOTAurl + otaFile );
-      else t_httpUpdate_return ret = ESPhttpUpdate.update(BaseOTAurl + otaFile, "", otaFingerprint );
+      t_httpUpdate_return ret;
+      if (strlen(otaFingerprint) == 0) ret = ESPhttpUpdate.update(BaseOTAurl + otaFile );
+      else ret = ESPhttpUpdate.update(BaseOTAurl + otaFile, "", otaFingerprint );
+      switch (ret) {
+      case HTTP_UPDATE_FAILED:
+        DebugTf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+          LogFile("Firmware update ERROR");  
+        break;
+      case HTTP_UPDATE_NO_UPDATES:
+        DebugTln("HTTP_UPDATE_NO_UPDATES");
+          LogFile("Firmware update ERROR");  
+        break;
+      case HTTP_UPDATE_OK:
+        DebugTln("HTTP_UPDATE_OK");
+          LogFile("Firmware update geslaagd");
+        break;
+    }
     } else {
       DebugTln("Remote update ERROR: OTA file missing");
       LogFile("Remote update ERROR: OTA file missing");      
