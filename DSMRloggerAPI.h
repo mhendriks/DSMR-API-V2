@@ -161,10 +161,9 @@ void delayms(unsigned long);
   char        actTimestamp[20] = "";
   char        newTimestamp[20] = "";
   uint32_t    slotErrors = 0;
-  byte        DagSlot = 99; // geen geldige slot waarde
+//  byte        DagSlot = 99; // geen geldige slot waarde
   float       GDT_G = 0, EDT1_G = 0,  EDT2_G = 0,ERT1_G = 0,ERT2_G = 0; //eindstand teller gisteren ivm dagberekening
   uint32_t    nrReboots  = 0;
-  uint32_t    loopCount = 0;
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw = false;
   int8_t      showRawCount = 0;
@@ -175,7 +174,7 @@ void delayms(unsigned long);
   static char      timeLastResponse[16]      = "";  
 #endif
   char      cMsg[150];
-  String    lastReset           = "";
+  char      lastReset[30];
   bool      spiffsNotPopulated  = false;
   bool      mqttIsConnected     = false;
   bool      doLog = false, Verbose1 = false, Verbose2 = false;
@@ -191,20 +190,26 @@ void delayms(unsigned long);
   char      settingIndexPage[50] = _DEFAULT_HOMEPAGE;
   char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
   int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
-  String    pTimestamp;
+
+
+#if defined(HAS_NO_SLIMMEMETER)
+  bool        forceBuildRingFiles = false;
+  enum runStates { SInit, SMonth, SDay, SHour, SNormal };
+  enum runStates runMode = SNormal;
+#endif
 
 //===========================================================================================
 // setup timers 
 DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
-DECLARE_TIMER_MIN(reconnectWiFi,      30);
-DECLARE_TIMER_SEC(synchrNTP,          30);
+DECLARE_TIMER_SEC(reconnectWiFi,      10);
 DECLARE_TIMER_SEC(nextTelegram,       10);
-DECLARE_TIMER_MIN(reconnectMQTTtimer,  2); // try reconnecting cyclus timer
+DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
-DECLARE_TIMER_MIN(minderGasTimer,     10, CATCH_UP_MISSED_TICKS); 
 DECLARE_TIMER_SEC(antiWearTimer,      61);
-DECLARE_TIMER_MS(AuxTimer,           500);
 
+//DECLARE_TIMER_MS(AuxTimer,           500);
+//DECLARE_TIMER_SEC(synchrNTP,          30);
+//DECLARE_TIMER_MIN(minderGasTimer,     10, CATCH_UP_MISSED_TICKS); 
 #endif
 /***************************************************************************
 *

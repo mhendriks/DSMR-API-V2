@@ -2,8 +2,6 @@
 
 #define   MAXLINELENGTH     128   // longest normal line is 47 char (+3 for \r\n\0)
 
-enum runStates { SInit, SMonth, SDay, SHour, SNormal };
-enum runStates runMode = SNormal;
 
 char        telegramLine[MAXLINELENGTH] = "";
 char        telegram[1000] = "";
@@ -18,8 +16,11 @@ uint8_t     ETariffInd=1;
 float       PDelivered, PReturned;
 float       IPD_l1, IPD_l2, IPD_l3, IPR_l1, IPR_l2, IPR_l3;
 float       GDelivered;
-bool        forceBuildRingFiles = false;
 int16_t     forceBuildRecs;
+
+#define _NO_HOUR_SLOTS_   (48 +1)
+#define _NO_DAY_SLOTS_    (14 +1)
+#define _NO_MONTH_SLOTS_  (24 +1)
 
 #define   TELEGRAM_INTERVAL   5 //seconds
 DECLARE_TIMER_SEC(telegramTimer, TELEGRAM_INTERVAL);
@@ -101,7 +102,7 @@ void handleTestdata()
   
   for (int16_t line = 0; line < 38; line++) {
     yield();
-    int16_t len = buildTelegram40(line, telegramLine);  // also: prints to DSMRsend
+    int16_t len = buildTelegramBE(line, telegramLine);  // also: prints to DSMRsend
     calcCRC = decodeTelegram(len);
   } 
   snprintf(cMsg, sizeof(cMsg), "!%04X\r\n\r\n", (calcCRC & 0xFFFF));
@@ -129,6 +130,136 @@ void handleTestdata()
   Debugf("==>> act date/time [%s] is [%s]\r\n\n", actTimestamp, buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str());
 
 } // handleTestdata()
+
+//==================================================================================================
+int16_t buildTelegramBE(int16_t line, char telegramLine[]) 
+{  
+  int16_t len = 0;
+
+  float val;
+
+  switch (line) {
+    case 0:   sprintf(telegramLine, "/FLU5\\25FLU5\\253769484_A\r\n");
+              break;
+    case 1:   sprintf(telegramLine, "\r\n");    
+              break;
+    case 2:   sprintf(telegramLine, "0-0:96.1.4(50213)\r\n");
+              break;
+    case 3:   sprintf(telegramLine, "0-0:1.0.0(%12.12sS)\r\n", newTimestamp);
+              break;
+    case 4:   sprintf(telegramLine, "0-0:96.1.1(3153414733313030313238303834)\r\n", val);
+              break;
+    case 5:   // Energy Delivered
+              sprintf(telegramLine, "1-0:1.8.1(%s*kWh)\r\n", Format(ED_T1, 10, 3).c_str());
+              break;
+    case 6:   sprintf(telegramLine, "1-0:1.8.2(%s*kWh)\r\n", Format(ED_T2, 10, 3).c_str());
+              break;
+    case 7:   // Energy Returned
+              sprintf(telegramLine, "1-0:2.8.1(%s*kWh)\r\n", Format(ER_T1, 10, 3).c_str());
+              break;
+    case 8:   sprintf(telegramLine, "1-0:2.8.2(%s*kWh)\r\n", Format(ER_T2, 10, 3).c_str());
+              break;
+    case 9:   // Tariff indicator electricity
+              sprintf(telegramLine, "0-0:96.14.0(%04d)\r\n", ETariffInd);
+              break;
+    case 10:  // Actual electricity power delivered (+P) in 1 Watt resolution
+              sprintf(telegramLine, "1-0:1.7.0(%s*kW)\r\n", Format(PDelivered, 6, 2).c_str());
+              break;
+    case 11:  // Actual electricity power received (-P) in 1 Watt resolution
+              sprintf(telegramLine, "1-0:2.7.0(%s*kW)\r\n", Format(PReturned, 6, 2).c_str());
+              break;
+    case 12:  // Number of power failures in any phase
+              sprintf(telegramLine, "0-0:96.7.21(00010)\r\n", val);
+              break;
+    case 13:  // Number of long power failures in any phase
+              sprintf(telegramLine, "0-0:96.7.9(00000)\r\n", val);
+              break;
+    case 14:  // Power Failure Event Log (long power failures)
+              sprintf(telegramLine, "1-0:99.97.0(0)(0-0:96.7.19)\r\n", val);
+              break;
+    case 15:  // Number of voltage sags in phase L1
+              sprintf(telegramLine, "1-0:32.32.0(00002)\r\n", val);
+              break;
+    case 16:  // Number of voltage sags in phase L2 (polyphase meters only)
+              sprintf(telegramLine, "1-0:52.32.0(00003)\r\n", val);
+              break;
+    case 17:  // Number of voltage sags in phase L3 (polyphase meters only)
+              sprintf(telegramLine, "1-0:72.32.0(00003)\r\n", val);
+              break;
+    case 18:  // Number of voltage swells in phase L1
+              sprintf(telegramLine, "1-0:32.36.0(00000)\r\n", val);
+              break;
+    case 19:  // Number of voltage swells in phase L2
+              sprintf(telegramLine, "1-0:52.36.0(00000)\r\n", val);
+              break;
+    case 20:  // Number of voltage swells in phase L3
+              sprintf(telegramLine, "1-0:72.36.0(00000)\r\n", val);
+              break;
+    case 21:  // Text message max 2048 characters
+              sprintf(telegramLine, "0-0:96.13.0()\r\n", val);
+              break;
+    case 22:  // Instantaneous voltage L1 in 0.1V resolution
+              sprintf(telegramLine, "1-0:32.7.0(%03d.0*V)\r\n", (240 + random(-3,3)));
+              break;
+    case 23:  // Instantaneous voltage L1 in 0.1V resolution
+              sprintf(telegramLine, "1-0:52.7.0(%03d.0*V)\r\n", (238 + random(-3,3)));
+              break;
+    case 24:  // Instantaneous voltage L1 in 0.1V resolution
+              sprintf(telegramLine, "1-0:72.7.0(%03d.0*V)\r\n", (236 + random(-3,3)));
+              break;
+    case 25:  // Instantaneous current L1 in A resolution
+              sprintf(telegramLine, "1-0:31.7.0(%03d.04*A)\r\n", random(0,4));
+              break;
+    case 26:  // Instantaneous current L2 in A resolution
+              sprintf(telegramLine, "1-0:51.7.0(%03d.37*A)\r\n",  random(0,4));
+              break;
+    case 27:  // Instantaneous current L3 in A resolution
+              sprintf(telegramLine, "1-0:71.7.0(006.41*A)\r\n", val);
+              break;
+    case 28:  // Instantaneous active power L1 (+P) in W resolution
+              sprintf(telegramLine, "1-0:21.7.0(%s*kW)\r\n", Format(IPD_l1, 6, 3).c_str());
+              break;
+    case 29:  // Instantaneous active power L2 (+P) in W resolution
+              sprintf(telegramLine, "1-0:41.7.0(%s*kW)\r\n", Format(IPD_l2, 6, 3).c_str());
+              break;
+    case 30:  // Instantaneous active power L3 (+P) in W resolution
+              sprintf(telegramLine, "1-0:61.7.0(%s*kW)\r\n", Format(IPD_l3, 6, 3).c_str());
+              break;
+    case 31:  // Instantaneous active power L1 (-P) in W resolution
+              sprintf(telegramLine, "1-0:22.7.0(%s*kW)\r\n", Format(IPR_l1, 6, 3).c_str());
+              break;
+    case 32:  // Instantaneous active power L2 (-P) in W resolution
+              sprintf(telegramLine, "1-0:42.7.0(%s*kW)\r\n", Format(IPR_l2, 6, 3).c_str());
+              break;
+    case 33:  // Instantaneous active power L3 (-P) in W resolution
+              sprintf(telegramLine, "1-0:62.7.0(%s*kW)\r\n", Format(IPR_l3, 6, 3).c_str());
+              break;
+    case 34:  // Gas Device-Type
+              sprintf(telegramLine, "0-1:24.1.0(003)\r\n", val);
+              break;
+    case 35:  // Equipment identifier (Gas)
+              sprintf(telegramLine, "0-1:96.1.1(4730303339303031363532303530323136)\r\n", val);
+              break;
+    case 36:  // Last 5-minute value (temperature converted), gas delivered to client
+              // in m3, including decimal values and capture time (Note: 4.x spec has
+              sprintf(telegramLine, "0-1:24.2.3(%02d%02d%02d%02d%02d01S)(%s*m3)\r\n", (year() - 2000), month(), day(), hour(), minute(), 
+                                                                            Format(GDelivered, 9, 3).c_str());
+              break;
+    case 37:  sprintf(telegramLine, "!xxxx\r\n");   
+              break;
+              
+  } // switch(line)
+
+  if (line < 37) {
+    if (Verbose2) Debug(telegramLine); 
+    strConcat(telegram, sizeof(telegram), telegramLine);
+  }
+
+  for(len = 0; len < MAXLINELENGTH, telegramLine[len] != '\0'; len++) {}    
+  
+  return len;
+
+} // buildTelegramBE()
 
 
 //==================================================================================================

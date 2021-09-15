@@ -6,17 +6,20 @@
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
-*      
+*      ˜
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
+*      √ reboot after 4 min AP mode
+*      reconnectMQTTtimer
+*      reconnectWiFi
 *      
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
     - Flash mode: "DOUT"
-    - Flash size: "1MB (FS: 64KB OAT:~470KB)" // or 2MB newer boards
+    - Flash size: "2MB (FS: 64KB OAT:~470KB)"
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -24,17 +27,17 @@
     - Crystal Frequency: "26 MHz"
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
-    - CPU Frequency: "160MHz"
+    - CPU Frequency: "80MHz"
     - Buildin Led: 2        //(n/a)
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
 */
+
 /******************** compiler options  ********************************************/
-#define USE_MQTT                      // define if you want to use MQTT (configure through webinterface)
-#define ALL_OPTIONS "[BLYNK][USE_MQTT][USE_DUTCH_PROTOCOL]" //change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT]([USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL])[USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]"
-#define USE_UPDATE_SERVER           // define if there is enough memory and updateServer to be used
-//#define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
+#define USE_MQTT                    // default ON : define if you want to use MQTT (configure through webinterface)
+#define USE_UPDATE_SERVER           // default ON : define if there is enough memory and updateServer to be used
+#define USE_BELGIUM_PROTOCOL        // define if Slimme Meter is a Belgium Smart Meter
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
@@ -45,8 +48,15 @@
 //#define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //#define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
 //#define USE_AUX                   // define if the aux port input should be used
-#define USE_BLYNK                 // define if the blynk app could be used
+//#define USE_BLYNK                   // default ON : define if the blynk app could be used
 //#define USE_PUSHOVER              // define if the pushover app could be used
+
+//change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT][USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL][USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]
+#ifdef USE_BELGIUM_PROTOCOL
+  #define ALL_OPTIONS "[BE][MQTT][UPDATE_SERVER]" 
+#else 
+  #define ALL_OPTIONS "[NL][MQTT][UPDATE_SERVER]"
+#endif
 
 #include "DSMRloggerAPI.h"
 
@@ -86,7 +96,7 @@ void openSysLog(bool empty)
 void setup() 
 {
   Serial.begin(115200, SERIAL_8N1);
-  pinMode(AUX_IN, INPUT); //optocoopler input
+//  pinMode(AUX_IN, INPUT); //optocoopler input
   pinMode(FLASH_BUTTON, INPUT);
   pinMode(DTR_ENABLE, OUTPUT);
   //--- setup randomseed the right way
@@ -96,7 +106,7 @@ void setup()
   Debug("\n\n ----> BOOTING....[" _VERSION "] <-----\n\n");
   DebugTln("The board name is: " ARDUINO_BOARD);
 
-  lastReset = ESP.getResetReason();
+  strcpy(lastReset, ESP.getResetReason().c_str());
   DebugT(F("Last reset reason: ")); Debugln(lastReset);
 
   startTelnet();
@@ -166,8 +176,8 @@ void setup()
 #endif  //USE_NTP_TIME                                      //USE_NTP
 //================ end NTP =========================================
 
-  snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
-  DebugTln(cMsg);
+//  snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
+  DebugTf("Last reset reason: [%s]\r", ESP.getResetReason().c_str());
 
 //============= now test if SPIFFS is correct populated!============
   if (!DSMRfileExist(settingIndexPage, false) )
@@ -188,7 +198,7 @@ void setup()
   snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
                                                , (year(t) - 2000), month(t), day(t) //USE_NTP
                                                , hour(t), minute(t), second(t));    //USE_NTP
-  pTimestamp = cMsg;                                                                //USE_NTP
+//  pTimestamp = cMsg;                                                                //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
 #endif  // use_dsmr_30
 
@@ -248,7 +258,7 @@ void setup()
 
 
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
-  DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
+  DebugTln("Swapping serial port to Smart Meter, debug output will continue on telnet");
   Debug(F("\nGebruik 'telnet "));
   Debug (WiFi.localIP());
   Debugln(F("' voor verdere debugging"));
@@ -290,14 +300,7 @@ void doTaskTelegram()
     //-- enable DTR to read a telegram from the Slimme Meter
     slimmeMeter.enable(true); 
     slimmeMeter.loop();
-    handleSlimmemeter();
   #endif
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    //for(int b=0; b<10; b++) { digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); delay(75);}
-    delay(750);
-  }
-  //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
 
 //===[ Do System tasks ]=============================================================
@@ -305,6 +308,7 @@ void doSystemTasks()
 {
   #ifndef HAS_NO_SLIMMEMETER
     slimmeMeter.loop();
+    handleSlimmemeter();
   #endif
   #ifdef USE_MQTT
     MQTTclient.loop();
@@ -319,51 +323,31 @@ void doSystemTasks()
   
 void loop () 
 {  
+  //--- verwerk volgend telegram
+  if DUE(nextTelegram) doTaskTelegram();
+
+  //--- update upTime counter
+  if DUE(updateSeconds) upTimeSeconds++;
+
   //--- do the tasks that has to be done 
   //--- as often as possible
   doSystemTasks();
-
-  loopCount++;
-
-  //--- verwerk volgend telegram
-  if DUE(nextTelegram)
-  {
-    doTaskTelegram();
-    #ifdef USE_BLYNK
-      UpdateDayStats();
-      Blynk.run();
-      handleBlynk();
-    #endif
-  }
-
-  //--- update upTime counter
-  if DUE(updateSeconds)
-  {
-    upTimeSeconds++;
-  }
-
   
-
-//--- if mindergas then check
-#ifdef USE_MINDERGAS
-  if ( DUE(minderGasTimer) )
-  {
-    handleMindergas();
-  }
-#endif
-
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
   {
-    writeToSysLog("Restart wifi with [%s]...", settingHostname);
+    LogFile("Wifi connection lost");  
+//    writeToSysLog("Restart wifi with [%s]...", settingHostname);
     startWiFi(settingHostname, 10);
-    if (WiFi.status() != WL_CONNECTED)
-          writeToSysLog("%s", "Wifi still not connected!");
-    else {
-          snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str()
-                                                              , WiFi.gatewayIP().toString().c_str());
-          writeToSysLog("%s", cMsg);
-    }
+    if (WiFi.status() != WL_CONNECTED) {
+//          writeToSysLog("%s", "Wifi still not connected!");
+          LogFile("Wifi connection still lost");  
+    } 
+//    else {
+//          snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str()
+//                                                              , WiFi.gatewayIP().toString().c_str());
+//          writeToSysLog("%s", cMsg);
+//    }
   }
 
 //--- if NTP set, see if it needs synchronizing
@@ -380,10 +364,6 @@ void loop ()
 #endif                                                              //USE_NTP
 
   yield();
-  
-#ifdef USE_AUX
-  if DUE(AuxTimer) handleAux(); //manage Aux interupt
-#endif
 
 } // loop()
 

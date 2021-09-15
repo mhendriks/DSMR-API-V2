@@ -29,6 +29,8 @@ static      FSInfo SPIFFSinfo;
 bool        SPIFFSmounted = false; 
 bool        isConnected = false;
 
+void LogFile(const char*);
+
 //gets called when WiFiManager enters configuration mode
 //===========================================================================================
 void configModeCallback (WiFiManager *myWiFiManager) 
@@ -49,6 +51,7 @@ void startWiFi(const char* hostname, int timeOut)
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
 
   DebugTln("start ...");
+  LogFile("Wifi Starting");
   
   manageWiFi.setDebugOutput(false);
   
@@ -65,20 +68,21 @@ void startWiFi(const char* hostname, int timeOut)
   //--- and goes into a blocking loop awaiting configuration
   if (!manageWiFi.autoConnect(thisAP.c_str())) 
   {
-    DebugTln(F("failed to connect and hit timeout"));
-    
+    DebugTln(F("failed to connect and hit timeout"));    
 
     //reset and try again, or maybe put it to deep sleep
-    //delay(3000);
-    //ESP.reset();
-    //delay(2000);
+    LogFile("Wifi Timeout");
+    delay(3000);
+    ESP.reset();
+    delay(2000);
+    //komt hier nooit
     DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
     return;
   }
 //  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
     WiFi.hostname("p1-dongle");
     DebugTf("Device name [%s]\n", "p1-dongle");
-
+    LogFile("Wifi Connected");
 
 #ifdef USE_UPDATE_SERVER
   httpUpdater.setup(&httpServer);
