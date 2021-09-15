@@ -44,8 +44,7 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
     }
     else
     {
-      DebugTf("next: handleFile(%s)\r\n"
-                      , String(httpServer.urlDecode(httpServer.uri())).c_str());
+      DebugTf("next: handleFile(%s)\r\n", String(httpServer.urlDecode(httpServer.uri())).c_str());
       if((httpServer.uri().indexOf("/RING") == 0) && (!LittleFS.exists(httpServer.uri().c_str()))) createRingFile(httpServer.uri().c_str());
       if (!handleFile(httpServer.urlDecode(httpServer.uri())))
       {

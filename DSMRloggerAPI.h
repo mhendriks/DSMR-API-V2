@@ -179,9 +179,10 @@ void delayms(unsigned long);
   bool        DSMR_NL       = true;
   char        BaseOTAurl[75]; 
   char        otaFingerprint[75];
+  char        LogString[75];
 
   char      cMsg[150];
-  String    lastReset           = "";
+  char      lastReset[30];
   bool      FSNotPopulated      = false;
   bool      mqttIsConnected     = false;
   bool      Verbose1 = false, Verbose2 = false;
@@ -200,7 +201,7 @@ void delayms(unsigned long);
   char      settingIndexPage[50]    = _DEFAULT_HOMEPAGE;
   char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
   int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
-  String    pTimestamp;
+//  String    pTimestamp;  
   float     gasDelivered;
   
 #if defined(HAS_NO_SLIMMEMETER)

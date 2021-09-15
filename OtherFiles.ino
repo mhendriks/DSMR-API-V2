@@ -151,7 +151,7 @@ void readSettings(bool show)
   DeserializationError error = deserializeJson(doc, SettingsFile);
   if (error) {
     DebugTln(F("read():Failed to read DSMRsettings.json file"));
-    LogFile(F("read():Failed to read DSMRsettings.json file"));
+    LogFile("read():Failed to read DSMRsettings.json file");
     SettingsFile.close();
     writeSettings();
     return;
@@ -343,7 +343,7 @@ void Rebootlog(){
 }
 
 //=======================================================================
-void LogFile(String payload) {
+void LogFile(const char* payload) {
   if (!FSmounted) return;
   File LogFile = LittleFS.open("/P1.log", "a"); // open for appending  
   if (!LogFile) {

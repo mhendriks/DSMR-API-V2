@@ -32,7 +32,7 @@ void createRingFile(E_ringfiletype ringfiletype)
   RingFile.close();
 }
 
-uint8_t CalcSlot(E_ringfiletype ringfiletype, char* Timestamp) 
+uint8_t CalcSlot(E_ringfiletype ringfiletype, const char* Timestamp) 
 {
   //slot positie bepalen
   uint32_t  nr=0;
@@ -53,13 +53,17 @@ uint8_t CalcSlot(E_ringfiletype ringfiletype, char* Timestamp)
   return slot;
 }
 
-void createRingFile(String filename) 
+//===========================================================================================
+
+void createRingFile(const char* filename) 
 {
-  if (filename=="/RINGhours.json") createRingFile(RINGHOURS);
-  else if (filename=="/RINGdays.json") createRingFile(RINGDAYS);
-  else if (filename=="/RINGmonths.json") createRingFile(RINGMONTHS);
+  if (strcmp(filename,"/RINGhours.json")==0) createRingFile(RINGHOURS);
+  else if (strcmp(filename,"/RINGdays.json")==0) createRingFile(RINGDAYS);
+  else if (strcmp(filename,"/RINGmonths.json")==0) createRingFile(RINGMONTHS);
   }
-//---------
+
+//===========================================================================================
+
 void RingFileTo(E_ringfiletype ringfiletype, bool toFile) 
 {  
   if (bailout() || !FSmounted) return; //exit when heapsize is too small
@@ -166,41 +170,6 @@ void writeRingFiles()
   writeRingFile(RINGMONTHS, "");
 
 } // writeRingFiles()
-
-//===========================================================================================
-void readRingDaySlot() 
-{
-  if (bailout() || !FSmounted) return; //exit when heapsize is too small
-
-  if (!LittleFS.exists(RingFiles[RINGDAYS].filename)) return;
-
-  DynamicJsonDocument doc(3100);
-
-  File RingFile = LittleFS.open(RingFiles[RINGDAYS].filename, "r"); // open for reading
-  DeserializationError error = deserializeJson(doc, RingFile);
-  yield();
-  EDT1_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][0];  
-  EDT2_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][1];
-  ERT1_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][2];
-  ERT2_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][3];
-  GDT_G  = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][4];
- 
-  //goto writing starting point  
-  // elegantere manier om een slot er uit te lezen
-//  uint16_t offset = ( (DagSlot-1) % RingFiles[RINGDAYS].slots * DATA_RECLEN) + JSON_HEADER_LEN;
-//  RingFile.seek(offset, SeekSet);
-//  
-//  //read line
-//  char buffer[64];
-//  while (RingFile.available()) {
-//     int l = RingFile.readBytesUntil('\n', buffer, sizeof(buffer));
-//     if (buffer[l-1] == ",") buffer[l-1] = 0 else buffer[l] = 0; // remove 
-//     Debugln(buffer);
-//  } 
-
-  RingFile.close();
-
-} //readRingDaySlot
 
 /***************************************************************************
 *

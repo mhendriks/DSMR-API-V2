@@ -42,13 +42,16 @@ void RemoteUpdate(){
     fingerprint sha-1: 70 94 DE DD E6 C4 69 48 3A 92 70 A1 48 56 78 2D 18 64 E0 B7
  */
   int flashSize = (ESP.getFlashChipRealSize() / 1024.0 / 1024.0);
-  String versie  = httpServer.arg(0);
-  String otaFile = "DSMR-API-V" + versie + "_" + flashSize + "Mb.bin.gz";
+  char otaFile[25], path[100];
+  sprintf(otaFile, "DSMR-API-V%s_%dMb.bin.gz",httpServer.arg(0).c_str(), flashSize);
+  sprintf(path, "%s%s\0",BaseOTAurl, otaFile);
   if (httpServer.argName(0) == "version") {
-    DebugTln("RemoteUpdate: versie " + versie + " | " + "flashsize " + flashSize + " Mb");
-    DebugTln("Remote update url: " + (String)BaseOTAurl + otaFile  );
-    LogFile("Remote update url: " + (String)BaseOTAurl + otaFile  );
-    httpServer.send(200, "text/html", "Update request with filename : " + otaFile);
+    DebugTln("RemoteUpdate: versie " + httpServer.arg(0) + " | " + "flashsize " + flashSize + " Mb");
+    DebugTln("Remote update url: " + (String)path);
+    sprintf(LogString, "Remote update url: %s",path);
+    LogFile(LogString);
+    sprintf(cMsg, "Update request with filename : %s",otaFile);
+    httpServer.send(200, "text/html", cMsg);
     
      // Add optional callback notifiers
     ESPhttpUpdate.onStart(update_started);
@@ -58,29 +61,24 @@ void RemoteUpdate(){
     
     //check of de file bestaat
     HTTPClient httpClient;
-    if (strlen(otaFingerprint) == 0) httpClient.begin( BaseOTAurl + otaFile );
-    else httpClient.begin( BaseOTAurl + otaFile, otaFingerprint );
+// configure time
+  configTime(3 * 3600, 0, "pool.ntp.org");
+
+  BearSSL::WiFiClientSecure client;
+  client.setFingerprint(otaFingerprint);
+    
+    if (strlen(otaFingerprint) == 0) httpClient.begin( path );
+    else {
+      httpClient.begin( (String)path, (String)otaFingerprint );
+      }
     int httpCode = httpClient.GET();
     if( httpCode == 200 ) { 
       //start update proces
       DebugTln("OTA file found --> start update proces");
       t_httpUpdate_return ret;
-      if (strlen(otaFingerprint) == 0) ret = ESPhttpUpdate.update(BaseOTAurl + otaFile );
-      else ret = ESPhttpUpdate.update(BaseOTAurl + otaFile, "", otaFingerprint );
-      switch (ret) {
-      case HTTP_UPDATE_FAILED:
-        DebugTf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-          LogFile("Firmware update ERROR");  
-        break;
-      case HTTP_UPDATE_NO_UPDATES:
-        DebugTln("HTTP_UPDATE_NO_UPDATES");
-          LogFile("Firmware update ERROR");  
-        break;
-      case HTTP_UPDATE_OK:
-        DebugTln("HTTP_UPDATE_OK");
-          LogFile("Firmware update geslaagd");
-        break;
-    }
+      ret = ESPhttpUpdate.update(client, path);
+//      if (strlen(otaFingerprint) == 0) ret = ESPhttpUpdate.update(BaseOTAurl + otaFile );
+//      else ret = ESPhttpUpdate.update(BaseOTAurl + otaFile, "", otaFingerprint );
     } else {
       DebugTln("Remote update ERROR: OTA file missing");
       LogFile("Remote update ERROR: OTA file missing");      

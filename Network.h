@@ -27,7 +27,7 @@ ESP8266WebServer        httpServer (80);
 bool        FSmounted = false; 
 bool        isConnected = false;
 
-void LogFile(String);
+void LogFile(const char*);
 
 //gets called when WiFiManager enters configuration mode
 //===========================================================================================

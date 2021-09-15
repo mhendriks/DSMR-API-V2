@@ -97,7 +97,7 @@ void setup()
   Debug("\n\n ----> BOOTING....[" _VERSION "] <-----\n\n");
   DebugTln("The board name is: " ARDUINO_BOARD);
 
-  lastReset = ESP.getResetReason();
+  strcpy(lastReset , ESP.getResetReason().c_str());
   DebugT(F("Last reset reason: ")); Debugln(lastReset);
   
   startTelnet();
@@ -189,7 +189,7 @@ void setup()
   snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
                                                , (year(t) - 2000), month(t), day(t) //USE_NTP
                                                , hour(t), minute(t), second(t));    //USE_NTP
-  pTimestamp = cMsg;                                                                //USE_NTP
+//  pTimestamp = cMsg;                                                                //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
 #endif  // use_dsmr_30
 

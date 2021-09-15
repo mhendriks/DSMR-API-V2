@@ -143,6 +143,9 @@ void handleKeyInput()
       case 's':
       case 'S':     listFS();
                     break;
+      case 't':
+      case 'T':     writeRingFiles();
+                    break;
       case 'v':
       case 'V':     if (Verbose2) 
                     {
