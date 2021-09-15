@@ -42,16 +42,15 @@ void RemoteUpdate(){
     fingerprint sha-1: 70 94 DE DD E6 C4 69 48 3A 92 70 A1 48 56 78 2D 18 64 E0 B7
  */
   int flashSize = (ESP.getFlashChipRealSize() / 1024.0 / 1024.0);
-  char otaFile[25], path[100];
-  sprintf(otaFile, "DSMR-API-V%s_%dMb.bin.gz",httpServer.arg(0).c_str(), flashSize);
-  sprintf(path, "%s%s\0",BaseOTAurl, otaFile);
+  String path,otaFile;
+  otaFile = "DSMR-API-V" + httpServer.arg(0) + "_" + flashSize + "Mb.bin.gz";
+  path = BaseOTAurl;
+  path += otaFile;
   if (httpServer.argName(0) == "version") {
     DebugTln("RemoteUpdate: versie " + httpServer.arg(0) + " | " + "flashsize " + flashSize + " Mb");
-    DebugTln("Remote update url: " + (String)path);
-    sprintf(LogString, "Remote update url: %s",path);
-    LogFile(LogString);
-    sprintf(cMsg, "Update request with filename : %s",otaFile);
-    httpServer.send(200, "text/html", cMsg);
+    DebugTln("Remote update url: " + path);
+//    LogFile("Remote update url: " + path);
+    httpServer.send(200, "text/html", "Update request with filename : " + otaFile);
     
      // Add optional callback notifiers
     ESPhttpUpdate.onStart(update_started);
@@ -64,19 +63,20 @@ void RemoteUpdate(){
 // configure time
   configTime(3 * 3600, 0, "pool.ntp.org");
 
+const uint8_t fingerprint[20] = {0x70, 0x94, 0xDE, 0xDD, 0xE6, 0xC4, 0x69, 0x48, 0x3A, 0x92, 0x70, 0xA1, 0x48, 0x56, 0x78, 0x2D, 0x18, 0x64, 0xE0, 0xB7};   // modify this
   BearSSL::WiFiClientSecure client;
-  client.setFingerprint(otaFingerprint);
+  client.setFingerprint(fingerprint);
     
     if (strlen(otaFingerprint) == 0) httpClient.begin( path );
     else {
-      httpClient.begin( (String)path, (String)otaFingerprint );
+      httpClient.begin( path, otaFingerprint );
       }
     int httpCode = httpClient.GET();
     if( httpCode == 200 ) { 
       //start update proces
       DebugTln("OTA file found --> start update proces");
       t_httpUpdate_return ret;
-      ret = ESPhttpUpdate.update(client, path);
+      ret = ESPhttpUpdate.update( client, "https://raw.githubusercontent.com/mhendriks/DSMR-API-V2/master/ota/DSMR-API-V3.0.4_4Mb.bin.gz" );
 //      if (strlen(otaFingerprint) == 0) ret = ESPhttpUpdate.update(BaseOTAurl + otaFile );
 //      else ret = ESPhttpUpdate.update(BaseOTAurl + otaFile, "", otaFingerprint );
     } else {
