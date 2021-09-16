@@ -123,7 +123,7 @@ void writeSettings()
 #endif
   doc["LED"] = LEDenabled;
   doc["ota"] = BaseOTAurl;
-  doc["otafingerprint"] = otaFingerprint;
+//  doc["otafingerprint"] = otaFingerprint;
   writeToJsonFile(doc, SettingsFile);
   
 } // writeSettings()
@@ -187,7 +187,7 @@ void readSettings(bool show)
 #endif
   LEDenabled = doc["LED"];
   strcpy(BaseOTAurl, doc["ota"]);
-  strcpy(otaFingerprint, doc["otafingerprint"]);
+//  strcpy(otaFingerprint, doc["otafingerprint"]);
   SettingsFile.close();
   //end json
 

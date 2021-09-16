@@ -20,6 +20,9 @@
 *      - nieuwe update scherm
 *      - instellingen FrontEnd zichtbaar in webpagina read only
 *      - fix sm data gas data indien deze niet aanwezig is
+*      √ Remote update via url (alleen http)
+*      √ Remote update via Telnet
+*      √ Telnetmenu Save Ringfiles
 *      
 *      
 *      

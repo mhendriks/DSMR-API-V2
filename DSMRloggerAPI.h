@@ -178,7 +178,7 @@ void delayms(unsigned long);
   bool        LEDenabled    = true;
   bool        DSMR_NL       = true;
   char        BaseOTAurl[75]; 
-  char        otaFingerprint[75];
+//  char        otaFingerprint[75];
   char        LogString[75];
 
   char      cMsg[150];
