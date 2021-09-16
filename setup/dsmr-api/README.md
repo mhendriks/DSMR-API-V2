@@ -97,7 +97,19 @@ De frequentie van uitlezen kan ingesteld worden.
 
 Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 
-**Flashen / Updaten**
+**Remote update**
+
+Vanaf de 3.0.4 firmware  is een remote Firmware update ook mogelijk. Dit kan op twee manieren, namelijk
+1) via Telnet door U gevolgd door versie nummer in te geven. bv: U 3.0.4.
+2) via de webinterface door de functie aanroep + versie op te geven. Bijvoorbeeld: /remote-update?version=3.0.2
+
+Dit is alleen mogelijk voor Firmware updates. Standaard zal er verwezen worden naar de smart-stuff.nl/ota directory. Deze verwijzing kan worden aangepast in de settingsfile op de dongel. 
+
+Let op: 
+- Na aanpassen settingsfile altijd een reboot van de dongel doen of Telnet optie L.
+- er kan alleen verwezen worden naar http servers.
+
+**Flashen**
 
 Flashen dient via een FTDI interface te gebeuren (115200 baud). Op J2 zitten de aansluitingen voor deze interface. 
 De pinout is :

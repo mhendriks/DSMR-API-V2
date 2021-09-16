@@ -148,7 +148,7 @@ void handleKeyInput()
                     char c;
                     while (TelnetStream.available() > 0) { 
                       c = TelnetStream.read();
-                      if ((c != 32) && (c!= 10) && (c!= 13)) versie+=c; //remove spaces
+                      if (!(c==32 || c==10 || c==13) ) versie+=c; //remove spaces
                     }
                     Debug("Update version: "); Debugln(versie);
                     if (versie.length()>2) RemoteUpdate(versie.c_str()); 
