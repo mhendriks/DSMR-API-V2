@@ -23,6 +23,10 @@
 *      √ Remote update via url (alleen http)
 *      √ Remote update via Telnet
 *      √ Telnetmenu Save Ringfiles
+*      - Piekvermogen bijhouden Belgie
+*      - enelogic koppeling
+*      √ uitzetten van hist data (Ringfiles)
+*      - watermeter 
 *      
 *      
 *      
@@ -192,7 +196,7 @@ void setup()
   snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
                                                , (year(t) - 2000), month(t), day(t) //USE_NTP
                                                , hour(t), minute(t), second(t));    //USE_NTP
-//  pTimestamp = cMsg;                                                                //USE_NTP
+//  pTimestamp = cMsg;                                                              //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
 #endif  // use_dsmr_30
 
@@ -201,7 +205,7 @@ void setup()
 
 #ifdef USE_MQTT                                                 //USE_MQTT
   //connectMQTT();
-  if ( (strlen(settingMQTTbroker) > 3) && (settingMQTTinterval != 0)) connectMQTT();
+  if ( (strlen(settingMQTTbroker) > 3) && settingMQTTinterval) connectMQTT();
 #endif                                                          //USE_MQTT
 
 //================ End of Start MQTT  ===============================
@@ -218,14 +222,9 @@ void setup()
     DebugTln(F("Oeps! not all files found on LittleFS -> present FSexplorer!\r"));
     FSNotPopulated = true;
   }
-  
-  //httpServer.serveStatic("/FSexplorer",      LittleFS, "/FSexplorer.html"); //for version 2.0.0 firmware
-  
+    
   setupFSexplorer();
-  httpServer.on("/api", HTTP_GET, processAPI); // all other api calls are catched in FSexplorer onNotFounD!
-  httpServer.begin();
-  DebugTln( F("HTTP server gestart\r") );
-  
+ 
   delay(1500);
   
 //================ Start HTTP Server ================================

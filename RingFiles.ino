@@ -41,12 +41,12 @@ uint8_t CalcSlot(E_ringfiletype ringfiletype, const char* Timestamp)
   if (ringfiletype == RINGMONTHS ) nr = ( (year(t1) -1) * 12) + month(t1);    // eg: year(2023) * 12 = 24276 + month(9) = 202309
   else nr = t1 / RingFiles[ringfiletype].seconds;
   uint8_t slot = nr % RingFiles[ringfiletype].slots;
-    DebugTf("slot: [%d], nr: [%d]\n", slot, nr);
+//  DebugTf("slot: [%d], nr: [%d]\n", slot, nr);
 
   if (slot < 0 || slot >= RingFiles[ringfiletype].slots)
   {
-    DebugTf("RINGFile: Some serious error! Slot is [%d]\r\n", slot);
-    slot = RingFiles[ringfiletype].slots;
+    DebugT(F("RINGFile: Some serious error! Slot is: ")); Debugln(slot);
+//    slot = RingFiles[ringfiletype].slots;
     slotErrors++;
     return 99;
   }
@@ -165,6 +165,7 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
 //===========================================================================================
 void writeRingFiles() 
 {
+  if (!EnableHistory) return; //do nothing
   writeRingFile(RINGHOURS, "");
   writeRingFile(RINGDAYS, "");
   writeRingFile(RINGMONTHS, "");

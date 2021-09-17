@@ -64,7 +64,6 @@ const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RIN
 #define JSON_HEADER_LEN   23  //total length incl new line
 #define DATA_CLOSE        2   //length last row of datafile
 
-
 /**
  * Define the DSMRdata we're interested in, as well as the DSMRdatastructure to
  * hold the parsed DSMRdata. This list shows all supported fields, remove
@@ -164,7 +163,6 @@ void delayms(unsigned long);
 #endif
   
   MyData      DSMRdata;
-//  uint32_t    readTimer;
   time_t      actT, newT;
   char        actTimestamp[20] = "";
   char        newTimestamp[20] = "";
@@ -177,6 +175,7 @@ void delayms(unsigned long);
   int8_t      showRawCount  = 0;
   bool        LEDenabled    = true;
   bool        DSMR_NL       = true;
+  bool        EnableHistory = true;
   char        BaseOTAurl[75]; 
   char        LogString[75];
 
@@ -200,7 +199,6 @@ void delayms(unsigned long);
   char      settingIndexPage[50]    = _DEFAULT_HOMEPAGE;
   char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
   int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
-//  String    pTimestamp;  
   float     gasDelivered;
   
 #if defined(HAS_NO_SLIMMEMETER)

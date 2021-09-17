@@ -446,8 +446,12 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
 //====================================================
 void handleHistApi(const char *URI, const char *word4, const char *word5, const char *word6)
 {
-
-  //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
+  if (!EnableHistory) 
+  { 
+    httpServer.send(200, "application/json", F("{\"error\":\"Historie Data staat uit\"}"));
+    return; //do nothing
+  }
+   //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (   strcmp(word4, "hours") == 0 )
   {
     RingFileTo(RINGHOURS, true);

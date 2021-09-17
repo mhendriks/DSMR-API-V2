@@ -42,7 +42,7 @@ void connectMQTT()
     mqttIsConnected = false;
     return;
   }
-
+  
   if (!MQTTclient.connected() || stateMQTT != MQTT_STATE_IS_CONNECTED)
   {
     mqttIsConnected = false;
@@ -210,19 +210,17 @@ struct buildJsonMQTT {
 void sendMQTTData() 
 {
 #ifdef USE_MQTT
-  String dateTime, topicId, json;
+//  String dateTime, topicId, json;
 
   if ((settingMQTTinterval == 0) || bailout() ) return;
 
   //make proper TopTopic
   if (settingMQTTtopTopic[strlen(settingMQTTtopTopic)-1] != '/') snprintf(settingMQTTtopTopic, sizeof(settingMQTTtopTopic), "%s/",  settingMQTTtopTopic);
- 
-  if (!MQTTclient.connected() || ! mqttIsConnected)
-  {
-    DebugTf("MQTTclient.connected(%d), mqttIsConnected[%d], stateMQTT [%d]\r\n"
-                                              , MQTTclient.connected()
-                                              , mqttIsConnected, stateMQTT);
-  }
+
+  if (MQTTclient.connected() && !mqttIsConnected) MQTTclient.disconnect(); //disconnect when connection is not allowed
+
+  if (!MQTTclient.connected() || !mqttIsConnected) DebugTf("MQTTclient.connected(%d), mqttIsConnected[%d], stateMQTT [%d]\r\n", MQTTclient.connected(), mqttIsConnected, stateMQTT);
+  
   if (!MQTTclient.connected())  
   {
     if ( DUE( reconnectMQTTtimer) || mqttIsConnected)

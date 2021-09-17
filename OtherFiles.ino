@@ -123,6 +123,8 @@ void writeSettings()
 #endif
   doc["LED"] = LEDenabled;
   doc["ota"] = BaseOTAurl;
+  doc["enableHistory"] = EnableHistory;
+
   writeToJsonFile(doc, SettingsFile);
   
 } // writeSettings()
@@ -186,6 +188,7 @@ void readSettings(bool show)
 #endif
   LEDenabled = doc["LED"];
   strcpy(BaseOTAurl, doc["ota"]);
+  EnableHistory = doc["enableHistory"];
   SettingsFile.close();
   //end json
 

@@ -51,11 +51,12 @@ void processSlimmemeter()
 {
 //  if (slimmeMeter.available()) 
 //  {
+
+    telegramCount++;
+    
     // Voorbeeld: [21:00:11][   9880/  8960] loop        ( 997): read telegram [28] => [140307210001S]
     Debugln(F("\r\n[Time----][FreeHeap/mBlck][Function----(line):\r"));
     DebugTf("telegramCount=[%d] telegramErrors=[%d]\r\n", telegramCount, telegramErrors);
-
-    telegramCount++;
         
     DSMRdata = {};
     String    DSMRerror;
@@ -160,11 +161,11 @@ float modifyMbusDelivered()
   DSMRdata.mbus1_delivered_present     = true;
   DSMRdata.mbus1_delivered_ntc_present = false;
   DSMRdata.mbus1_delivered_dbl_present = false;
-  if (settingMbus1Type > 0) DebugTf("mbus1_delivered [%.3f]\r\n", (float)DSMRdata.mbus1_delivered);
+//  if (settingMbus1Type > 0) DebugTf("mbus1_delivered [%.3f]\r\n", (float)DSMRdata.mbus1_delivered);
   if ( (settingMbus1Type == 3) && (DSMRdata.mbus1_device_type == 3) )
   {
     tmpGasDelivered = (float)(DSMRdata.mbus1_delivered * 1.0);
-    DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
+//    DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
   }
 
 //  if (DSMRdata.mbus2_delivered_ntc_present) 

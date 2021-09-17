@@ -34,6 +34,7 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   httpServer.on("/update", updateFirmware);
   httpServer.on("/remote-update", [](){RemoteUpdate("");});
   httpServer.on("/ResetWifi", resetWifi);
+  httpServer.on("/api", HTTP_GET, processAPI); // all other api calls are catched in FSexplorer onNotFounD!
   httpServer.onNotFound([]() 
   {
     if (Verbose2) DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(httpServer.uri()).c_str());
@@ -52,6 +53,9 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
       }
     }
   });
+  
+  httpServer.begin();
+  DebugTln( F("HTTP server gestart\r") );
   
 } // setupFSexplorer()
 
