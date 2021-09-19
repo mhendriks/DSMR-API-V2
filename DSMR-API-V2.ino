@@ -20,15 +20,9 @@
 *      - nieuwe update scherm
 *      - instellingen FrontEnd zichtbaar in webpagina read only
 *      - fix sm data gas data indien deze niet aanwezig is
-*      √ Remote update via url (alleen http)
-*      √ Remote update via Telnet
-*      √ Telnetmenu Save Ringfiles
+*      - watermeter 
 *      - Piekvermogen bijhouden Belgie
 *      - enelogic koppeling
-*      √ uitzetten van hist data (Ringfiles)
-*      - watermeter 
-*      
-*      
 *      
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 
@@ -59,6 +53,7 @@
 //#define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //#define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //#define USE_PUSHOVER              // define if the pushover app could be used
+//#define USE_BLYNK                 // define if the pushover app could be used
 
 #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS]"
 #include "DSMRloggerAPI.h"
@@ -163,7 +158,7 @@ void setup()
   if (!startNTP())                                          //USE_NTP
   {                                                         //USE_NTP
     DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));   //USE_NTP
-                                                     //USE_NTP
+    writeLastStatus();                                      //USE_NTP
     delay(1500);                                            //USE_NTP
     ESP.restart();                                          //USE_NTP
     delay(2000);                                            //USE_NTP
@@ -253,6 +248,10 @@ void setup()
   Debug(F("\n!!! DEBUG MODE AAN !!!\n\n")); 
 #endif // is_esp12
 
+#ifdef USE_BLYNK
+  SetupBlynk();
+#endif
+
 } // setup()
 
 
@@ -316,12 +315,19 @@ void loop ()
   if DUE(nextTelegram) doTaskTelegram();
 
   //--- update statusfile + ringfiles
-  if (DUE(antiWearTimer))
-  {
-    writeRingFiles();
-    writeLastStatus();
-  }
+  if (DUE(antiWearRing)) writeRingFiles(); //eens per 25min + elk uur overgang
 
+  if (DUE(antiWearStatus)) writeLastStatus(); //eens per 15min
+
+  #ifdef USE_BLYNK
+  if (LittleFS.exists("/BlynkSetup")){
+    slimmeMeter.loop(); //ivm evt verliezen data
+    yield();
+    Blynk.run();
+    if (DUE(RefreshBlynk)) handleBlynk(); //eens per 5sec
+  }
+  #endif
+  
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
   {

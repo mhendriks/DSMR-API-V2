@@ -34,9 +34,9 @@ void processTelegram()
   {
 //    writeToSysLog("Update RING-files");
     writeRingFiles();
-    writeLastStatus();
+//    writeLastStatus();
   }
-    
+  yield();
   if ( DUE(publishMQTTtimer) ) sendMQTTData();  
 
 } // processTelegram()

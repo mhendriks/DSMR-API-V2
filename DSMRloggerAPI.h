@@ -20,6 +20,11 @@
 #include "Network.h"
 #include "LittleFS.h"
 
+#ifdef USE_BLYNK 
+  #include <BlynkSimpleEsp8266.h>
+  BlynkTimer timer;
+#endif
+
 static      FSInfo fs_info;
 
 #ifdef USE_SYSLOGGER
@@ -176,8 +181,7 @@ void delayms(unsigned long);
   bool        LEDenabled    = true;
   bool        DSMR_NL       = true;
   bool        EnableHistory = true;
-  char        BaseOTAurl[75]; 
-  char        LogString[75];
+  char        BaseOTAurl[75] = "";
 
   char      cMsg[150];
   char      lastReset[30];
@@ -215,7 +219,9 @@ DECLARE_TIMER_SEC(synchrNTP,          30);
 DECLARE_TIMER_SEC(nextTelegram,        2);
 DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
-DECLARE_TIMER_SEC(antiWearTimer,      301); //write files every ±5min
+DECLARE_TIMER_MIN(antiWearRing,       25); 
+DECLARE_TIMER_MIN(antiWearStatus,     15); 
+DECLARE_TIMER_SEC(RefreshBlynk,        5); 
 
 #endif
 /***************************************************************************

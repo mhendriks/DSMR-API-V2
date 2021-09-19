@@ -187,8 +187,8 @@ void readSettings(bool show)
   
 #endif
   LEDenabled = doc["LED"];
-  strcpy(BaseOTAurl, doc["ota"]);
-  EnableHistory = doc["enableHistory"];
+  if (doc.containsKey("ota")) strcpy(BaseOTAurl, doc["ota"]);
+  if (doc.containsKey("enableHistory")) EnableHistory = doc["enableHistory"];
   SettingsFile.close();
   //end json
 
@@ -233,7 +233,9 @@ void readSettings(bool show)
   Debugf("              MQTT top Topic : %s\r\n", settingMQTTtopTopic);
 #endif  // USE_MQTT
   Debug(F("                 LED enabled : ")); Debugln(LEDenabled);
-  Debugln(F("-\r"));
+  Debug(F("                Base OTA url : ")); Debugln(BaseOTAurl);
+  Debug(F("              History Enabled: ")); Debugln(EnableHistory);
+  Debugln(F("\r"));
 
 } // readSettings()
 

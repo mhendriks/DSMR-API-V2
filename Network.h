@@ -27,6 +27,7 @@ ESP8266WebServer        httpServer (80);
 bool        FSmounted = false; 
 bool        isConnected = false;
 
+void writeLastStatus(); 
 void LogFile(const char*);
 
 //gets called when WiFiManager enters configuration mode
@@ -71,6 +72,7 @@ void startWiFi(const char* hostname, int timeOut)
    
     //reset and try again, or maybe put it to deep sleep
     LogFile("Wifi Timeout");
+    writeLastStatus();
     delay(3000);
     ESP.reset();
     delay(2000);

@@ -16,7 +16,7 @@ void update_finished() {
 
 void update_started() {
   LogFile("Firmware update gestart");
-  httpServer.send(200, "text/html", "Firmware update gestart");
+  httpServer.send(200, "text/html", "Firmware update gestart...");
 }
 
 void update_progress(int cur, int total) {
@@ -54,7 +54,7 @@ void RemoteUpdate(const char* versie){
   if ((httpServer.argName(0) == "version") || strlen(versie) > 0) {
     DebugTln("RemoteUpdate: versie " + httpServer.arg(0) + " | " + "flashsize " + flashSize + " Mb");
     DebugTln("Remote update path: " + path);
-    httpServer.send(200, "text/html", "Update request with filename : " + otaFile);
+//    httpServer.send(200, "text/html", "Update request with filename : " + otaFile);
     
     // Add optional callback notifiers
     ESPhttpUpdate.onStart(update_started);
