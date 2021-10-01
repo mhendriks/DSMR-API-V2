@@ -136,11 +136,16 @@ void sendJson(const TSource &doc)
   sendJsonBuffer(buffer);
   DebugTln(F("sendJson: json sent .."));   
 }
+
+//--------------------------
+
 void sendJsonBuffer(char* buffer){
   httpServer.sendHeader("Access-Control-Allow-Origin", "*");
   httpServer.setContentLength(strlen(buffer));
   httpServer.send(200, "application/json", buffer);
 } //sendJsonBuffer
+
+//--------------------------
 
 void sendDeviceTime() 
 {
@@ -150,6 +155,8 @@ void sendDeviceTime()
   sendJsonBuffer(buffer);
   
 } // sendDeviceTime()
+
+//--------------------------
 
 void sendDeviceInfo() 
 {
@@ -395,10 +402,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
 void handleDevApi(const char *URI, const char *word4, const char *word5, const char *word6)
 {
   //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
-  if (strcmp(word4, "info") == 0)
-  {
-    sendDeviceInfo();
-  }
+  if (strcmp(word4, "info") == 0) sendDeviceInfo();
   else if (strcmp(word4, "time") == 0)
   {
     sendDeviceTime();
@@ -434,7 +438,7 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
       //DebugTf("--> field[%s] => newValue[%s]\r\n", field, newValue);
       updateSetting(field, newValue);
       httpServer.send(200, "application/json", httpServer.arg(0));
-      writeToSysLog("DSMReditor: Field[%s] changed to [%s]", field, newValue);
+//      writeToSysLog("DSMReditor: Field[%s] changed to [%s]", field, newValue);
     }
     else
     {

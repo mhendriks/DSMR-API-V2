@@ -19,10 +19,6 @@
 #include "Debug.h"
 #include "Network.h"
 
-#ifdef USE_BLYNK
-  #include <BlynkSimpleEsp8266.h>
-#endif
-
 #ifdef USE_SYSLOGGER
   #include "ESP_SysLogger.h"      // https://github.com/mrWheel/ESP_SysLogger
   ESPSL sysLog;                   // Create instance of the ESPSL object
@@ -46,8 +42,7 @@
 #define _DEFAULT_HOSTNAME   "DSMR-API" 
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
-#define DTR_ENABLE          14
-#define AUX_IN               2
+#define DTR_ENABLE           14
 #define FLASH_BUTTON          0
 #define JSON_BUFF_MAX       255
 #define MQTT_BUFF_MAX       200
@@ -93,19 +88,20 @@ using MyData = ParsedData<
   /* String */        ,electricity_tariff
   /* FixedValue */    ,power_delivered
   /* FixedValue */    ,power_returned
-//  /* FixedValue */    ,electricity_threshold
-//  /* uint8_t */       ,electricity_switch_position
-//  /* uint32_t */      ,electricity_failures
-//  /* uint32_t */      ,electricity_long_failures
-//  /* String */        ,electricity_failure_log
-//  /* uint32_t */      ,electricity_sags_l1
-//  /* uint32_t */      ,electricity_sags_l2
-//  /* uint32_t */      ,electricity_sags_l3
-//  /* uint32_t */      ,electricity_swells_l1
-//  /* uint32_t */      ,electricity_swells_l2
-//  /* uint32_t */      ,electricity_swells_l3
-//  /* String */        ,message_short
-//  /* String */        ,message_long
+  /* FixedValue */    ,electricity_threshold
+  /* uint8_t */       ,electricity_switch_position
+  /* uint32_t */      ,electricity_failures
+  /* uint32_t */      ,electricity_long_failures
+  /* String */        ,electricity_failure_log
+  /* uint32_t */      ,electricity_sags_l1
+  /* uint32_t */      ,electricity_sags_l2
+  /* uint32_t */      ,electricity_sags_l3
+  /* uint32_t */      ,electricity_swells_l1
+  /* uint32_t */      ,electricity_swells_l2
+  /* uint32_t */      ,electricity_swells_l3
+  /* String */        ,message_short
+  /* String */        ,message_long
+  /* uint16_t */      ,fuse_treshold_l1
   /* FixedValue */    ,voltage_l1
   /* FixedValue */    ,voltage_l2
   /* FixedValue */    ,voltage_l3
@@ -120,7 +116,7 @@ using MyData = ParsedData<
   /* FixedValue */    ,power_returned_l3
   /* uint16_t */      ,gas_device_type
   /* String */        ,gas_equipment_id
-//  /* uint8_t */       ,gas_valve_position
+  /* uint8_t */       ,gas_valve_position
   /* TimestampedFixedValue */ ,gas_delivered
 //  /* uint16_t */      ,thermal_device_type
 //  /* String */        ,thermal_equipment_id
@@ -167,12 +163,7 @@ void delayms(unsigned long);
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw = false;
   int8_t      showRawCount = 0;
-#ifdef USE_MINDERGAS
-  static char      settingMindergasToken[21] = "";
-  static uint16_t  intStatuscodeMindergas    = 0; 
-  static char      txtResponseMindergas[30]  = "";
-  static char      timeLastResponse[16]      = "";  
-#endif
+  char        BaseOTAurl[75] = "http://smart-stuff.nl/ota/";
   char      cMsg[150];
   char      lastReset[30];
   bool      spiffsNotPopulated  = false;
@@ -205,11 +196,11 @@ DECLARE_TIMER_SEC(reconnectWiFi,      10);
 DECLARE_TIMER_SEC(nextTelegram,       10);
 DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
-DECLARE_TIMER_SEC(antiWearTimer,      61);
+DECLARE_TIMER_MIN(antiWearRing,       25); 
+DECLARE_TIMER_MIN(antiWearStatus,     15); 
 
-//DECLARE_TIMER_MS(AuxTimer,           500);
 //DECLARE_TIMER_SEC(synchrNTP,          30);
-//DECLARE_TIMER_MIN(minderGasTimer,     10, CATCH_UP_MISSED_TICKS); 
+
 #endif
 /***************************************************************************
 *

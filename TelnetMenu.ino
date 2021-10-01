@@ -115,6 +115,23 @@ void handleKeyInput()
       case 'h':
       case 'H':     RingFileTo(RINGHOURS, false);
                     break;
+      case 'n':
+      case 'N':     {   
+                      if (bailout() || !SPIFFSmounted) return; //exit when heapsize is too small
+                      if (!SPIFFS.exists("/P1.log"))
+                      {
+                        DebugT(F("LogFile doesn't exist: "));
+                        return;
+                        }
+                
+                      File RingFile = SPIFFS.open("/P1.log", "r"); // open for reading
+                      DebugTln(F("Ringfile output: "));
+                      //read the content and output to serial interface
+                      while (RingFile.available()) TelnetStream.write(RingFile.read());
+                      Debugln();    
+                      RingFile.close();
+                    }
+                    break;
       case 'm':
       case 'M':     RingFileTo(RINGMONTHS, false);
                     break;
@@ -149,9 +166,18 @@ void handleKeyInput()
       case 'S':     listSPIFFS();
                     break;
       
-      case 'U':     writeRingFiles();
-                    break;
-                    
+      case 'U':     {
+                    String versie;
+                    char c;
+                    while (TelnetStream.available() > 0) { 
+                      c = TelnetStream.read();
+                      if (!(c==32 || c==10 || c==13) ) versie+=c; //remove spaces
+                    }
+                    Debug("Update version: "); Debugln(versie);
+                    if (versie.length()>2) RemoteUpdate(versie.c_str()); 
+                    else Debugln(F("Fout in versie opgave"));
+                    break; }
+
       case 'v':
       case 'V':     if (Verbose2) 
                     {
@@ -177,7 +203,7 @@ void handleKeyInput()
                     sysLog.dumpLogFile();
                     sysLog.setDebugLvl(1);
                     break;
-#endif
+#endif                    
       case 'Z':     slotErrors      = 0;
                     nrReboots       = 0;
                     telegramCount   = 0;
@@ -195,6 +221,7 @@ void handleKeyInput()
                     Debugln(F("   D - Display Day table from SPIFFS\r"));
                     Debugln(F("   H - Display Hour table from SPIFFS\r"));
                     Debugln(F("   M - Display Month table from SPIFFS\r"));
+                    Debugln(F("   N - Display LogFile P1.log\r"));
                   #if defined(HAS_NO_SLIMMEMETER)
                     Debugln(F("  *F - Force build RING files\r"));
                   #endif
@@ -204,7 +231,7 @@ void handleKeyInput()
                     } 
                     else 
                     {
-                      Debugln(F("   P - No Parsing (show RAW data from Smart Meter)\r"));
+                      Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
                       showRawCount = 0;
                     }
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
@@ -213,7 +240,7 @@ void handleKeyInput()
 #endif
                     Debugln(F("  *R - Reboot\r"));
                     Debugln(F("   S - File info on SPIFFS\r"));
-                    Debugln(F("  *U - Update SPIFFS (save Data-files)\r"));
+                    Debugln(F("  *U+ - Update Remote; Enter Firmware version -> U 3.0.4 \r"));
                     Debugln(F("  *Z - Zero counters\r\n"));
                     if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));
                     else if (Verbose1)        Debugln(F("   V - Toggle Verbose 2\r"));

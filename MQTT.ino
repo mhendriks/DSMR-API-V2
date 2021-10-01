@@ -20,7 +20,6 @@
   
   int8_t              reconnectAttempts = 0;
   char                lastMQTTtimestamp[15] = "-";
-  char                mqttBuff[100];
 
   enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_IS_CONNECTED, MQTT_STATE_ERROR };
   enum states_of_MQTT stateMQTT = MQTT_STATE_INIT;
@@ -161,31 +160,31 @@ bool connectMQTT_FSM()
 } // connectMQTT_FSM()
 
 //=======================================================================
-
+ 
 struct buildJsonMQTT {
 #ifdef USE_MQTT
-
-  char topicId[100];
-  StaticJsonDocument<125> doc;  
-
+/* twee types
+ *  {energy_delivered_tariff1":[{"value":11741.29,"unit":"kWh"}]}"
+ *  {equipment_id":[{"value":"4530303435303033383833343439383137"}]}"
+ *  
+ *  msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":"+Unit+"}]}";
+ *  msg = "\"{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+"}]}\""
+ *  
+ */
+    String msg;
+    
     template<typename Item>
     void apply(Item &i) {
       if (i.present()) 
       {
-        String Name = Item::name;
-        String Unit = Item::unit();
-        strcpy(topicId,settingMQTTtopTopic);
-        strConcat(topicId, sizeof(topicId), Name.c_str());
-        if (Verbose2) DebugTf("topicId[%s]\r\n", topicId);
-        doc.clear();
-        JsonObject nested = doc[Name].createNestedObject();
-        if (Unit.length() > 0) {
-          nested["value"] = value_to_json(i.val());
-          nested["unit"] = Unit;
-        }
-        else nested["value"] = value_to_json(i.val());
-        serializeJson(doc, mqttBuff);
-        if (!MQTTclient.publish(topicId, mqttBuff) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", topicId, mqttBuff, (strlen(topicId) + strlen(mqttBuff)));
+//        String Name = Item::name;
+//        String Unit = Item::unit();    
+        strcpy(cMsg,settingMQTTtopTopic);
+        strcat(cMsg, (char*)Item::name);
+        if (strlen(Item::unit()) > 0) msg = "{\""+String(Item::name)+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
+        else msg = "{\""+String(Item::name)+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
+        if (Verbose2) DebugTln("mqtt bericht: "+msg);
+        if (!MQTTclient.publish(cMsg, msg.c_str()) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
       } // if i.present
   } //apply
   
@@ -194,13 +193,10 @@ struct buildJsonMQTT {
     return i;
   }
 
-  String value_to_json(TimestampedFixedValue i) {
-    return String(i);
+  String value_to_json( String i){
+    return "\"" + i+ "\"";
   }
   
-  float value_to_json(FixedValue i) {
-    return i;
-  }
 #endif
 
 }; // buildJsonMQTT
@@ -209,7 +205,6 @@ struct buildJsonMQTT {
 void sendMQTTData() 
 {
 #ifdef USE_MQTT
-  String dateTime, topicId, json;
 
   if ((settingMQTTinterval == 0) || bailout() ) return;
 

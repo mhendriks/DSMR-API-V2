@@ -11,9 +11,11 @@
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - update via site ipv url incl logica voor uitvragen hiervan
 *      √ reboot after 4 min AP mode
-*      reconnectMQTTtimer
-*      reconnectWiFi
-*      
+*      √ reconnectMQTTtimer
+*      √ reconnectWiFi
+*      √ remote update
+*      √ display log file via telnet
+*      √ show telegram verbetering telnet
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
@@ -41,17 +43,13 @@
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
-//#define HIST_CONV
+//#define HEAP_LOG
 
 //----- EXTENSIONS
 //#define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //#define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
-//#define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
-//#define USE_AUX                   // define if the aux port input should be used
-//#define USE_BLYNK                   // default ON : define if the blynk app could be used
-//#define USE_PUSHOVER              // define if the pushover app could be used
 
-//change manual -> possible values [USE_AUX][PUSHOVER][BLYNK][USE_MQTT][USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL][USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]
+//change manual -> possible values [USE_MQTT][USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL][USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]
 #ifdef USE_BELGIUM_PROTOCOL
   #define ALL_OPTIONS "[BE][MQTT][UPDATE_SERVER]" 
 #else 
@@ -96,7 +94,6 @@ void openSysLog(bool empty)
 void setup() 
 {
   Serial.begin(115200, SERIAL_8N1);
-//  pinMode(AUX_IN, INPUT); //optocoopler input
   pinMode(FLASH_BUTTON, INPUT);
   pinMode(DTR_ENABLE, OUTPUT);
   //--- setup randomseed the right way
@@ -234,10 +231,6 @@ void setup()
   delay(1500);
   
 //================ Start HTTP Server ================================
-  
-#ifdef USE_MINDERGAS
-    handleMindergas();
-#endif
 
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
   writeToSysLog("Startup complete! actTimestamp[%s]", actTimestamp);  
@@ -247,15 +240,6 @@ void setup()
 
   
 //================ Start Slimme Meter ===============================
-#ifdef USE_AUX
-  DebugTln(F("Enable Aux interrupt..."));
-  attachInterrupt(digitalPinToInterrupt(2), isrAux, CHANGE);       // interrupt program when signal to pin 2 detected call ISR function when happens
-#endif
-
-#ifdef HIST_CONV
-  hist_conv(); 
-#endif
-
 
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
   DebugTln("Swapping serial port to Smart Meter, debug output will continue on telnet");
@@ -290,6 +274,10 @@ void delayms(unsigned long delay_ms)
 
 //========================================================================================
 
+
+  unsigned int heap_before;
+
+
 //==[ Do Telegram Processing ]===============================================================
 void doTaskTelegram()
 {
@@ -298,30 +286,61 @@ void doTaskTelegram()
     handleTestdata();
   #else
     //-- enable DTR to read a telegram from the Slimme Meter
-    slimmeMeter.enable(true); 
-    slimmeMeter.loop();
+    if (!Verbose1) {
+      slimmeMeter.loop(); //voorkomen dat de buffer nog vol zit met andere data
+      slimmeMeter.enable(true); 
+    } else {
+      heap_before = ESP.getFreeHeap();
+      slimmeMeter.enable(true); 
+      if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> slimmeMeter.enable\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
+  
+      heap_before = ESP.getFreeHeap();
+      slimmeMeter.loop();
+      if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> slimmeMeter.loop_taskTelegram\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
+    }
   #endif
 }
 
 //===[ Do System tasks ]=============================================================
 void doSystemTasks()
 {
-  #ifndef HAS_NO_SLIMMEMETER
-    slimmeMeter.loop();
-    handleSlimmemeter();
-  #endif
+    if (!Verbose1) {
+      slimmeMeter.loop();
+      handleSlimmemeter();
+      MQTTclient.loop();
+      httpServer.handleClient();
+      MDNS.update();
+      handleKeyInput();
+    } else {
+      heap_before = ESP.getFreeHeap();
+      slimmeMeter.loop();
+      if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> slimmeMeter.loop_system\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
+      
+      heap_before = ESP.getFreeHeap();
+      handleSlimmemeter();
+      if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> handleSlimmemeter\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
   #ifdef USE_MQTT
-    MQTTclient.loop();
+      heap_before = ESP.getFreeHeap();
+      MQTTclient.loop();
+      if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> MQTTclient.loop\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
   #endif
-  httpServer.handleClient();
-  MDNS.update();
-  handleKeyInput();
+      heap_before = ESP.getFreeHeap();
+      httpServer.handleClient();
+      if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> httpServer.handleClient\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
+
+      heap_before = ESP.getFreeHeap();
+      MDNS.update();
+      if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> MDNS.update\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
+
+      heap_before = ESP.getFreeHeap();
+      handleKeyInput();
+      if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> handleKeyInput\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
+    }
   yield();
 
 } // doSystemTasks()
-
-  
-void loop () 
+ 
+void loop() 
 {  
   //--- verwerk volgend telegram
   if DUE(nextTelegram) doTaskTelegram();
@@ -332,6 +351,11 @@ void loop ()
   //--- do the tasks that has to be done 
   //--- as often as possible
   doSystemTasks();
+  
+  //--- update statusfile + ringfiles
+  if (DUE(antiWearRing)) writeRingFiles(); //eens per 25min + elk uur overgang in processtelegram
+
+  if (DUE(antiWearStatus)) writeLastStatus(); //eens per 15min
   
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )

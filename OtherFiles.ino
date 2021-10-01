@@ -63,18 +63,17 @@ void readLastStatus()
 void writeLastStatus()
 { 
   if (bailout() || !SPIFFSmounted ) return;
-  DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, nrReboots, slotErrors);
   
   File statusFile = SPIFFS.open("/DSMRstatus.json", "w");
   if (!statusFile) DebugTln(F("write(): No /DSMRstatus.json found"));
 
-  char buffer[74];
+  char buffer[85];
   sprintf_P(buffer,PSTR("{\"Timestamp\":\"%s\",\"Reboots\":%d,\"slotErrors\":%d}"), actTimestamp, nrReboots, slotErrors);
   
   int bytesWritten = statusFile.print(buffer);
   if (bytesWritten > 0) {
-    DebugT(F("File was written:"));Debugln(bytesWritten);
-  } else DebugTln(F("File write failed"));
+     DebugTf("Status file writen => actTime [%s] reboot [%u] SlotError [%u] BytesWriten [%d]\n", actTimestamp, nrReboots, slotErrors,bytesWritten);
+  } else DebugTln(F("FAILED : status file write"));
  
   statusFile.flush();
   statusFile.close();
@@ -123,7 +122,8 @@ void writeSettings()
   doc["MQTTtopTopic"] = settingMQTTtopTopic;
   
 #endif
-  
+    doc["ota"] = BaseOTAurl;
+
 #ifdef USE_MINDERGAS
   doc["MindergasAuthtoken"] = settingMQTTtsettingMindergasTokenopTopic;
 
@@ -193,7 +193,7 @@ void readSettings(bool show)
 #ifdef USE_MINDERGAS
   strcpy(settingMQTTtsettingMindergasTokenopTopic, doc["MindergasAuthtoken"]);
 #endif
- 
+   if (doc.containsKey("ota")) strcpy(BaseOTAurl, doc["ota"]);
   SettingsFile.close();
   //end json
 
@@ -365,7 +365,7 @@ void LogFile( const char* payload ){
   }
   
   //log rotate
-  if (LogFile.size() > 2500){ 
+  if (LogFile.size() > 7000){ 
 //    DebugT(F("LogFile filesize: "));Debugln(RebootFile.size());
     SPIFFS.remove("/P1_log.old");     //remove .old if existing 
     //rename file

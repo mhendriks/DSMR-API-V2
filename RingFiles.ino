@@ -41,7 +41,7 @@ uint8_t CalcSlot(E_ringfiletype ringfiletype, char* Timestamp)
   if (ringfiletype == RINGMONTHS ) nr = ( (year(t1) -1) * 12) + month(t1);    // eg: year(2023) * 12 = 24276 + month(9) = 202309
   else nr = t1 / RingFiles[ringfiletype].seconds;
   uint8_t slot = nr % RingFiles[ringfiletype].slots;
-    DebugTf("slot: [%d], nr: [%d]\n", slot, nr);
+//    DebugTf("slot: [%d], nr: [%d]\n", slot, nr);
 
   if (slot < 0 || slot >= RingFiles[ringfiletype].slots)
   {
@@ -58,12 +58,6 @@ void RingFileTo(E_ringfiletype ringfiletype, bool toFile)
 {  
   if (bailout() || !SPIFFSmounted) return; //exit when heapsize is too small
 
-  if (DUE(antiWearTimer))
-  {
-    writeRingFiles();
-    writeLastStatus();
-  }
-
   if (!SPIFFS.exists(RingFiles[ringfiletype].filename))
   {
     DebugT(F("read(): Ringfile doesn't exist: "));Debugln(RingFiles[ringfiletype].filename);
@@ -74,11 +68,11 @@ void RingFileTo(E_ringfiletype ringfiletype, bool toFile)
   File RingFile = SPIFFS.open(RingFiles[ringfiletype].filename, "r"); // open for reading
 
   if (toFile) {
-      DebugTln(F("http: json sent .."));
+      if (Verbose1) DebugTln(F("http: json sent .."));
       httpServer.sendHeader("Access-Control-Allow-Origin", "*");
       httpServer.streamFile(RingFile, "application/json"); 
   } else {
-      DebugT(F("Ringfile output: "));
+      DebugTln(F("Ringfile output: "));
       while (RingFile.available()) //read the content and output to serial interface
       { 
         //Serial.write(RingFile.read());
@@ -96,9 +90,8 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
   char key[9] = "";
   byte slot = 0;
   uint8_t actSlot = CalcSlot(ringfiletype, actTimestamp);
-  if (actSlot == 99) return;  // stop if error occured
+  if ( (actSlot == 99) || !SPIFFSmounted) return;  // stop if error occured
   StaticJsonDocument<145> rec;
-  if (!SPIFFSmounted) return;
   
   char buffer[DATA_RECLEN];
   if (strlen(JsonRec) > 1) {
@@ -112,7 +105,7 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
   }
 
   //json openen
-  DebugT(F("read(): Ring file ")); Debugln(RingFiles[ringfiletype].filename);
+//  DebugT(F("read(): Ring file ")); Debugln(RingFiles[ringfiletype].filename);
   
   File RingFile = SPIFFS.open(RingFiles[ringfiletype].filename, "r+"); // open for reading  
   if (!RingFile) {
@@ -154,6 +147,8 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
   if (bytesWritten != (DATA_RECLEN - 2)) DebugTf("ERROR! slot[%02d]: written [%d] bytes but should have been [%d]\r\n", slot, bytesWritten, DATA_RECLEN);
   if ( slot < (RingFiles[ringfiletype].slots -1)) RingFile.print(",\n");
   else RingFile.print("\n"); // no comma at last record
+  
+  DebugTf("RINGfile %s writen\n", RingFiles[ringfiletype].filename);
   
   RingFile.close();
 } // writeRingFile()
