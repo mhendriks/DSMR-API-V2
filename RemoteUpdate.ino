@@ -20,7 +20,7 @@ void update_started() {
 }
 
 void update_progress(int cur, int total) {
-  Debugf("CALLBACK:  HTTP update process at %d of %d bytes...\n", cur, total);
+  Debugf("CALLBACK:  HTTP update process at %d of %d bytes...\r", cur, total);
 }
 
 void update_error(int err) {

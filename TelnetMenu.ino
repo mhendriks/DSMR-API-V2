@@ -225,15 +225,7 @@ void handleKeyInput()
                   #if defined(HAS_NO_SLIMMEMETER)
                     Debugln(F("  *F - Force build RING files\r"));
                   #endif
-                    if (showRaw) 
-                    {
-                      Debugln(F("   P - Start Parsing again\r"));
-                    } 
-                    else 
-                    {
-                      Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
-                      showRawCount = 0;
-                    }
+                    Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
 #ifdef USE_SYSLOGGER
                     Debugln(F("   Q - dump sysLog file\r"));
