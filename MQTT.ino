@@ -16,7 +16,6 @@
   static IPAddress  MQTTbrokerIP;
   static char       MQTTbrokerIPchar[20];
 
-#ifdef USE_MQTT
   
   int8_t              reconnectAttempts = 0;
   char                lastMQTTtimestamp[15] = "-";
@@ -26,12 +25,9 @@
 
   String            MQTTclientId;
 
-#endif
-
 //===========================================================================================
 void connectMQTT() 
 {
-#ifdef USE_MQTT
   
   if (Verbose2) DebugTf("MQTTclient.connected(%d), mqttIsConnected[%d], stateMQTT [%d]\r\n"
                                               , MQTTclient.connected()
@@ -56,13 +52,11 @@ void connectMQTT()
 
   CHANGE_INTERVAL_SEC(reconnectMQTTtimer, 5);
 
-#endif
 }
 
 //===========================================================================================
 bool connectMQTT_FSM() 
 {
-#ifdef USE_MQTT
   
   switch(stateMQTT) 
   {
@@ -153,7 +147,6 @@ bool connectMQTT_FSM()
           DebugTln(F("Next State: MQTT_STATE_INIT"));
           break;
   }
-#endif
 
   return false;  
 
@@ -162,7 +155,6 @@ bool connectMQTT_FSM()
 //=======================================================================
  
 struct buildJsonMQTT {
-#ifdef USE_MQTT
 /* twee types
  *  {energy_delivered_tariff1":[{"value":11741.29,"unit":"kWh"}]}"
  *  {equipment_id":[{"value":"4530303435303033383833343439383137"}]}"
@@ -197,14 +189,12 @@ struct buildJsonMQTT {
     return "\"" + i+ "\"";
   }
   
-#endif
 
 }; // buildJsonMQTT
 
 //===========================================================================================
 void sendMQTTData() 
 {
-#ifdef USE_MQTT
 
   if ((settingMQTTinterval == 0) || bailout() ) return;
 
@@ -238,8 +228,6 @@ void sendMQTTData()
   DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", settingMQTTbroker, settingMQTTbrokerPort);
   
   DSMRdata.applyEach(buildJsonMQTT());
-
-#endif
 
 } // sendMQTTData()
 

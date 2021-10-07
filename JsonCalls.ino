@@ -8,6 +8,7 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
+#ifndef MQTT_CORE
 
 #define ACTUALELEMENTS  20
 #define INFOELEMENTS     6
@@ -52,7 +53,9 @@ struct buildJson {
   }
 
 }; // buildjson{} 
- 
+
+#endif
+
 //=======================================================================
 void processAPI() {
 //  char fName[40] = "";
@@ -68,19 +71,12 @@ void processAPI() {
   else  DebugTf("from[%s] URI[%s] method[PUT] \r\n" 
                                   , httpServer.client().remoteIP().toString().c_str()
                                         , URI); 
-
-#ifdef USE_SYSLOGGER
-  if (ESP.getFreeHeap() < 5000) // to prevent firmware from crashing!
-#else
-  if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
-#endif
-  {
-      DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
-      writeToSysLog("from[%s][%s] Bailout low heap (%d bytes)"
-                                    , httpServer.client().remoteIP().toString().c_str()
-                                    , URI
-                                    , ESP.getFreeHeap() );
-    httpServer.send(500, "text/plain", "500: internal server error (low heap)\r\n"); 
+if (bailout())   {
+//      DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
+//                                    , httpServer.client().remoteIP().toString().c_str()
+//                                    , URI
+//                                    , ESP.getFreeHeap() );
+//    httpServer.send(500, "text/plain", "500: internal server error (low heap)\r\n"); 
     return;
   }
 
@@ -108,11 +104,19 @@ void processAPI() {
   }
   else if (words[3] == "hist")
   {
-    handleHistApi(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
+#ifdef MQTT_CORE
+  sendApiNotFound(URI);
+#else
+  handleHistApi(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
+#endif
   }
   else if (words[3] == "sm")
   {
-    handleSmApi(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
+#ifdef MQTT_CORE
+  sendApiNotFound(URI);
+#else
+  handleSmApi(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
+#endif
   }
   else sendApiNotFound(URI);
   
@@ -213,24 +217,17 @@ void sendDeviceInfo()
   doc["telegramcount"] = (int)telegramCount;
   doc["telegramerrors"] = (int)telegramErrors;
 
-#ifdef USE_MQTT
   snprintf(cMsg, sizeof(cMsg), "%s:%04d", settingMQTTbroker, settingMQTTbrokerPort);
   doc["mqttbroker"] = cMsg;
   doc["mqttinterval"] = settingMQTTinterval;
-  if (mqttIsConnected)
-        doc["mqttbroker_connected"] = "yes";
+  if (mqttIsConnected) doc["mqttbroker_connected"] = "yes";
   else  doc["mqttbroker_connected"] = "no";
-#endif
-
-#ifdef USE_MINDERGAS
-  snprintf(cMsg, sizeof(cMsg), "%s:%d", timeLastResponse, intStatuscodeMindergas);
-  doc["mindergas_response"] = txtResponseMindergas;
-  doc["mindergas_status"] = cMsg;
-#endif
 
   doc["reboots"] = (int)nrReboots;
   doc["lastreset"] = lastReset;  
-
+#ifdef MQTT_CORE 
+  doc["mqtt_core"] = true; 
+#endif
   sendJson(doc);
  
 } // sendDeviceInfo()
@@ -244,7 +241,8 @@ void sendDeviceSettings()
   doc["hostname"]["value"] = settingHostname;
   doc["hostname"]["type"] = "s";
   doc["hostname"]["maxlen"] = sizeof(settingHostname) -1;
-  
+
+#ifndef MQTT_CORE
   doc["ed_tariff1"]["value"] = settingEDT1;
   doc["ed_tariff1"]["type"] = "f";
   doc["ed_tariff1"]["min"] = 0;
@@ -279,7 +277,7 @@ void sendDeviceSettings()
   doc["gas_netw_costs"]["type"] = "f";
   doc["gas_netw_costs"]["min"] = 0;
   doc["gas_netw_costs"]["max"] = 100;
-  
+#endif
   doc["sm_has_fase_info"]["value"] = settingSmHasFaseInfo;
   doc["sm_has_fase_info"]["type"] = "i";
   doc["sm_has_fase_info"]["min"] = 0;
@@ -319,12 +317,6 @@ void sendDeviceSettings()
   doc["mqtt_interval"]["type"] = "i";
   doc["mqtt_interval"]["min"] = 0;
   doc["mqtt_interval"]["max"] = 600;
-  
-  #if defined (USE_MINDERGAS )
-    doc["mindergastoken"]["value"] = settingMindergasToken;
-    doc["mindergastoken"]["type"] = "s";
-    doc["mindergastoken"]["maxlen"] = sizeof(settingMindergasToken) -1;
-  #endif
 
   sendJson(doc);
 
@@ -346,57 +338,7 @@ void sendApiNotFound(const char *URI)
   
 } // sendApiNotFound()  
 
-//====================================================
-void handleSmApi(const char *URI, const char *word4, const char *word5, const char *word6)
-{
-  //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
-  switch (word4[0]) {
-    
-  case 'i': //info
-    onlyIfPresent = false;
-    fieldsElements = INFOELEMENTS;
-    jsonDoc.clear();
-    DSMRdata.applyEach(buildJson());
-    sendJson(jsonDoc);
-  break;
-  
-  case 'a': //actual
-    fieldsElements = ACTUALELEMENTS;
-    onlyIfPresent = true;
-    jsonDoc.clear();
-    DSMRdata.applyEach(buildJson());
-    sendJson(jsonDoc);
-  break;
-  
-  case 'f': //fields
-    fieldsElements = 0;
-    onlyIfPresent = false;
-    if (strlen(word5) > 0)
-    {
-       strCopy(Onefield, 24, word5);
-       fieldsElements = FIELDELEMENTS;
-    }
-    jsonDoc.clear();
-    DSMRdata.applyEach(buildJson());
-    sendJson(jsonDoc);
-  break;  
-  case 't': //telegramm 
-  {
-    String buff = slimmeMeter.raw();
-    if (buff.length() == 0) 
-    {
-      httpServer.send(200, "application/plain", "no telegram received");
-      return;
-    }
-    sendJsonBuffer(&buff[0]);
-    break; 
-    } 
-  default:
-    sendApiNotFound(URI);
-    break;
-  }
-  
-} // handleSmApi()
+
 //====================================================
 
 void handleDevApi(const char *URI, const char *word4, const char *word5, const char *word6)
@@ -453,10 +395,62 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
   
 } // handleDevApi()
 
+#ifndef MQTT_CORE
+//====================================================
+void handleSmApi(const char *URI, const char *word4, const char *word5, const char *word6)
+{
+  //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
+  switch (word4[0]) {
+    
+  case 'i': //info
+    onlyIfPresent = false;
+    fieldsElements = INFOELEMENTS;
+    jsonDoc.clear();
+    DSMRdata.applyEach(buildJson());
+    sendJson(jsonDoc);
+  break;
+  
+  case 'a': //actual
+    fieldsElements = ACTUALELEMENTS;
+    onlyIfPresent = true;
+    jsonDoc.clear();
+    DSMRdata.applyEach(buildJson());
+    sendJson(jsonDoc);
+  break;
+  
+  case 'f': //fields
+    fieldsElements = 0;
+    onlyIfPresent = false;
+    if (strlen(word5) > 0)
+    {
+       strCopy(Onefield, 24, word5);
+       fieldsElements = FIELDELEMENTS;
+    }
+    jsonDoc.clear();
+    DSMRdata.applyEach(buildJson());
+    sendJson(jsonDoc);
+  break;  
+  case 't': //telegramm 
+  {
+    String buff = slimmeMeter.raw();  
+    if (buff.length() == 0) 
+    {
+      httpServer.send(200, "application/plain", "no telegram received");
+      return;
+    }
+    sendJsonBuffer(&buff[0]);
+    break; 
+    } 
+  default:
+    sendApiNotFound(URI);
+    break;
+  }
+  
+} // handleSmApi()
+
 //====================================================
 void handleHistApi(const char *URI, const char *word4, const char *word5, const char *word6)
 {
-
   //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (   strcmp(word4, "hours") == 0 )
   {
@@ -490,13 +484,25 @@ void handleHistApi(const char *URI, const char *word4, const char *word5, const 
       return;
     }
   }
-  else 
+  else sendApiNotFound(URI);
+} // handleHistApi()
+
+bool isInFieldsArray(const char* lookUp)
+{                        
+//    DebugTf("Elemts[%2d] | LookUp [%s] | LookUpType[%2d]\r\n", elemts, lookUp, LookUpType);
+if (fieldsElements == 0) return true;  
+  for (int i=0; i<fieldsElements; i++)
   {
-    sendApiNotFound(URI);
-    return;
+    //if (Verbose2) DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]); 
+    if (fieldsElements == ACTUALELEMENTS ) { if (strcmp_P(lookUp, actualArray[i]) == 0 ) return true; }
+    else if (fieldsElements == INFOELEMENTS ) { if (strcmp_P(lookUp, infoArray[i]) == 0 ) return true; }
+    else if (fieldsElements == FIELDELEMENTS ) { if ( (strcmp(lookUp, Onefield) == 0) || (strcmp(lookUp, "timestamp") == 0)  ) return true; }
   }
 
-} // handleHistApi()
+  return false; 
+} // isInFieldsArray()
+
+#endif
 
 //=======================================================================
 void sendDeviceDebug(const char *URI, String tail) 
@@ -529,20 +535,7 @@ void sendDeviceDebug(const char *URI, String tail)
 
 } // sendDeviceDebug()
 
-bool isInFieldsArray(const char* lookUp)
-{                        
-//    DebugTf("Elemts[%2d] | LookUp [%s] | LookUpType[%2d]\r\n", elemts, lookUp, LookUpType);
-if (fieldsElements == 0) return true;  
-  for (int i=0; i<fieldsElements; i++)
-  {
-    //if (Verbose2) DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]); 
-    if (fieldsElements == ACTUALELEMENTS ) { if (strcmp_P(lookUp, actualArray[i]) == 0 ) return true; }
-    else if (fieldsElements == INFOELEMENTS ) { if (strcmp_P(lookUp, infoArray[i]) == 0 ) return true; }
-    else if (fieldsElements == FIELDELEMENTS ) { if ( (strcmp(lookUp, Onefield) == 0) || (strcmp(lookUp, "timestamp") == 0)  ) return true; }
-  }
 
-  return false; 
-} // isInFieldsArray()
 
 /***************************************************************************
 *

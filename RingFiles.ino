@@ -8,6 +8,29 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
+#ifndef MQTT_CORE
+uint8_t CalcSlot(E_ringfiletype ringfiletype, char* Timestamp) 
+{
+  //slot positie bepalen
+  uint32_t  nr=0;
+  //time_t    t1 = epoch((char*)actTimestamp, strlen(actTimestamp), false);
+  time_t    t1 = epoch(Timestamp, strlen(Timestamp), false);
+  if (ringfiletype == RINGMONTHS ) nr = ( (year(t1) -1) * 12) + month(t1);    // eg: year(2023) * 12 = 24276 + month(9) = 202309
+  else nr = t1 / RingFiles[ringfiletype].seconds;
+  uint8_t slot = nr % RingFiles[ringfiletype].slots;
+//    DebugTf("slot: [%d], nr: [%d]\n", slot, nr);
+
+  if (slot < 0 || slot >= RingFiles[ringfiletype].slots)
+  {
+    DebugTf("RINGFile: Some serious error! Slot is [%d]\r\n", slot);
+    slot = RingFiles[ringfiletype].slots;
+    slotErrors++;
+    return 99;
+  }
+  return slot;
+}
+
+//-----------
 
 void createRingFile(E_ringfiletype ringfiletype) 
 {
@@ -30,27 +53,6 @@ void createRingFile(E_ringfiletype ringfiletype)
   }
   RingFile.print("\n]}"); //terminate the json string
   RingFile.close();
-}
-
-uint8_t CalcSlot(E_ringfiletype ringfiletype, char* Timestamp) 
-{
-  //slot positie bepalen
-  uint32_t  nr=0;
-  //time_t    t1 = epoch((char*)actTimestamp, strlen(actTimestamp), false);
-  time_t    t1 = epoch(Timestamp, strlen(Timestamp), false);
-  if (ringfiletype == RINGMONTHS ) nr = ( (year(t1) -1) * 12) + month(t1);    // eg: year(2023) * 12 = 24276 + month(9) = 202309
-  else nr = t1 / RingFiles[ringfiletype].seconds;
-  uint8_t slot = nr % RingFiles[ringfiletype].slots;
-//    DebugTf("slot: [%d], nr: [%d]\n", slot, nr);
-
-  if (slot < 0 || slot >= RingFiles[ringfiletype].slots)
-  {
-    DebugTf("RINGFile: Some serious error! Slot is [%d]\r\n", slot);
-    slot = RingFiles[ringfiletype].slots;
-    slotErrors++;
-    return 99;
-  }
-  return slot;
 }
 
 //---------
@@ -162,40 +164,7 @@ void writeRingFiles()
 
 } // writeRingFiles()
 
-//===========================================================================================
-//void readRingDaySlot() 
-//{
-//  if (bailout() || !SPIFFSmounted) return; //exit when heapsize is too small
-//
-//  if (!SPIFFS.exists(RingFiles[RINGDAYS].filename)) return;
-//
-//  DynamicJsonDocument doc(3100);
-//
-//  File RingFile = SPIFFS.open(RingFiles[RINGDAYS].filename, "r"); // open for reading
-//  DeserializationError error = deserializeJson(doc, RingFile);
-//  yield();
-//  EDT1_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][0];  
-//  EDT2_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][1];
-//  ERT1_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][2];
-//  ERT2_G = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][3];
-//  GDT_G  = doc["data"][(DagSlot-1) % RingFiles[RINGDAYS].slots]["values"][4];
-// 
-//  //goto writing starting point  
-//  // elegantere manier om een slot er uit te lezen
-////  uint16_t offset = ( (DagSlot-1) % RingFiles[RINGDAYS].slots * DATA_RECLEN) + JSON_HEADER_LEN;
-////  RingFile.seek(offset, SeekSet);
-////  
-////  //read line
-////  char buffer[64];
-////  while (RingFile.available()) {
-////     int l = RingFile.readBytesUntil('\n', buffer, sizeof(buffer));
-////     if (buffer[l-1] == ",") buffer[l-1] = 0 else buffer[l] = 0; // remove 
-////     Debugln(buffer);
-////  } 
-//
-//  RingFile.close();
-//
-//} //readRingDaySlot
+#endif
 
 /***************************************************************************
 *

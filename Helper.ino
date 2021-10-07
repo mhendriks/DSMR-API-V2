@@ -11,10 +11,13 @@
 
 bool bailout () // to prevent firmware from crashing!
 {
-  if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
+  if (ESP.getFreeHeap() < 5500) // to prevent firmware from crashing!
   {
-    DebugT(F("Bailout due to low heap: ")); Debugln(ESP.getFreeHeap());
-    return true;
+    DebugT(F("Bailout due to low heap --> reboot in 3 seconds")); Debugln(ESP.getFreeHeap());
+    delay(3000);
+    ESP.restart();
+    delay(2000);
+    return true; // komt hier als het goed is niet
   }
   return false;
 }

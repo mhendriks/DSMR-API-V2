@@ -10,6 +10,7 @@
 */  
 #ifndef DSMRloggerAPI_h
 #define DSMRloggerAPI_h
+//#define TELNET_ONE_CONCURRENT
 
 #include "version.h"
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time
@@ -18,18 +19,6 @@
 #include <ArduinoJson.h>
 #include "Debug.h"
 #include "Network.h"
-
-#ifdef USE_SYSLOGGER
-  #include "ESP_SysLogger.h"      // https://github.com/mrWheel/ESP_SysLogger
-  ESPSL sysLog;                   // Create instance of the ESPSL object
-  #define writeToSysLog(...) ({ sysLog.writeDbg( sysLog.buildD("[%02d:%02d:%02d][%7d][%-12.12s] " \
-                                                               , hour(), minute(), second()     \
-                                                               , ESP.getFreeHeap()              \
-                                                               , __FUNCTION__)                  \
-                                                               ,__VA_ARGS__); })
-#else
-  #define writeToSysLog(...)  // nothing
-#endif
 
 #if defined( USE_BELGIUM_PROTOCOL )                           //Belgium
   //  https://github.com/mrWheel/arduino-dsmr-be.git            //Belgium
@@ -40,7 +29,11 @@
 #endif
 
 #define _DEFAULT_HOSTNAME   "DSMR-API" 
-#define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
+#ifndef MQTT_CORE
+  #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
+#else
+  #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE_core.html"
+#endif
 #define SETTINGS_FILE       "/DSMRsettings.json"
 #define DTR_ENABLE           14
 #define FLASH_BUTTON          0
@@ -49,6 +42,7 @@
 
 P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
 
+#ifndef MQTT_CORE
 enum { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 enum E_ringfiletype {RINGHOURS, RINGDAYS, RINGMONTHS};
 
@@ -75,6 +69,7 @@ const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RIN
  * and printing code smaller.
  * Each template argument below results in a field of the same name.
  */
+#endif
  
 using MyData = ParsedData<
   /* String */         identification
@@ -132,12 +127,8 @@ using MyData = ParsedData<
 //  /* TimestampedFixedValue */ ,slave_delivered
 >;
 
-enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
+//enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
 
-const PROGMEM char *weekDayName[]  { "Unknown", "Zondag", "Maandag", "Dinsdag", "Woensdag"
-                            , "Donderdag", "Vrijdag", "Zaterdag", "Unknown" };
-const PROGMEM char *monthName[]    { "00", "Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli"
-                            , "Augustus", "September", "Oktober", "November", "December", "13" };
 const PROGMEM char *flashMode[]    { "QIO", "QOUT", "DIO", "DOUT", "Unknown" };
 
 //===========================prototype's=======================================
@@ -146,10 +137,8 @@ void delayms(unsigned long);
 
 //===========================GLOBAL VAR'S======================================
   WiFiClient  wifiClient;
-#ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
   static PubSubClient MQTTclient(wifiClient);
-#endif
   
   MyData      DSMRdata;
   uint32_t    readTimer;
@@ -157,31 +146,29 @@ void delayms(unsigned long);
   char        actTimestamp[20] = "";
   char        newTimestamp[20] = "";
   uint32_t    slotErrors = 0;
-//  byte        DagSlot = 99; // geen geldige slot waarde
-  float       GDT_G = 0, EDT1_G = 0,  EDT2_G = 0,ERT1_G = 0,ERT2_G = 0; //eindstand teller gisteren ivm dagberekening
   uint32_t    nrReboots  = 0;
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw = false;
-  int8_t      showRawCount = 0;
   char        BaseOTAurl[75] = "http://smart-stuff.nl/ota/";
-  char      cMsg[150];
-  char      lastReset[30];
-  bool      spiffsNotPopulated  = false;
-  bool      mqttIsConnected     = false;
-  bool      doLog = false, Verbose1 = false, Verbose2 = false;
-  int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
-  uint32_t  unixTimestamp;
-  uint64_t  upTimeSeconds;
-  IPAddress ipDNS, ipGateWay, ipSubnet;
+  char        cMsg[150];
+  char        lastReset[30];
+  bool        spiffsNotPopulated  = false;
+  bool        mqttIsConnected     = false;
+  bool        Verbose1 = false, Verbose2 = false;
+  int8_t      thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
+  uint32_t    unixTimestamp;
+  uint64_t    upTimeSeconds;
+  IPAddress   ipDNS, ipGateWay, ipSubnet;
+  uint8_t     settingTelegramInterval = 10; //seconden
+  uint8_t     settingSmHasFaseInfo = 1;
+  char        settingHostname[30] = _DEFAULT_HOSTNAME;
+  char        settingIndexPage[50] = _DEFAULT_HOMEPAGE;
+  char        settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
+  int32_t     settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
+ #ifndef MQTT_CORE
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
   float     settingENBK = 15.15, settingGNBK = 11.11;
-  uint8_t   settingTelegramInterval = 10; //seconden
-  uint8_t   settingSmHasFaseInfo = 1;
-  char      settingHostname[30] = _DEFAULT_HOSTNAME;
-  char      settingIndexPage[50] = _DEFAULT_HOMEPAGE;
-  char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
-  int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
-
+ #endif
 
 #if defined(HAS_NO_SLIMMEMETER)
   bool        forceBuildRingFiles = false;

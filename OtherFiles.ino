@@ -49,7 +49,6 @@ void readLastStatus()
     return;
   }
   
-
   statusFile.close();
   
   nrReboots = doc["Reboots"];
@@ -68,8 +67,11 @@ void writeLastStatus()
   if (!statusFile) DebugTln(F("write(): No /DSMRstatus.json found"));
 
   char buffer[85];
+#ifndef MQTT_CORE
   sprintf_P(buffer,PSTR("{\"Timestamp\":\"%s\",\"Reboots\":%d,\"slotErrors\":%d}"), actTimestamp, nrReboots, slotErrors);
-  
+#else
+  sprintf_P(buffer,PSTR("{\"Timestamp\":\"%s\",\"Reboots\":%d}"), actTimestamp, nrReboots);
+#endif
   int bytesWritten = statusFile.print(buffer);
   if (bytesWritten > 0) {
      DebugTf("Status file writen => actTime [%s] reboot [%u] SlotError [%u] BytesWriten [%d]\n", actTimestamp, nrReboots, slotErrors,bytesWritten);
@@ -102,6 +104,18 @@ void writeSettings()
     
   DebugTln(F("Start writing setting data to json settings file"));
   doc["Hostname"] = settingHostname;
+  doc["SmHasFaseInfo"] = settingSmHasFaseInfo;
+  doc["TelegramInterval"] = settingTelegramInterval;
+  doc["IndexPage"] = settingIndexPage; 
+  doc["MQTTbroker"] = settingMQTTbroker;
+  doc["MQTTbrokerPort"] = settingMQTTbrokerPort;
+  doc["MQTTUser"] = settingMQTTuser;
+  doc["MQTTpasswd"] = settingMQTTpasswd;
+  doc["MQTTinterval"] = settingMQTTinterval;
+  doc["MQTTtopTopic"] = settingMQTTtopTopic;
+  doc["ota"] = BaseOTAurl;
+
+#ifndef MQTT_CORE
   doc["EnergyDeliveredT1"] = settingEDT1;
   doc["EnergyDeliveredT2"] = settingEDT2;
   doc["EnergyReturnedT1"] = settingERT1;
@@ -109,26 +123,7 @@ void writeSettings()
   doc["GASDeliveredT"] = settingGDT;
   doc["EnergyVasteKosten"] = settingENBK;
   doc["GasVasteKosten"] = settingGNBK;
-  doc["SmHasFaseInfo"] = settingSmHasFaseInfo;
-  doc["TelegramInterval"] = settingTelegramInterval;
-  doc["IndexPage"] = settingIndexPage;
- 
-#ifdef USE_MQTT
-  doc["MQTTbroker"] = settingMQTTbroker;
-  doc["MQTTbrokerPort"] = settingMQTTbrokerPort;
-  doc["MQTTUser"] = settingMQTTuser;
-  doc["MQTTpasswd"] = settingMQTTpasswd;
-  doc["MQTTinterval"] = settingMQTTinterval;
-  doc["MQTTtopTopic"] = settingMQTTtopTopic;
-  
 #endif
-    doc["ota"] = BaseOTAurl;
-
-#ifdef USE_MINDERGAS
-  doc["MindergasAuthtoken"] = settingMQTTtsettingMindergasTokenopTopic;
-
-#endif
-
   writeToJsonFile(doc, SettingsFile);
   
 } // writeSettings()
@@ -141,7 +136,7 @@ void readSettings(bool show)
   File SettingsFile;
   if (!SPIFFSmounted) return;
   
-  DebugTf(" %s ..\r\n", SETTINGS_FILE);
+  DebugTf("Read %s ..\r\n", SETTINGS_FILE);
  
    if (!SPIFFS.exists(SETTINGS_FILE)) 
   {
@@ -162,7 +157,22 @@ void readSettings(bool show)
   }
   
   //strcpy(spiffsTimestamp, doc["Timestamp"]);
-  strcpy(settingHostname, doc["Hostname"] | _DEFAULT_HOSTNAME );
+  strcpy(settingHostname, doc["Hostname"] | _DEFAULT_HOSTNAME );  
+  settingTelegramInterval = doc["TelegramInterval"];
+  strcpy(settingIndexPage, doc["IndexPage"] | _DEFAULT_HOMEPAGE);
+  CHANGE_INTERVAL_SEC(nextTelegram, settingTelegramInterval);
+  strcpy(settingMQTTbroker, doc["MQTTbroker"]);
+  settingMQTTbrokerPort = doc["MQTTbrokerPort"];
+  strcpy(settingMQTTuser, doc["MQTTUser"]);
+  strcpy(settingMQTTpasswd, doc["MQTTpasswd"]);
+  settingMQTTinterval = doc["MQTTinterval"];
+  strcpy(settingMQTTtopTopic, doc["MQTTtopTopic"]);
+  settingSmHasFaseInfo = doc["SmHasFaseInfo"];
+  CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
+  CHANGE_INTERVAL_MIN(reconnectMQTTtimer, 1);
+  if (doc.containsKey("ota")) strcpy(BaseOTAurl, doc["ota"]);
+
+#ifndef MQTT_CORE
   settingEDT1 = doc["EnergyDeliveredT1"];
   settingEDT2 = doc["EnergyDeliveredT2"];
   settingERT1 = doc["EnergyReturnedT1"];
@@ -170,30 +180,8 @@ void readSettings(bool show)
   settingGDT = doc["GASDeliveredT"];
   settingENBK = doc["EnergyVasteKosten"];
   settingGNBK = doc["GasVasteKosten"];
-  settingSmHasFaseInfo = doc["SmHasFaseInfo"];
-  settingTelegramInterval = doc["TelegramInterval"];
-  strcpy(settingIndexPage, doc["IndexPage"] | _DEFAULT_HOMEPAGE);
-  
-  CHANGE_INTERVAL_SEC(nextTelegram, settingTelegramInterval);
- 
-#ifdef USE_MQTT
-  //sprintf(settingMQTTbroker, "%s:%d", MQTTbroker, MQTTbrokerPort);
-  strcpy(settingMQTTbroker, doc["MQTTbroker"]);
-  settingMQTTbrokerPort = doc["MQTTbrokerPort"];
-  strcpy(settingMQTTuser, doc["MQTTUser"]);
-  strcpy(settingMQTTpasswd, doc["MQTTpasswd"]);
-  settingMQTTinterval = doc["MQTTinterval"];
-  strcpy(settingMQTTtopTopic, doc["MQTTtopTopic"]);
-  
-  CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
-  CHANGE_INTERVAL_MIN(reconnectMQTTtimer, 1);
-  
 #endif
   
-#ifdef USE_MINDERGAS
-  strcpy(settingMQTTtsettingMindergasTokenopTopic, doc["MindergasAuthtoken"]);
-#endif
-   if (doc.containsKey("ota")) strcpy(BaseOTAurl, doc["ota"]);
   SettingsFile.close();
   //end json
 
@@ -204,7 +192,7 @@ void readSettings(bool show)
   DebugTln(F(" .. done\r"));
 
 
-  if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindexEDGE.html");
+  if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), _DEFAULT_HOMEPAGE);
   if (settingTelegramInterval  < 2) settingTelegramInterval = 10;
   if (settingMQTTbrokerPort    < 1) settingMQTTbrokerPort   = 1883;
 
@@ -212,6 +200,7 @@ void readSettings(bool show)
   
   Debugln(F("\r\n==== Settings ===================================================\r"));
   Debugf("                    Hostname : %s\r\n",     settingHostname);
+#ifndef MQTT_CORE
   Debugf("   Energy Delivered Tarief 1 : %9.7f\r\n",  settingEDT1);
   Debugf("   Energy Delivered Tarief 2 : %9.7f\r\n",  settingEDT2);
   Debugf("   Energy Delivered Tarief 1 : %9.7f\r\n",  settingERT1);
@@ -219,12 +208,11 @@ void readSettings(bool show)
   Debugf("        Gas Delivered Tarief : %9.7f\r\n",  settingGDT);
   Debugf("     Energy Netbeheer Kosten : %9.2f\r\n",  settingENBK);
   Debugf("        Gas Netbeheer Kosten : %9.2f\r\n",  settingGNBK);
+#endif  
   Debugf("  SM Fase Info (0=No, 1=Yes) : %d\r\n",     settingSmHasFaseInfo);
   Debugf("   Telegram Process Interval : %d\r\n",     settingTelegramInterval);
-  
   Debugf("                  Index Page : %s\r\n",     settingIndexPage);
 
-#ifdef USE_MQTT
   Debugln(F("\r\n==== MQTT settings ==============================================\r"));
   Debugf("          MQTT broker URL/IP : %s:%d", settingMQTTbroker, settingMQTTbrokerPort);
   if (MQTTclient.connected()) Debugln(F(" (is Connected!)\r"));
@@ -237,12 +225,6 @@ void readSettings(bool show)
 #endif
   Debugf("          MQTT send Interval : %d\r\n", settingMQTTinterval);
   Debugf("              MQTT top Topic : %s\r\n", settingMQTTtopTopic);
-#endif  // USE_MQTT
-#ifdef USE_MINDERGAS
-  Debugln(F("\r\n==== Mindergas settings ==============================================\r"));
-  Debugf("         Mindergas Authtoken : %s\r\n", settingMindergasToken);
-#endif  
-  
   Debugln(F("-\r"));
 
 } // readSettings()
@@ -265,15 +247,15 @@ void updateSetting(const char *field, const char *newValue)
     Debugln();
     DebugTf("Need reboot before new %s.local will be available!\r\n\n", settingHostname);
   }
+#ifndef MQTT_CORE
   if (!stricmp(field, "ed_tariff1"))        settingEDT1         = String(newValue).toFloat();  
   if (!stricmp(field, "ed_tariff2"))        settingEDT2         = String(newValue).toFloat();  
   if (!stricmp(field, "er_tariff1"))        settingERT1         = String(newValue).toFloat();  
   if (!stricmp(field, "er_tariff2"))        settingERT2         = String(newValue).toFloat();  
   if (!stricmp(field, "electr_netw_costs")) settingENBK         = String(newValue).toFloat();
-
   if (!stricmp(field, "gd_tariff"))         settingGDT          = String(newValue).toFloat();  
   if (!stricmp(field, "gas_netw_costs"))    settingGNBK         = String(newValue).toFloat();
-
+#endif
   if (!stricmp(field, "sm_has_fase_info")) 
   {
     settingSmHasFaseInfo = String(newValue).toInt(); 
@@ -289,11 +271,6 @@ void updateSetting(const char *field, const char *newValue)
 
   if (!stricmp(field, "IndexPage"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  
 
-#ifdef USE_MINDERGAS
-  if (!stricmp(field, "MindergasToken"))    strCopy(settingMindergasToken, 20, newValue);  
-#endif //USE_MINDERGAS
-
-#ifdef USE_MQTT
   if (!stricmp(field, "mqtt_broker"))  {
     DebugT("settingMQTTbroker! to : ");
     memset(settingMQTTbroker, '\0', sizeof(settingMQTTbroker));
@@ -322,7 +299,6 @@ void updateSetting(const char *field, const char *newValue)
     CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
   }
   if (!stricmp(field, "mqtt_toptopic"))     strCopy(settingMQTTtopTopic, 20, newValue);  
-#endif
 
   writeSettings();
   
@@ -365,7 +341,7 @@ void LogFile( const char* payload ){
   }
   
   //log rotate
-  if (LogFile.size() > 7000){ 
+  if (LogFile.size() > 4000){ 
 //    DebugT(F("LogFile filesize: "));Debugln(RebootFile.size());
     SPIFFS.remove("/P1_log.old");     //remove .old if existing 
     //rename file

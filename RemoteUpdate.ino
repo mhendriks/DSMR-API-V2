@@ -20,11 +20,11 @@ void update_started() {
 }
 
 void update_progress(int cur, int total) {
-  Debugf("CALLBACK:  HTTP update process at %d of %d bytes...\r", cur, total);
+  Debugf("HTTP update process at %d of %d bytes...\r", cur, total);
 }
 
 void update_error(int err) {
-  Debugf("CALLBACK:  HTTP update fatal error code %d | %s\n", err, ESPhttpUpdate.getLastErrorString().c_str());
+  Debugf("HTTP update fatal error code %d | %s\n", err, ESPhttpUpdate.getLastErrorString().c_str());
   LogFile("Firmware update ERROR");
   httpServer.send(200, "text/html", "Firmware update ERROR: " + err);
 }

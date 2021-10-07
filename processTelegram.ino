@@ -27,12 +27,14 @@ void processTelegram()
   // has the hour changed (or the day or month)  
   // in production testing on hour only would
   // suffice, but in testing I need all three
+ #ifndef MQTT_CORE
   if (     (hour(actT) != hour(newT)  ) ) 
 //       ||   (day(actT) != day(newT)   ) 
 //       || (month(actT) != month(newT) ) )
   {
     writeRingFiles();
   }
+ #endif
   yield();
   if ( DUE(publishMQTTtimer) ) sendMQTTData();  
 

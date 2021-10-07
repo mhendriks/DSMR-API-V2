@@ -8,10 +8,28 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
+
+void DisplayLogFile(char *fname) {   
+  if (bailout() || !SPIFFSmounted) return; //exit when heapsize is too small
+  if (!SPIFFS.exists(fname))
+  {
+    DebugT(F("LogFile doesn't exist: "));
+    return;
+    }
+  File RingFile = SPIFFS.open(fname, "r"); // open for reading
+  DebugTln(F("Ringfile output: "));
+  //read the content and output to serial interface
+  while (RingFile.available()) TelnetStream.write(RingFile.read());
+  Debugln();    
+  RingFile.close();
+} //displaylogfile
+
+//--------------------------------
+
 void displayBoardInfo() 
 {
   Debugln(F("\r\n==================================================================\r"));
-  Debug(F("]\r\n      Firmware Version ["));  Debug( _VERSION );
+  Debug(F("\r\n       Firmware Version ["));  Debug( _VERSION );
   Debug(F("]\r\n              Compiled ["));  Debug( __DATE__ "  "  __TIME__ );
   Debug(F("]\r\n              #defines "));   Debug(F(ALL_OPTIONS));
   Debug(F(" \r\n   Telegrams Processed ["));  Debug( telegramCount );
@@ -51,7 +69,7 @@ void displayBoardInfo()
     Debug(F("ESP8266_GENERIC"));
 #endif
 #ifdef ESP8266_ESP01
-    Debug(F("ESP8266_ESP01"));
+    Debug(F("ESP8266"));
 #endif
 #ifdef ESP8266_ESP12
     Debug(F("ESP8266_ESP12"));
@@ -68,7 +86,6 @@ void displayBoardInfo()
   Debug(F("]\r\n                upTime ["));  Debug( upTime() );
   Debugln(F("]\r"));
 
-#ifdef USE_MQTT
   Debugln(F("==================================================================\r"));
   Debug(F(" \r\n           MQTT broker ["));  Debug( settingMQTTbroker );
   Debug(F("]\r\n             MQTT User ["));  Debug( settingMQTTuser );
@@ -81,7 +98,6 @@ void displayBoardInfo()
   Debug(F("]\r\n       Update Interval ["));  Debug(settingMQTTinterval);
   Debugln(F("]\r"));
   Debugln(F("==================================================================\r\n\r"));
-#endif
 
 } // displayBoardInfo()
 
@@ -102,40 +118,27 @@ void handleKeyInput()
       case 'l':
       case 'L':     readSettings(true);
                     break;
+#ifndef MQTT_CORE
       case 'd':
       case 'D':     RingFileTo(RINGDAYS, false);
                     break;
-      case 'E':     eraseFile();
-                    break;
-#if defined(HAS_NO_SLIMMEMETER)
-      case 'F':     forceBuildRingFiles = true;
-                    runMode = SInit;
-                    break;
-#endif
       case 'h':
       case 'H':     RingFileTo(RINGHOURS, false);
-                    break;
-      case 'n':
-      case 'N':     {   
-                      if (bailout() || !SPIFFSmounted) return; //exit when heapsize is too small
-                      if (!SPIFFS.exists("/P1.log"))
-                      {
-                        DebugT(F("LogFile doesn't exist: "));
-                        return;
-                        }
-                
-                      File RingFile = SPIFFS.open("/P1.log", "r"); // open for reading
-                      DebugTln(F("Ringfile output: "));
-                      //read the content and output to serial interface
-                      while (RingFile.available()) TelnetStream.write(RingFile.read());
-                      Debugln();    
-                      RingFile.close();
-                    }
                     break;
       case 'm':
       case 'M':     RingFileTo(RINGMONTHS, false);
                     break;
-                    
+#endif
+      case 'E':     eraseFile();
+                    break;
+#ifdef HAS_NO_SLIMMEMETER
+      case 'F':     forceBuildRingFiles = true;
+                    runMode = SInit;
+                    break;
+#endif
+      case 'n':
+      case 'N':     DisplayLogFile("P1.log");
+                    break;
       case 'W':     Debugf("\r\nConnect to AP [%s] and go to ip address shown in the AP-name\r\n", settingHostname);
                     delay(1000);
                     WiFi.disconnect(true);  // deletes credentials !
@@ -144,21 +147,17 @@ void handleKeyInput()
                     ESP.reset();
                     delay(2000);
                     break;
-#ifdef USE_MINDERGAS
-      case 't':
-      case 'T':     forceMindergasUpdate();  //skip waiting for (midnight||countdown) 
-                    break;
-#endif
+
       case 'p':
       case 'P':     showRaw = !showRaw;
                     if (showRaw)  digitalWrite(DTR_ENABLE, HIGH);
                     else          digitalWrite(DTR_ENABLE, LOW);
-                    showRawCount = 0;
                     break;
       case 'R':     DebugT(F("Reboot in 3 seconds ... \r\n"));
                     DebugFlush();
                     delay(3000);
                     DebugTln(F("now Rebooting. \r"));
+                    TelnetStream.stop();
                     DebugFlush();
                     ESP.reset();
                     break;
@@ -197,39 +196,29 @@ void handleKeyInput()
                       Verbose2 = false;
                     }
                     break;
-#ifdef USE_SYSLOGGER
-      case 'q':
-      case 'Q':     sysLog.setDebugLvl(0);
-                    sysLog.dumpLogFile();
-                    sysLog.setDebugLvl(1);
-                    break;
-#endif                    
-      case 'Z':     slotErrors      = 0;
-                    nrReboots       = 0;
+      case 'Z':     nrReboots       = 0;
                     telegramCount   = 0;
                     telegramErrors  = 0;
                     writeLastStatus();
-                    #ifdef USE_SYSLOGGER
-                      sysLog = {};
-                      openSysLog(true);
+                    #ifndef MQTT_CORE
+                      slotErrors      = 0;
                     #endif
                     break;
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   B - Board Info\r"));
                     Debugln(F("  *E - erase file from SPIFFS\r"));
                     Debugln(F("   L - list Settings\r"));
+#ifndef MQTT_CORE
                     Debugln(F("   D - Display Day table from SPIFFS\r"));
-                    Debugln(F("   H - Display Hour table from SPIFFS\r"));
+                    Debugln(F("   H - Display Hour table fr#ifdef MQTT_COREom SPIFFS\r"));
                     Debugln(F("   M - Display Month table from SPIFFS\r"));
+#endif
                     Debugln(F("   N - Display LogFile P1.log\r"));
-                  #if defined(HAS_NO_SLIMMEMETER)
+#if defined(HAS_NO_SLIMMEMETER)
                     Debugln(F("  *F - Force build RING files\r"));
-                  #endif
+#endif
                     Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
-#ifdef USE_SYSLOGGER
-                    Debugln(F("   Q - dump sysLog file\r"));
-#endif
                     Debugln(F("  *R - Reboot\r"));
                     Debugln(F("   S - File info on SPIFFS\r"));
                     Debugln(F("  *U+ - Update Remote; Enter Firmware version -> U 3.0.4 \r"));
@@ -237,9 +226,6 @@ void handleKeyInput()
                     if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));
                     else if (Verbose1)        Debugln(F("   V - Toggle Verbose 2\r"));
                     else                      Debugln(F("   V - Toggle Verbose 1\r"));
-                    #ifdef USE_MINDERGAS
-                    Debugln(F("   T - Force update mindergas.nl\r"));
-                    #endif
 
     } // switch()
     while (TelnetStream.available() > 0) 

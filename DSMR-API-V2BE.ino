@@ -6,16 +6,17 @@
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
-*      ˜
+*      
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
-*      - update via site ipv url incl logica voor uitvragen hiervan
-*      √ reboot after 4 min AP mode
-*      √ reconnectMQTTtimer
-*      √ reconnectWiFi
-*      √ remote update
-*      √ display log file via telnet
-*      √ show telegram verbetering telnet
+*      √ reboot bij bailout due to low memory (2.3.10)
+*      - Core verion met alleen MQTT en essentiele api functies, Niet meer beschikbaar in de MQTT_CORE versie:
+*      √-- RING Files
+*      √-- api/v2/sm
+*      √-- api/v2/hist
+*      - Aanpassen front-end ivm MQTT_CORE feaure
+*      √ Wifi credentials in aparte file voor testen (2.3.10)
+*      √ Telnet: alleen maar een concurrent sessie mogelijk; Een nieuwe sessie verbreekt de eerste sessie. (2.3.10)
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
@@ -29,17 +30,16 @@
     - Crystal Frequency: "26 MHz"
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
-    - CPU Frequency: "80MHz"
-    - Buildin Led: 2        //(n/a)
+    - CPU Frequency: "160MHz"
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
 */
 
 /******************** compiler options  ********************************************/
-#define USE_MQTT                    // default ON : define if you want to use MQTT (configure through webinterface)
 #define USE_UPDATE_SERVER           // default ON : define if there is enough memory and updateServer to be used
 #define USE_BELGIUM_PROTOCOL        // define if Slimme Meter is a Belgium Smart Meter
+//#define MQTT_CORE
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
@@ -47,50 +47,24 @@
 
 //----- EXTENSIONS
 //#define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
-//#define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 
-//change manual -> possible values [USE_MQTT][USE_DUTCH_PROTOCOL] or [USE_BELGIUM_PROTOCOL][USE_UPDATE_SERVER][USE_MINDERGAS][USE_SYSLOGGER][USE_NTP_TIME]
+//change manual -> possible values [USE_MQTT][NL] or [BE][USE_UPDATE_SERVER][USE_NTP_TIME]
 #ifdef USE_BELGIUM_PROTOCOL
-  #define ALL_OPTIONS "[BE][MQTT][UPDATE_SERVER]" 
+  #ifdef MQTT_CORE
+    #define ALL_OPTIONS "[BE][MQTT_CORE][UPDATE_SERVER]" 
+  #else
+    #define ALL_OPTIONS "[BE][MQTT][UPDATE_SERVER]" 
+  #endif
 #else 
-  #define ALL_OPTIONS "[NL][MQTT][UPDATE_SERVER]"
+#ifdef MQTT_CORE
+    #define ALL_OPTIONS "[NL][MQTT_CORE][UPDATE_SERVER]" 
+  #else
+    #define ALL_OPTIONS "[NL][MQTT][UPDATE_SERVER]" 
+  #endif
 #endif
 
 #include "DSMRloggerAPI.h"
 
-#ifdef USE_SYSLOGGER
-void openSysLog(bool empty)
-{
-  if (sysLog.begin(500, 100, empty))  // 500 lines use existing sysLog file
-  {   
-    DebugTln(F("Succes opening sysLog!"));
-    
-  }
-  else
-  {
-    DebugTln(F("Error opening sysLog!"));
-    
-  }
-
-  sysLog.setDebugLvl(1);
-  sysLog.setOutput(&TelnetStream);
-  sysLog.status();
-  sysLog.write("\r\n");
-  for (uint8_t q=0;q<3;q++)
-  {
-    sysLog.write("******************************************************************************************************");
-  }
-  writeToSysLog(F("Last Reset Reason [%s]"), ESP.getResetReason().c_str());
-  writeToSysLog("actTimestamp[%s], nrReboots[%u], Errors[%u]", actTimestamp
-                                                             , nrReboots
-                                                             , slotErrors);
-
-  sysLog.write(" ");
-
-} // openSysLog()
-#endif
-
-//===========================================================================================
 void setup() 
 {
   Serial.begin(115200, SERIAL_8N1);
@@ -143,19 +117,12 @@ void setup()
 
   delay(1000);
 //-----------------------------------------------------------------
-#ifdef USE_SYSLOGGER
-  openSysLog(false);
-  snprintf(cMsg, sizeof(cMsg), "SSID:[%s],  IP:[%s], Gateway:[%s]", WiFi.SSID().c_str()
-                                                                  , WiFi.localIP().toString().c_str()
-                                                                  , WiFi.gatewayIP().toString().c_str());
-  writeToSysLog("%s", cMsg);
-#endif
 
   startMDNS(settingHostname);
  
 //=============end Networkstuff======================================
 
-#if defined(USE_NTP_TIME)                                   //USE_NTP
+#ifdef USE_NTP_TIME
 //================ startNTP =========================================
                                                         //USE_NTP
                                                             //USE_NTP
@@ -173,56 +140,36 @@ void setup()
 #endif  //USE_NTP_TIME                                      //USE_NTP
 //================ end NTP =========================================
 
-//  snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTf("Last reset reason: [%s]\r", ESP.getResetReason().c_str());
 
 //============= now test if SPIFFS is correct populated!============
-  if (!DSMRfileExist(settingIndexPage, false) )
-  {
-    spiffsNotPopulated = true;   
-  }
+  if (!DSMRfileExist(settingIndexPage, false) ) spiffsNotPopulated = true;   
     
 //=============end SPIFFS =========================================
-#ifdef USE_SYSLOGGER
-  if (spiffsNotPopulated)
-  {
-    sysLog.write(F("SPIFFS is not correct populated (files are missing)"));
-  }
-#endif
   
-#if defined(USE_NTP_TIME)                                                           //USE_NTP
+#ifdef USE_NTP_TIME                                                           //USE_NTP
   time_t t = now(); // store the current time in time variable t                    //USE_NTP
-  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
-                                               , (year(t) - 2000), month(t), day(t) //USE_NTP
-                                               , hour(t), minute(t), second(t));    //USE_NTP
-//  pTimestamp = cMsg;                                                                //USE_NTP
+  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0", (year(t) - 2000), month(t), day(t), hour(t), minute(t), second(t));
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
 #endif  // use_dsmr_30
 
-
 //================ Start MQTT  ======================================
 
-#ifdef USE_MQTT                                                 //USE_MQTT
-  connectMQTT();                                                //USE_MQTT
-#endif                                                          //USE_MQTT
+  connectMQTT();
 
-//================ End of Start MQTT  ===============================
 //================ Start HTTP Server ================================
 
   if (!spiffsNotPopulated) {
     DebugTln(F("SPIFFS correct populated -> normal operation!\r"));
     httpServer.serveStatic("/",                 SPIFFS, settingIndexPage);
     httpServer.serveStatic("/DSMRindex.html",   SPIFFS, settingIndexPage);
-    httpServer.serveStatic("/DSMRindexEDGE.html",SPIFFS, settingIndexPage);
+    httpServer.serveStatic(_DEFAULT_HOMEPAGE,SPIFFS, settingIndexPage);
     httpServer.serveStatic("/index",            SPIFFS, settingIndexPage);
     httpServer.serveStatic("/index.html",       SPIFFS, settingIndexPage);
   } else {
     DebugTln(F("Oeps! not all files found on SPIFFS -> present FSexplorer!\r"));
     spiffsNotPopulated = true;
-  }
-  
-  //httpServer.serveStatic("/FSexplorer",      SPIFFS, "/FSexplorer.html"); //for version 2.0.0 firmware
-  
+  }  
   setupFSexplorer();
   httpServer.on("/api", HTTP_GET, processAPI); // all other api calls are catched in FSexplorer onNotFounD!
   httpServer.begin();
@@ -233,12 +180,7 @@ void setup()
 //================ Start HTTP Server ================================
 
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
-  writeToSysLog("Startup complete! actTimestamp[%s]", actTimestamp);  
 
-//================ End of Slimmer Meter ============================
-//================ The final part of the Setup =====================
-
-  
 //================ Start Slimme Meter ===============================
 
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
@@ -258,7 +200,6 @@ void setup()
 
 } // setup()
 
-
 //===[ no-blocking delay with running background tasks in ms ]============================
 DECLARE_TIMER_MS(timer_delay_ms, 1);
 void delayms(unsigned long delay_ms)
@@ -274,9 +215,7 @@ void delayms(unsigned long delay_ms)
 
 //========================================================================================
 
-
   unsigned int heap_before;
-
 
 //==[ Do Telegram Processing ]===============================================================
 void doTaskTelegram()
@@ -319,11 +258,9 @@ void doSystemTasks()
       heap_before = ESP.getFreeHeap();
       handleSlimmemeter();
       if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> handleSlimmemeter\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
-  #ifdef USE_MQTT
       heap_before = ESP.getFreeHeap();
       MQTTclient.loop();
       if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> MQTTclient.loop\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
-  #endif
       heap_before = ESP.getFreeHeap();
       httpServer.handleClient();
       if (heap_before-ESP.getFreeHeap()!=0) Debugf("%5d | %d | %d | %d -> httpServer.handleClient\n",telegramCount,heap_before,ESP.getFreeHeap(),heap_before-ESP.getFreeHeap());
@@ -353,7 +290,9 @@ void loop()
   doSystemTasks();
   
   //--- update statusfile + ringfiles
+#ifndef MQTT_CORE
   if (DUE(antiWearRing)) writeRingFiles(); //eens per 25min + elk uur overgang in processtelegram
+#endif
 
   if (DUE(antiWearStatus)) writeLastStatus(); //eens per 15min
   

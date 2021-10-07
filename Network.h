@@ -20,6 +20,8 @@
 #include <WiFiManager.h>        // version 0.16.0 - https://github.com/tzapu/WiFiManager
 #include <FS.h>                 // part of ESP8266 Core https://github.com/esp8266/Arduino
 
+#include "../../WifiCredentials.h"  //maakt het testen eenvoudiger
+
 ESP8266WebServer        httpServer (80);
 #ifdef USE_UPDATE_SERVER
   ESP8266HTTPUpdateServer httpUpdater(true);
@@ -66,7 +68,7 @@ void startWiFi(const char* hostname, int timeOut)
   //--- if it does not connect it starts an access point with the specified name
   //--- here  "DSMR-WS-<MAC>"
   //--- and goes into a blocking loop awaiting configuration
-  if (!manageWiFi.autoConnect(thisAP.c_str())) 
+  if (!manageWiFi.autoConnect(WIFI_SSID,WIFI_PASSWORD)) 
   {
     DebugTln(F("failed to connect and hit timeout"));    
 
@@ -76,7 +78,7 @@ void startWiFi(const char* hostname, int timeOut)
     ESP.reset();
     delay(2000);
     //komt hier nooit
-    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
+//    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
     return;
   }
 //  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
