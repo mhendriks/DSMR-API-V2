@@ -9,14 +9,11 @@
 *      
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
-*      √ reboot bij bailout due to low memory (2.3.10)
 *      - Core verion met alleen MQTT en essentiele api functies, Niet meer beschikbaar in de MQTT_CORE versie:
 *      √-- RING Files
 *      √-- api/v2/sm
 *      √-- api/v2/hist
 *      - Aanpassen front-end ivm MQTT_CORE feaure
-*      √ Wifi credentials in aparte file voor testen (2.3.10)
-*      √ Telnet: alleen maar een concurrent sessie mogelijk; Een nieuwe sessie verbreekt de eerste sessie. (2.3.10)
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
@@ -163,7 +160,7 @@ void setup()
     DebugTln(F("SPIFFS correct populated -> normal operation!\r"));
     httpServer.serveStatic("/",                 SPIFFS, settingIndexPage);
     httpServer.serveStatic("/DSMRindex.html",   SPIFFS, settingIndexPage);
-    httpServer.serveStatic(_DEFAULT_HOMEPAGE,SPIFFS, settingIndexPage);
+    httpServer.serveStatic(_DEFAULT_HOMEPAGE,   SPIFFS, settingIndexPage);
     httpServer.serveStatic("/index",            SPIFFS, settingIndexPage);
     httpServer.serveStatic("/index.html",       SPIFFS, settingIndexPage);
   } else {
@@ -184,7 +181,7 @@ void setup()
 //================ Start Slimme Meter ===============================
 
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
-  DebugTln("Swapping serial port to Smart Meter, debug output will continue on telnet");
+  DebugTln(F("Swapping serial port to Smart Meter, debug output will continue on telnet"));
   Debug(F("\nGebruik 'telnet "));
   Debug (WiFi.localIP());
   Debugln(F("' voor verdere debugging"));

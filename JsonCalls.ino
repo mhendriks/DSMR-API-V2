@@ -432,6 +432,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
   break;  
   case 't': //telegramm 
   {
+    
     String buff = slimmeMeter.raw();  
     if (buff.length() == 0) 
     {
@@ -507,31 +508,7 @@ if (fieldsElements == 0) return true;
 //=======================================================================
 void sendDeviceDebug(const char *URI, String tail) 
 {
-#ifdef USE_SYSLOGGER
-  String lLine = "";
-  int lineNr = 0;
-  int tailLines = tail.toInt();
-
-  DebugTf("list [%d] debug lines\r\n", tailLines);
-  sysLog.status();
-  sysLog.setDebugLvl(0);
-  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
-  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
-  if (tailLines > 0)
-        sysLog.startReading((tailLines * -1));  
-  else  sysLog.startReading(0, 0);  
-  while( (lLine = sysLog.readNextLine()) && !(lLine == "EOF")) 
-  {
-    lineNr++;
-    snprintf(cMsg, sizeof(cMsg), "%s\r\n", lLine.c_str());
-    httpServer.sendContent(cMsg);
-
-  }
-  sysLog.setDebugLvl(1);
-
-#else
   sendApiNotFound(URI);
-#endif
 
 } // sendDeviceDebug()
 
