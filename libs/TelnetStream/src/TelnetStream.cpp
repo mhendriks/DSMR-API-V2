@@ -1,12 +1,17 @@
 #include "TelnetStream.h"
 
-WiFiServer TelnetStreamClass::server(23);
-
-TelnetStreamClass::TelnetStreamClass() {
+TelnetStreamClass::TelnetStreamClass(uint16_t port) :server(port) {
 }
 
-void TelnetStreamClass::begin() {
+void TelnetStreamClass::begin(int port) {
+  if (port) {
+    server = NetServer(port);
+  }
+#if defined(_WIFI_ESP_AT_H_)
+  server.begin(3, 3600);
+#else
   server.begin();
+#endif
   client = server.available();
 }
 
@@ -15,23 +20,18 @@ void TelnetStreamClass::stop() {
 }
 
 boolean TelnetStreamClass::disconnected() {
-#ifdef ESP32
-  if (!server)
+#if __has_include(<WiFiNINA.h>) || __has_include(<WiFi101.h>)
+  if (server.status() == 0) // 0 is CLOSED
     return true;
 #else
-  if (server.status() == CLOSED)
+  if (!server)
     return true;
 #endif
-  if (!client) {
-    client = server.available();
+
+  if (!client || !client.available()) {
+    client = server.available(); // try to get next client with data
   }
-  if (client) {
-    if (client.connected())
-      return false;
-    client.stop();
-    client = server.available();
-  }
-  return true;
+  return !client;
 }
 
 int TelnetStreamClass::read() {
@@ -53,15 +53,15 @@ int TelnetStreamClass::peek() {
 }
 
 size_t TelnetStreamClass::write(uint8_t val) {
-  if (disconnected())
-    return 1;
-  return client.write(val);
+  return server.write(val);
+}
+
+size_t TelnetStreamClass::write(const uint8_t *buf, size_t size) {
+  return server.write(buf, size);
 }
 
 void TelnetStreamClass::flush() {
-  if (disconnected())
-    return;
-  client.flush();
+  server.flush();
 }
 
-TelnetStreamClass TelnetStream;
+TelnetStreamClass TelnetStream(23);

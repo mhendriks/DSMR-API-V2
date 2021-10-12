@@ -16,7 +16,6 @@
   static IPAddress  MQTTbrokerIP;
   static char       MQTTbrokerIPchar[20];
 
-#ifdef USE_MQTT
   
   int8_t              reconnectAttempts = 0;
   char                lastMQTTtimestamp[15] = "-";
@@ -27,12 +26,10 @@
 
   String            MQTTclientId;
 
-#endif
 
 //===========================================================================================
 void connectMQTT() 
 {
-#ifdef USE_MQTT
   
   if (Verbose2) DebugTf("MQTTclient.connected(%d), mqttIsConnected[%d], stateMQTT [%d]\r\n"
                                               , MQTTclient.connected()
@@ -57,14 +54,11 @@ void connectMQTT()
 
   CHANGE_INTERVAL_SEC(reconnectMQTTtimer, 5);
 
-#endif
 }
 
 //===========================================================================================
 bool connectMQTT_FSM() 
-{
-#ifdef USE_MQTT
-  
+{  
   switch(stateMQTT) 
   {
     case MQTT_STATE_INIT:  
@@ -155,7 +149,6 @@ bool connectMQTT_FSM()
           DebugTln(F("Next State: MQTT_STATE_INIT"));
           break;
   }
-#endif
 
   return false;  
 
@@ -164,29 +157,27 @@ bool connectMQTT_FSM()
 //=======================================================================
 
 struct buildJsonMQTT {
-#ifdef USE_MQTT
-
-  char topicId[100];
-  StaticJsonDocument<125> doc;  
-
+/* twee types
+ *  {energy_delivered_tariff1":[{"value":11741.29,"unit":"kWh"}]}"
+ *  {equipment_id":[{"value":"4530303435303033383833343439383137"}]}"
+ *  
+ *  msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":"+Unit+"}]}";
+ *  msg = "\"{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+"}]}\""
+ *  
+ */
+    String msg;
+    
     template<typename Item>
     void apply(Item &i) {
       if (i.present()) 
       {
         String Name = String(Item::name);
-        String Unit = Item::unit();
-        strcpy(topicId,settingMQTTtopTopic);
-        strConcat(topicId, sizeof(topicId), Name.c_str());
-        if (Verbose2) DebugTf("topicId[%s]\r\n", topicId);
-        doc.clear();
-        JsonObject nested = doc[Name].createNestedObject();
-        if (Unit.length() > 0) {
-          nested["value"] = value_to_json(i.val());
-          nested["unit"] = Unit;
-        }
-        else nested["value"] = value_to_json(i.val());
-        serializeJson(doc, mqttBuff);
-        if (!MQTTclient.publish(topicId, mqttBuff) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", topicId, mqttBuff, (strlen(topicId) + strlen(mqttBuff)));
+        strcpy(cMsg,settingMQTTtopTopic);
+        strcat(cMsg, Name.c_str());
+        if (strlen(Item::unit()) > 0) msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
+        else msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
+        if (Verbose2) DebugTln("mqtt bericht: "+msg);
+        if (!MQTTclient.publish(cMsg, msg.c_str()) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
       } // if i.present
   } //apply
   
@@ -195,21 +186,14 @@ struct buildJsonMQTT {
     return i;
   }
 
-  String value_to_json(TimestampedFixedValue i) {
-    return String(i);
-  }
-  
-  float value_to_json(FixedValue i) {
-    return i;
-  }
-#endif
-
+  String value_to_json( String i){
+    return "\"" + i+ "\"";
+  } 
 }; // buildJsonMQTT
 
 //===========================================================================================
 void sendMQTTData() 
 {
-#ifdef USE_MQTT
 //  String dateTime, topicId, json;
 
   if ((settingMQTTinterval == 0) || bailout() ) return;
@@ -242,8 +226,6 @@ void sendMQTTData()
   DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", settingMQTTbroker, settingMQTTbrokerPort);
   
   DSMRdata.applyEach(buildJsonMQTT());
-
-#endif
 
 } // sendMQTTData()
 

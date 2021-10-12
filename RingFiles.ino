@@ -47,7 +47,7 @@ uint8_t CalcSlot(E_ringfiletype ringfiletype, const char* Timestamp)
   {
     DebugT(F("RINGFile: Some serious error! Slot is: ")); Debugln(slot);
 //    slot = RingFiles[ringfiletype].slots;
-    slotErrors++;
+    P1Status.sloterrors++;
     return 99;
   }
   return slot;

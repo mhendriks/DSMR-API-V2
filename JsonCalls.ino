@@ -75,17 +75,9 @@ void processAPI() {
                                   , httpServer.client().remoteIP().toString().c_str()
                                         , URI); 
 
-#ifdef USE_SYSLOGGER
-  if (ESP.getFreeHeap() < 5000) // to prevent firmware from crashing!
-#else
   if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
-#endif
   {
-      DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
-      writeToSysLog("from[%s][%s] Bailout low heap (%d bytes)"
-                                    , httpServer.client().remoteIP().toString().c_str()
-                                    , URI
-                                    , ESP.getFreeHeap() );
+    DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
     httpServer.send(500, "text/plain", "500: internal server error (low heap)\r\n"); 
     return;
   }
@@ -214,16 +206,14 @@ void sendDeviceInfo()
   doc["telegramcount"] = (int)telegramCount;
   doc["telegramerrors"] = (int)telegramErrors;
 
-#ifdef USE_MQTT
   snprintf(cMsg, sizeof(cMsg), "%s:%04d", settingMQTTbroker, settingMQTTbrokerPort);
   doc["mqttbroker"] = cMsg;
   doc["mqttinterval"] = settingMQTTinterval;
   if (mqttIsConnected)
         doc["mqttbroker_connected"] = "yes";
   else  doc["mqttbroker_connected"] = "no";
-#endif
 
-  doc["reboots"]      = (int)nrReboots;
+  doc["reboots"]      = (int)P1Status.reboots;
   doc["lastreset"]    = lastReset;  
 
   sendJson(doc);
@@ -314,6 +304,18 @@ void sendDeviceSettings()
   doc["mqtt_interval"]["type"] = "i";
   doc["mqtt_interval"]["min"] = 0;
   doc["mqtt_interval"]["max"] = 600;  
+
+#ifdef USE_WATER_SENSOR
+  doc["water_m3"]["value"] = P1Status.wtr_m3;
+  doc["water_m3"]["type"] = "i";
+  doc["water_m3"]["min"] = 0;
+  doc["water_m3"]["max"] = 99999;  
+  
+  doc["water_l"]["value"] = P1Status.wtr_l;
+  doc["water_l"]["type"] = "i";
+  doc["water_l"]["min"] = 0;
+  doc["water_l"]["max"] = 999;  
+#endif
   sendJson(doc);
 
 } // sendDeviceSettings()
@@ -427,7 +429,6 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
       //DebugTf("--> field[%s] => newValue[%s]\r\n", field, newValue);
       updateSetting(field, newValue);
       httpServer.send(200, "application/json", httpServer.arg(0));
-      writeToSysLog("DSMReditor: Field[%s] changed to [%s]", field, newValue);
     }
     else
     {
@@ -495,31 +496,7 @@ void handleHistApi(const char *URI, const char *word4, const char *word5, const 
 //=======================================================================
 void sendDeviceDebug(const char *URI, String tail) 
 {
-#ifdef USE_SYSLOGGER
-  String lLine = "";
-  int lineNr = 0;
-  int tailLines = tail.toInt();
-
-  DebugTf("list [%d] debug lines\r\n", tailLines);
-  sysLog.status();
-  sysLog.setDebugLvl(0);
-  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
-  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
-  if (tailLines > 0)
-        sysLog.startReading((tailLines * -1));  
-  else  sysLog.startReading(0, 0);  
-  while( (lLine = sysLog.readNextLine()) && !(lLine == "EOF")) 
-  {
-    lineNr++;
-    snprintf(cMsg, sizeof(cMsg), "%s\r\n", lLine.c_str());
-    httpServer.sendContent(cMsg);
-
-  }
-  sysLog.setDebugLvl(1);
-
-#else
   sendApiNotFound(URI);
-#endif
 
 } // sendDeviceDebug()
 

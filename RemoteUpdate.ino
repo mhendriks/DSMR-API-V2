@@ -20,11 +20,11 @@ void update_started() {
 }
 
 void update_progress(int cur, int total) {
-  DebugTf("CALLBACK:  HTTP update process at %d of %d bytes...\n", cur, total);
+  Debugf("HTTP update process at %d of %d bytes...\r", cur, total);
 }
 
 void update_error(int err) {
-  DebugTf("CALLBACK:  HTTP update fatal error code %d | %s\n", err, ESPhttpUpdate.getLastErrorString().c_str());
+  Debugf("HTTP update fatal error code %d | %s\n", err, ESPhttpUpdate.getLastErrorString().c_str());
   LogFile("Firmware update ERROR");
   httpServer.send(200, "text/html", "Firmware update ERROR: " + err);
 }
@@ -46,10 +46,10 @@ void RemoteUpdate(const char* versie){
  */
  
   int flashSize = (ESP.getFlashChipRealSize() / 1024.0 / 1024.0);
-  String path,otaFile;
-  if (strlen(versie) == 0) otaFile = "DSMR-API-V" + httpServer.arg(0) + "_" + flashSize + "Mb.bin.gz";
-  else otaFile = "DSMR-API-V" + String(versie) + "_" + flashSize + "Mb.bin.gz";
-  path = BaseOTAurl;
+  String path = BaseOTAurl;
+  String otaFile;
+  if (strlen(versie) == 0) otaFile = "DSMR-API-V" + httpServer.arg(0) + "_" + flashSize + "Mb.bin";
+  else otaFile = "DSMR-API-V" + String(versie) + "_" + flashSize + "Mb.bin";
   path += otaFile;
   if ((httpServer.argName(0) == "version") || strlen(versie) > 0) {
     DebugTln("RemoteUpdate: versie " + httpServer.arg(0) + " | " + "flashsize " + flashSize + " Mb");

@@ -9,8 +9,6 @@
 *      
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
-*      - update via site ipv url incl logica voor uitvragen hiervan
-*      - aanpassen Telnet plugin ivm crash na x minuten
 *      - indien api niet beschikbaar (chck time) dan overige calls ook niet meer doen
 *      - frontend instellingen mutabel in webpagina
 *      - mqtt broker benaderen via host name http://www.iotsharing.com/2017/06/how-to-get-ip-address-from-mdns-host-name-in-arduino-esp32.html 
@@ -20,9 +18,14 @@
 *      - nieuwe update scherm
 *      - instellingen FrontEnd zichtbaar in webpagina read only
 *      - fix sm data gas data indien deze niet aanwezig is
-*      - watermeter 
 *      - Piekvermogen bijhouden Belgie
-*      - enelogic koppeling
+*      √ watermeter -> persistant data opgenomen in P1Status Data
+*      √ telnet: dump logfile
+*      √ Wifi credentials in aparte file voor testen
+*      √ Telnet -> alleen maar een concurrent sessie mogelijk; Een nieuwe sessie verbreekt de eerste sessie. 
+*      √ reboot bij bailout due to low memory
+*      √ StatusFile -> EEPROM persistant memory (sneller en veiliger ipv dataupdate)
+*      √ Watermeter -> wegschrijven updates naar P1Status per m3 en bij reboot
 *      
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 
@@ -43,41 +46,18 @@
     - Port: <select correct port>
 */
 /******************** compiler options  ********************************************/
-#define USE_MQTT                    // default ON : define if you want to use MQTT (configure through webinterface)
 #define USE_UPDATE_SERVER           // default ON : define if there is enough memory and updateServer to be used
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
 
 //----- EXTENSIONS
+//#define USE_WATER_SENSOR
 //#define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
-//#define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
-//#define USE_PUSHOVER              // define if the pushover app could be used
-//#define USE_BLYNK                 // define if the pushover app could be used
+//#define USE_BLYNK                 // define if the blynk app could be used
 
 #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS]"
 #include "DSMRloggerAPI.h"
-
-#ifdef USE_SYSLOGGER
-void openSysLog(bool empty)
-{
-  if (sysLog.begin(500, 100, empty)) DebugTln(F("Succes opening sysLog!"));  // 500 lines use existing sysLog file
-  else DebugTln(F("Error opening sysLog!"));
-
-  sysLog.setDebugLvl(1);
-  sysLog.setOutput(&TelnetStream);
-  sysLog.status();
-  sysLog.write("\r\n");
-  for (uint8_t q=0;q<3;q++)
-  {
-    sysLog.write("******************************************************************************************************");
-  }
-  writeToSysLog(F("Last Reset Reason [%s]"), ESP.getResetReason().c_str());
-  writeToSysLog("actTimestamp[%s], nrReboots[%u], Errors[%u]", actTimestamp, nrReboots, slotErrors);
-  sysLog.write(" ");
-
-} // openSysLog()
-#endif
 
 //===========================================================================================
 void setup() 
@@ -103,13 +83,18 @@ void setup()
   DebugT(F("Last reset reason: ")); Debugln(lastReset);
   
   startTelnet();
-  
+
+//================ Read Persistance Settings ====================
+  P1StatusBegin();
+  delay(500);
+  if (P1StatusAvailable()) P1StatusRead(); //load persistant data
+
 //================ FS ===========================================
   if (LittleFS.begin()) 
   {
     DebugTln(F("File System Mount succesful"));
     FSmounted = true;   
-  } else DebugTln(F("!!!File System Mount failed!!!"));   // Serious problem with LittleFS 
+  } else DebugTln(F("/!\\File System Mount failed/!\\"));   // Serious problem with LittleFS 
 
 
 //------ read status file for last Timestamp --------------------
@@ -117,14 +102,17 @@ void setup()
   //==========================================================//
   // writeLastStatus();  // only for firsttime initialization //
   //==========================================================//
-  readLastStatus(); // place it in actTimestamp
+
+//  readLastStatus(); // place it in actTimestamp
+  
   // set the time to actTimestamp!
   actT = epoch(actTimestamp, strlen(actTimestamp), true);
-  nrReboots++;
-  DebugTf("===> actTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n", actTimestamp, nrReboots, slotErrors);                                                                    
-  
+  P1Status.reboots++;
+//  DebugTf("===> actTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n", actTimestamp, P1Status.reboots, P1Status.sloterrors);                                                                    
+  P1StatusWrite();
+  P1StatusPrint(); //print latest values
   readSettings(true);
-  writeLastStatus(); //update reboots
+//  writeLastStatus(); //update reboots
   Rebootlog(); // write reboot status to file
   
 //=============start Networkstuff==================================
@@ -137,15 +125,7 @@ void setup()
   Debug (F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
   Debugln();
 
-  //for(int b=0; b<3; b++) { digitalWrite(LED, !digitalRead(LED)); delay(300);} //some delay
 //-----------------------------------------------------------------
-#ifdef USE_SYSLOGGER
-  openSysLog(false);
-  snprintf(cMsg, sizeof(cMsg), "SSID:[%s],  IP:[%s], Gateway:[%s]", WiFi.SSID().c_str()
-                                                                  , WiFi.localIP().toString().c_str()
-                                                                  , WiFi.gatewayIP().toString().c_str());
-  writeToSysLog("%s", cMsg);
-#endif
 
   startMDNS(settingHostname);
  
@@ -158,10 +138,8 @@ void setup()
   if (!startNTP())                                          //USE_NTP
   {                                                         //USE_NTP
     DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));   //USE_NTP
-    writeLastStatus();                                      //USE_NTP
-    delay(1500);                                            //USE_NTP
-    ESP.restart();                                          //USE_NTP
-    delay(2000);                                            //USE_NTP
+//    writeLastStatus();                                      //USE_NTP
+    P1Reboot();
   }                                                         //USE_NTP
                                                     //USE_NTP
   prevNtpHour = hour();                                     //USE_NTP
@@ -169,22 +147,12 @@ void setup()
 #endif  //USE_NTP_TIME                                      //USE_NTP
 //================ end NTP =========================================
 
-  snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
-  DebugTln(cMsg);
+  DebugTf("Last reset reason: [%s]\r", ESP.getResetReason().c_str());
 
 //============= now test if LittleFS is correct populated!============
-  if (!DSMRfileExist(settingIndexPage, false) )
-  {
-    FSNotPopulated = true;   
-  }
+  if (!DSMRfileExist(settingIndexPage, false) )  FSNotPopulated = true;   
     
 //=============end FS =========================================
-#ifdef USE_SYSLOGGER
-  if (FSNotPopulated)
-  {
-    sysLog.write(F("File System is not correct populated (files are missing)"));
-  }
-#endif
   
 #if defined(USE_NTP_TIME)                                                           //USE_NTP
   time_t t = now(); // store the current time in time variable t                    //USE_NTP
@@ -198,10 +166,7 @@ void setup()
 
 //================ Start MQTT  ======================================
 
-#ifdef USE_MQTT                                                 //USE_MQTT
-  //connectMQTT();
   if ( (strlen(settingMQTTbroker) > 3) && settingMQTTinterval) connectMQTT();
-#endif                                                          //USE_MQTT
 
 //================ End of Start MQTT  ===============================
 //================ Start HTTP Server ================================
@@ -210,7 +175,7 @@ void setup()
     DebugTln(F("File System correct populated -> normal operation!\r"));
     httpServer.serveStatic("/",                 LittleFS, settingIndexPage);
     httpServer.serveStatic("/DSMRindex.html",   LittleFS, settingIndexPage);
-    httpServer.serveStatic("/DSMRindexEDGE.html",LittleFS, settingIndexPage);
+    httpServer.serveStatic(_DEFAULT_HOMEPAGE,   LittleFS, settingIndexPage);
     httpServer.serveStatic("/index",            LittleFS, settingIndexPage);
     httpServer.serveStatic("/index.html",       LittleFS, settingIndexPage);
   } else {
@@ -220,12 +185,11 @@ void setup()
     
   setupFSexplorer();
  
-  delay(1500);
+  delay(1000);
   
 //================ Start HTTP Server ================================
   
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
-  writeToSysLog("Startup complete! actTimestamp[%s]", actTimestamp);  
 
 //================ End of Slimmer Meter ============================
 //================ The final part of the Setup =====================
@@ -251,6 +215,9 @@ void setup()
 #ifdef USE_BLYNK
   SetupBlynk();
 #endif
+#ifdef USE_WATER_SENSOR  
+  setupWater();
+#endif //USE_WATER_SENSOR
 
 } // setup()
 
@@ -277,13 +244,10 @@ void doTaskTelegram()
   #if defined(HAS_NO_SLIMMEMETER)
     handleTestdata();
   #else
+    slimmeMeter.loop(); //voorkomen dat de buffer nog vol zit met andere data
     //-- enable DTR to read a telegram from the Slimme Meter
     slimmeMeter.enable(true); 
   #endif
-//  if (WiFi.status() != WL_CONNECTED)
-//  {
-//    for(int b=0; b<10; b++) { digitalWrite(LED, !digitalRead(LED)); delay(100);}
-//  }
 }
 
 //===[ Do System tasks ]=============================================================
@@ -293,32 +257,33 @@ void doSystemTasks()
     slimmeMeter.loop();
     handleSlimmemeter();
   #endif
-  #ifdef USE_MQTT
-    MQTTclient.loop();
-  #endif
+  MQTTclient.loop();
   httpServer.handleClient();
   MDNS.update();
   handleKeyInput();
   yield();
-
 } // doSystemTasks()
 
   
 void loop () 
 {  
-  doSystemTasks(); //--- do the tasks that has to be done as often as possible
+  //--- verwerk volgend telegram
+  if DUE(nextTelegram) doTaskTelegram();
 
   //--- update upTime counter
   if DUE(updateSeconds) upTimeSeconds++;
   
-  //--- verwerk volgend telegram
-  if DUE(nextTelegram) doTaskTelegram();
+  //--- do the tasks that has to be done as often as possible
+  doSystemTasks(); 
 
   //--- update statusfile + ringfiles
   if (DUE(antiWearRing)) writeRingFiles(); //eens per 25min + elk uur overgang
 
-  if (DUE(antiWearStatus)) writeLastStatus(); //eens per 15min
-
+  if (DUE(WaterTimer)) { //eens per 15min of indien extra m3
+    P1StatusWrite();
+    CHANGE_INTERVAL_MIN(WaterTimer, 15);
+  }
+  
   #ifdef USE_BLYNK
   if (LittleFS.exists("/BlynkSetup")){
     slimmeMeter.loop(); //ivm evt verliezen data
@@ -332,16 +297,10 @@ void loop ()
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
   {
     LogFile("Wifi connection lost");  
-    writeToSysLog("Restart wifi with [%s]...", settingHostname);
     startWiFi(settingHostname, 10);
     if (WiFi.status() != WL_CONNECTED){
-          writeToSysLog("%s", "Wifi still not connected!");
           LogFile("Wifi connection still lost");  
-    } else {
-          snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str()
-                                                              , WiFi.gatewayIP().toString().c_str());
-          writeToSysLog("%s", cMsg);
-    }
+    } else snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str(), WiFi.gatewayIP().toString().c_str());
   }
 
 //--- if NTP set, see if it needs synchronizing

@@ -32,9 +32,7 @@ void processTelegram()
 //       || (month(actT) != month(newT) ) 
     )
   {
-//    writeToSysLog("Update RING-files");
     writeRingFiles();
-//    writeLastStatus();
   }
   yield();
   if ( DUE(publishMQTTtimer) ) sendMQTTData();  

@@ -19,6 +19,8 @@
 #endif
 #include <WiFiManager.h>        // version 0.16.0 - https://github.com/tzapu/WiFiManager
 
+#include "../../WifiCredentials.h"  //maakt het testen eenvoudiger
+
 ESP8266WebServer        httpServer (80);
 #ifdef USE_UPDATE_SERVER
   ESP8266HTTPUpdateServer httpUpdater(true);
@@ -26,8 +28,8 @@ ESP8266WebServer        httpServer (80);
 
 bool        FSmounted = false; 
 bool        isConnected = false;
-
-void writeLastStatus(); 
+void P1StatusWrite();
+void P1Reboot();
 void LogFile(const char*);
 
 //gets called when WiFiManager enters configuration mode
@@ -66,17 +68,13 @@ void startWiFi(const char* hostname, int timeOut)
   //--- if it does not connect it starts an access point with the specified name
   //--- here  "DSMR-WS-<MAC>"
   //--- and goes into a blocking loop awaiting configuration
-  if (!manageWiFi.autoConnect(thisAP.c_str())) 
+  if (!manageWiFi.autoConnect("P1-Dongle")) 
   {
     DebugTln(F("failed to connect and hit timeout"));
    
     //reset and try again, or maybe put it to deep sleep
     LogFile("Wifi Timeout");
-    writeLastStatus();
-    delay(3000);
-    ESP.reset();
-    delay(2000);
-//    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
+    P1Reboot();
     return;
   }
 //  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
@@ -91,7 +89,7 @@ void startWiFi(const char* hostname, int timeOut)
   httpUpdater.setIndexPage(UpdateHTML);
 //  httpUpdater.setSuccessPage(UpdateServerSuccess);
 #endif
-  DebugTf(" took [%d] seconds => OK!\n", (millis() - lTime) / 1000);
+  DebugTf("took [%d] seconds => OK!\n", (millis() - lTime) / 1000);
   
 } // startWiFi()
 

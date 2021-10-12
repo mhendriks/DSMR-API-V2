@@ -143,15 +143,11 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
     if (doDisplay)
     {
       Debugln(F("NO! Error!!"));
-      
-      writeToSysLog("Error! File [%s] not found!", fName);
       return false;
     }
     else
     {
-      Debugln(F("NO! "));
-      
-      writeToSysLog("File [%s] not found!", fName);
+      Debugln(F("NO! "));      
       return false;
     }
   } 

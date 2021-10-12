@@ -26,7 +26,6 @@
                            TelnetStream.flush(); \
                         })
 
-
 #define DebugT(...)     ({ _debugBOL(__FUNCTION__, __LINE__);  \
                            Debug(__VA_ARGS__);                 \
                         })

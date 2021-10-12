@@ -17,8 +17,9 @@
 #include "safeTimers.h"
 #include <ArduinoJson.h>
 #include "Debug.h"
-#include "Network.h"
 #include "LittleFS.h"
+#include <EEPROM.h>
+#include "Network.h"
 
 #ifdef USE_BLYNK 
   #include <BlynkSimpleEsp8266.h>
@@ -26,18 +27,6 @@
 #endif
 
 static      FSInfo fs_info;
-
-#ifdef USE_SYSLOGGER
-  #include "ESP_SysLogger.h"      // https://github.com/mrWheel/ESP_SysLogger
-  ESPSL sysLog;                   // Create instance of the ESPSL object
-  #define writeToSysLog(...) ({ sysLog.writeDbg( sysLog.buildD("[%02d:%02d:%02d][%7d][%-12.12s] " \
-                                                               , hour(), minute(), second()     \
-                                                               , ESP.getFreeHeap()              \
-                                                               , __FUNCTION__)                  \
-                                                               ,__VA_ARGS__); })
-#else
-  #define writeToSysLog(...)  // nothing
-#endif
 
 //  https://github.com/mrWheel/dsmr2Lib.git             
 #include <dsmr2.h>               // commit 0ed3916813850af43200863853bfb4b26e9655eb on 7 juni 2021
@@ -150,10 +139,10 @@ using MyData = ParsedData<
 //  /* TimestampedFixedValue */ ,mbus4_delivered_dbl
 >;
 
-enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
+//enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
 
-const PROGMEM char *weekDayName[]  { "Unknown", "Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Unknown" };
-const PROGMEM char *monthName[]    { "00", "Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December", "13" };
+//const PROGMEM char *weekDayName[]  { "Unknown", "Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Unknown" };
+//const PROGMEM char *monthName[]    { "00", "Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December", "13" };
 const PROGMEM char *flashMode[]    { "QIO", "QOUT", "DIO", "DOUT", "Unknown" };
 
 //===========================prototype's=======================================
@@ -162,26 +151,35 @@ void delayms(unsigned long);
 
 //===========================GLOBAL VAR'S======================================
   WiFiClient  wifiClient;
-#ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
   static PubSubClient MQTTclient(wifiClient);
-#endif
   
+#ifdef USE_WATER_SENSOR  
+  #define PIN_WATER_SENSOR 14
+#endif //USE_WATER_SENSOR
+
+struct Status {
+   uint32_t reboots;
+   uint32_t sloterrors;
+   char     timestamp[14];
+   volatile uint32_t wtr_m3;
+   volatile uint16_t wtr_l;
+};
+
+Status P1Status = {0,0,"010101010101X",0,0};
+
   MyData      DSMRdata;
   time_t      actT, newT;
-  char        actTimestamp[20] = "";
   char        newTimestamp[20] = "";
-  uint32_t    slotErrors = 0;
-  byte        DagSlot = 99; // geen geldige slot waarde
-  float       GDT_G = 0, EDT1_G = 0,  EDT2_G = 0,ERT1_G = 0,ERT2_G = 0; //eindstand teller gisteren ivm dagberekening
-  uint32_t    nrReboots  = 0;
+  char        actTimestamp[20] = "";
+//  uint32_t    slotErrors = 0;
+//  uint32_t    nrReboots  = 0;
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw       = false;
-  int8_t      showRawCount  = 0;
   bool        LEDenabled    = true;
   bool        DSMR_NL       = true;
   bool        EnableHistory = true;
-  char        BaseOTAurl[75] = "";
+  char        BaseOTAurl[75] = "http://smart-stuff.nl/ota/";
 
   char      cMsg[150];
   char      lastReset[30];
@@ -191,8 +189,6 @@ void delayms(unsigned long);
   int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
   uint64_t  upTimeSeconds;
   IPAddress ipDNS, ipGateWay, ipSubnet;
-  float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
-  float     settingENBK = 15.15, settingGNBK = 11.11;
   uint8_t   settingTelegramInterval = 2; //seconden 10 pre v3.1 ... 1 second v3.1
   uint8_t   settingMbus1Type        = 3;
 //  uint8_t   settingMbus2Type     = 0;
@@ -204,7 +200,11 @@ void delayms(unsigned long);
   char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
   int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
   float     gasDelivered;
-  
+
+//specifiek voor dongle functies
+  float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
+  float     settingENBK = 15.15, settingGNBK = 11.11;
+
 #if defined(HAS_NO_SLIMMEMETER)
   bool        forceBuildRingFiles = false;
   enum runStates { SInit, SMonth, SDay, SHour, SNormal };
@@ -215,13 +215,14 @@ void delayms(unsigned long);
 // setup timers 
 DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
 DECLARE_TIMER_SEC(reconnectWiFi,      10);
-DECLARE_TIMER_SEC(synchrNTP,          30);
 DECLARE_TIMER_SEC(nextTelegram,        2);
 DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(antiWearRing,       25); 
-DECLARE_TIMER_MIN(antiWearStatus,     15); 
 DECLARE_TIMER_SEC(RefreshBlynk,        5); 
+DECLARE_TIMER_MIN(WaterTimer,          15);
+
+//DECLARE_TIMER_SEC(synchrNTP,          30);
 
 #endif
 /***************************************************************************

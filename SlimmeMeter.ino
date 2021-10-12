@@ -38,8 +38,9 @@ void handleSlimmemeter()
 
     if (showRaw) {
       //-- process telegrams in raw mode
-      int l = slimmeMeter.raw().length();
-      Debugf("Telegram Raw (%d)\n%s\n" ,l,slimmeMeter.raw().c_str()); 
+      Debugf("Telegram Raw (%d)\n%s\n" , slimmeMeter.raw().length(),slimmeMeter.raw().c_str()); 
+      showRaw = false; //only 1 reading
+
     } 
     else processSlimmemeter();
     if (LEDenabled) digitalWrite(LED, !digitalRead(LED)); //toggle LED when telegram available
@@ -103,21 +104,17 @@ void processSlimmemeter()
     else                  // Parser error, print error
     {
       telegramErrors++;
-      #ifdef USE_SYSLOGGER
-        sysLog.writef("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
-      #endif
       DebugTf("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
       //--- set DTR to get a new telegram as soon as possible
 //      slimmeMeter.enable(true);
 //      slimmeMeter.loop();
         slimmeMeter.clear(); //on errors clear buffer
     }
-
-    if ( (telegramCount > 25) && (telegramCount % (2100 / (settingTelegramInterval + 1)) == 0) )
-    {
-      DebugTf("Processed [%d] telegrams ([%d] errors)\r\n", telegramCount, telegramErrors);
-      writeToSysLog("Processed [%d] telegrams ([%d] errors)", telegramCount, telegramErrors);
-    }
+//
+//    if ( (telegramCount > 25) && (telegramCount % (2100 / (settingTelegramInterval + 1)) == 0) )
+//    {
+//      DebugTf("Processed [%d] telegrams ([%d] errors)\r\n", telegramCount, telegramErrors);
+//    }
         
   //} // if (slimmeMeter.available()) 
   

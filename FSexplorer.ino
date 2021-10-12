@@ -160,6 +160,8 @@ void handleFileUpload()
       fsUploadFile.close();
     Debugln("FileUpload Size: " + (String)upload.totalSize);
     httpServer.sendContent(Header);
+//    if (upload.filename == "DSMRstatus.json") readLastStatus();
+    if (upload.filename == "DSMRsettings.json") readSettings(false);
   }
   
 } // handleFileUpload() 
@@ -253,9 +255,7 @@ void doRedirect(String msg, int wait, const char* URL, bool reboot, bool resetWi
    {   WiFiManager manageWiFi;
        manageWiFi.resetSettings();
    }
-    writeLastStatus();
-    ESP.restart();
-    delay(3000);
+    P1Reboot();
   }
   
 } // doRedirect()
