@@ -194,8 +194,6 @@ struct buildJsonMQTT {
 //===========================================================================================
 void sendMQTTData() 
 {
-//  String dateTime, topicId, json;
-
   if ((settingMQTTinterval == 0) || bailout() ) return;
 
   //make proper TopTopic

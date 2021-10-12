@@ -19,13 +19,8 @@
 *      - instellingen FrontEnd zichtbaar in webpagina read only
 *      - fix sm data gas data indien deze niet aanwezig is
 *      - Piekvermogen bijhouden Belgie
-*      √ watermeter -> persistant data opgenomen in P1Status Data
-*      √ telnet: dump logfile
-*      √ Wifi credentials in aparte file voor testen
-*      √ Telnet -> alleen maar een concurrent sessie mogelijk; Een nieuwe sessie verbreekt de eerste sessie. 
-*      √ reboot bij bailout due to low memory
-*      √ StatusFile -> EEPROM persistant memory (sneller en veiliger ipv dataupdate)
-*      √ Watermeter -> wegschrijven updates naar P1Status per m3 en bij reboot
+*      - check reconnect MQTT indien geen gegevens zijn ingevuld
+*      - Water Sensor -> Send MQTT data
 *      
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 
