@@ -68,7 +68,7 @@ void startWiFi(const char* hostname, int timeOut)
   //--- if it does not connect it starts an access point with the specified name
   //--- here  "DSMR-WS-<MAC>"
   //--- and goes into a blocking loop awaiting configuration
-  if (!manageWiFi.autoConnect(WIFI_SSID,WIFI_PASSWORD)) 
+  if (!manageWiFi.autoConnect("BALI","JijBentLief#5")) 
   {
     DebugTln(F("failed to connect and hit timeout"));    
 

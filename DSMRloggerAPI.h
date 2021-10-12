@@ -10,7 +10,6 @@
 */  
 #ifndef DSMRloggerAPI_h
 #define DSMRloggerAPI_h
-//#define TELNET_ONE_CONCURRENT
 
 #include "version.h"
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time

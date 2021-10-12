@@ -84,7 +84,7 @@ void writeLastStatus()
 //=======================================================================
 void writeSettings() 
 {
-  StaticJsonDocument<600> doc; 
+  StaticJsonDocument<650> doc; 
   if (!SPIFFSmounted) return;
   
   DebugT(F("Writing to [")); Debug(SETTINGS_FILE); Debugln(F("] ..."));
@@ -132,7 +132,7 @@ void writeSettings()
 //=======================================================================
 void readSettings(bool show) 
 {
-  StaticJsonDocument<600> doc; 
+  StaticJsonDocument<650> doc; 
   File SettingsFile;
   if (!SPIFFSmounted) return;
   
