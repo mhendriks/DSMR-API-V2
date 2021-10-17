@@ -27,6 +27,7 @@
   #include <dsmr.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
 #endif
 
+#define _DEFAULT_MQTT_TOPIC   "DSMR-API/" 
 #define _DEFAULT_HOSTNAME   "DSMR-API" 
 #ifndef MQTT_CORE
   #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
@@ -95,7 +96,9 @@ using MyData = ParsedData<
   /* uint32_t */      ,electricity_swells_l3
   /* String */        ,message_short
   /* String */        ,message_long
+#ifdef USE_BELGIUM_PROTOCOL 
   /* uint16_t */      ,fuse_treshold_l1
+#endif
   /* FixedValue */    ,voltage_l1
   /* FixedValue */    ,voltage_l2
   /* FixedValue */    ,voltage_l3
@@ -162,8 +165,11 @@ void delayms(unsigned long);
   uint8_t     settingSmHasFaseInfo = 1;
   char        settingHostname[30] = _DEFAULT_HOSTNAME;
   char        settingIndexPage[50] = _DEFAULT_HOMEPAGE;
-  char        settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
+  
+  bool        StaticInfoSend = false;
+  char        settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_MQTT_TOPIC;
   int32_t     settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
+ 
  #ifndef MQTT_CORE
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
   float     settingENBK = 15.15, settingGNBK = 11.11;

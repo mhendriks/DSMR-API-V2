@@ -143,9 +143,7 @@ void handleKeyInput()
                     delay(1000);
                     WiFi.disconnect(true);  // deletes credentials !
                     //setupWiFi(true);
-                    delay(2000);
-                    ESP.reset();
-                    delay(2000);
+                    P1Reboot();
                     break;
 
       case 'p':
@@ -155,11 +153,10 @@ void handleKeyInput()
                     break;
       case 'R':     DebugT(F("Reboot in 3 seconds ... \r\n"));
                     DebugFlush();
-                    delay(3000);
                     DebugTln(F("now Rebooting. \r"));
                     TelnetStream.stop();
                     DebugFlush();
-                    ESP.reset();
+                    P1Reboot();
                     break;
       case 's':
       case 'S':     listSPIFFS();

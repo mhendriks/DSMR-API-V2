@@ -248,8 +248,7 @@ void doRedirect(String msg, int wait, const char* URL, bool reboot, bool resetWi
    {   WiFiManager manageWiFi;
        manageWiFi.resetSettings();
    }
-    ESP.restart();
-    delay(3000);
+    P1Reboot();
   }
   
 } // doRedirect()

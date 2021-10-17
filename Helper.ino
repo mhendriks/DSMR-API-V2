@@ -9,14 +9,24 @@
 ***************************************************************************      
 */
 
+
+void P1Reboot(){
+    sprintf(cMsg,"%sLWT",settingMQTTtopTopic);
+    MQTTclient.publish(cMsg,"Offline", true); //LWT status update
+    DebugTln(F("now Rebooting!\r"));
+//    P1StatusWrite();
+    delay(3000);
+    ESP.restart();
+    delay(2000);  
+}
+
 bool bailout () // to prevent firmware from crashing!
 {
   if (ESP.getFreeHeap() < 5500) // to prevent firmware from crashing!
   {
     DebugT(F("Bailout due to low heap --> reboot in 3 seconds")); Debugln(ESP.getFreeHeap());
-    delay(3000);
-    ESP.restart();
-    delay(2000);
+    LogFile("Reboot due to bailout");
+    P1Reboot();
     return true; // komt hier als het goed is niet
   }
   return false;

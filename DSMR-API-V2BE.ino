@@ -14,6 +14,17 @@
 *      √-- api/v2/sm
 *      √-- api/v2/hist
 *      - Aanpassen front-end ivm MQTT_CORE feaure
+*      √ MQTT LWT -> TopTopic/LWT geeft status aan (2.3.12)
+*      √ Reboot.log opgenomen in P1.log !! Na update Reboot.log en Reboot.old files verwijderen (2.3.13) 
+*      - retained mqtt values voor (2.3.14)
+*      -- Identification 
+*      -- p1_version
+*      -- Equipement_id
+*      -- Gas_device_type
+*      -- Gas_equipement_id
+*      -- Firmware version
+*      -- IP-adres
+*      - Wifi RSSI als mqtt bericht sturen
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
@@ -100,7 +111,7 @@ void setup()
   
   readSettings(true);
   writeLastStatus(); //update reboots
-  Rebootlog(); // write reboot status to file
+  LogFile(""); // write reboot status to file
   
 //=============start Networkstuff==================================
   
@@ -127,9 +138,7 @@ void setup()
   {                                                         //USE_NTP
     DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));   //USE_NTP
                                                      //USE_NTP
-    delay(1500);                                            //USE_NTP
-    ESP.restart();                                          //USE_NTP
-    delay(2000);                                            //USE_NTP
+    P1Reboot();                                          //USE_NTP
   }                                                         //USE_NTP
                                                     //USE_NTP
   prevNtpHour = hour();                                     //USE_NTP

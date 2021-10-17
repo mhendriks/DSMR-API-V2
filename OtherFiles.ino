@@ -167,6 +167,7 @@ void readSettings(bool show)
   strcpy(settingMQTTpasswd, doc["MQTTpasswd"]);
   settingMQTTinterval = doc["MQTTinterval"];
   strcpy(settingMQTTtopTopic, doc["MQTTtopTopic"]);
+  if (settingMQTTtopTopic[strlen(settingMQTTtopTopic)-1] != '/') strcat(settingMQTTtopTopic,"/");
   settingSmHasFaseInfo = doc["SmHasFaseInfo"];
   CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
   CHANGE_INTERVAL_MIN(reconnectMQTTtimer, 1);
@@ -298,38 +299,38 @@ void updateSetting(const char *field, const char *newValue)
     settingMQTTinterval   = String(newValue).toInt();  
     CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
   }
-  if (!stricmp(field, "mqtt_toptopic"))     strCopy(settingMQTTtopTopic, 20, newValue);  
+  if (!stricmp(field, "mqtt_toptopic")) strCopy(settingMQTTtopTopic, 20, newValue);  
 
   writeSettings();
   
 } // updateSetting()
-
-//=======================================================================
-void Rebootlog(){
-  if (!SPIFFSmounted) return;
-  File RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
-  if (!RebootFile) {
-    DebugTln(F("open RebootLog file FAILED!!!--> Bailout\r\n"));
-    return;
-  }
-  
-  //log rotate
-  if (RebootFile.size() > 2500){ 
-//    DebugT(F("RebootLog filesize: "));Debugln(RebootFile.size());
-    SPIFFS.remove("/Rebootlog.old");     //remove .old if existing 
-    //rename file
-    DebugTln(F("RebootLog: rename file"));
-    RebootFile.close(); 
-    SPIFFS.rename("/Reboot.log", "/Rebootlog.old");
-    RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
-    }
-  
-    //make one record : {"time":"2020-09-23 17:03:25","reason":"Software/System restart","reboots":42}
-    RebootFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"reason\":\"" + lastReset + "\",\"reboots\":" +  (int)nrReboots + "}");
-  
-    //closing the file
-    RebootFile.close(); 
-}
+//
+////=======================================================================
+//void Rebootlog(){
+//  if (!SPIFFSmounted) return;
+//  File RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
+//  if (!RebootFile) {
+//    DebugTln(F("open RebootLog file FAILED!!!--> Bailout\r\n"));
+//    return;
+//  }
+//  
+//  //log rotate
+//  if (RebootFile.size() > 2500){ 
+////    DebugT(F("RebootLog filesize: "));Debugln(RebootFile.size());
+//    SPIFFS.remove("/Rebootlog.old");     //remove .old if existing 
+//    //rename file
+//    DebugTln(F("RebootLog: rename file"));
+//    RebootFile.close(); 
+//    SPIFFS.rename("/Reboot.log", "/Rebootlog.old");
+//    RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
+//    }
+//  
+//    //make one record : {"time":"2020-09-23 17:03:25","reason":"Software/System restart","reboots":42}
+//    RebootFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"reason\":\"" + lastReset + "\",\"reboots\":" +  (int)nrReboots + "}");
+//  
+//    //closing the file
+//    RebootFile.close(); 
+//}
 
 //=======================================================================
 void LogFile( const char* payload ){
@@ -350,10 +351,15 @@ void LogFile( const char* payload ){
     SPIFFS.rename("/P1.log", "/P1_log.old");
     LogFile = SPIFFS.open("/P1.log", "a"); // open for appending  
     }
-  
-    //make one record : {"time":"2020-09-23 17:03:25","log":"Software/System restart"}
-    LogFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"log\":\"" + payload + "\"}");
-  
+  //write record in log
+    if (strlen(payload)==0) {
+      //reboot
+      //make one record : {"time":"2020-09-23 17:03:25","reason":"Software/System restart","reboots":42}
+      LogFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"reboot\":\"" + lastReset + "\",\"reboots\":" +  (int)nrReboots + "}");
+    } else {
+      //make one record : {"time":"2020-09-23 17:03:25","log":"Software/System restart"}
+      LogFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"log\":\"" + payload + "\"}");
+    }
     //closing the file
     LogFile.close(); 
 }

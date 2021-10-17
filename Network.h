@@ -31,6 +31,7 @@ static      FSInfo SPIFFSinfo;
 bool        SPIFFSmounted = false; 
 bool        isConnected = false;
 
+void        P1Reboot();
 void LogFile(const char*);
 
 //gets called when WiFiManager enters configuration mode
@@ -68,17 +69,13 @@ void startWiFi(const char* hostname, int timeOut)
   //--- if it does not connect it starts an access point with the specified name
   //--- here  "DSMR-WS-<MAC>"
   //--- and goes into a blocking loop awaiting configuration
-  if (!manageWiFi.autoConnect("BALI","JijBentLief#5")) 
+  if (!manageWiFi.autoConnect("P1-Dongle")) 
   {
     DebugTln(F("failed to connect and hit timeout"));    
 
     //reset and try again, or maybe put it to deep sleep
     LogFile("Wifi Timeout");
-    delay(3000);
-    ESP.reset();
-    delay(2000);
-    //komt hier nooit
-//    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
+    P1Reboot();
     return;
   }
 //  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
