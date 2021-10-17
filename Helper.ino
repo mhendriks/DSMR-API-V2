@@ -10,7 +10,9 @@
 */
 
 void P1Reboot(){
+    sprintf(cMsg,"%sLWT",settingMQTTtopTopic);
     DebugTln(F("now Rebooting!\r"));
+    MQTTclient.publish(cMsg,"Offline", true); //LWT status update
     P1StatusWrite();
     delay(3000);
     ESP.restart();

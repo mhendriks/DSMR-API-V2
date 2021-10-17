@@ -15,7 +15,7 @@ void IRAM_ATTR iWater() {
     if (P1Status.wtr_l == 1000) {
       P1Status.wtr_m3++;
       P1Status.wtr_l = 0;
-      CHANGE_INTERVAL_MS(WaterTimer, 100); //update status file snel bij elke m3 - hoofd loop ivm Interupt interval
+      CHANGE_INTERVAL_MS(StatusTimer, 100); //update status file snel bij elke m3 - hoofd loop ivm Interupt interval
     }
 //    digitalWrite(LED, !digitalRead(LED)); 
 }

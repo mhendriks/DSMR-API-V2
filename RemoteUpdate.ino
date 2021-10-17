@@ -52,7 +52,8 @@ void RemoteUpdate(const char* versie){
   else otaFile = "DSMR-API-V" + String(versie) + "_" + flashSize + "Mb.bin";
   path += otaFile;
   if ((httpServer.argName(0) == "version") || strlen(versie) > 0) {
-    DebugTln("RemoteUpdate: versie " + httpServer.arg(0) + " | " + "flashsize " + flashSize + " Mb");
+    if (versie) DebugTln("RemoteUpdate: versie " + String(versie) + " | " + "flashsize " + flashSize + " Mb");
+    else DebugTln("RemoteUpdate: versie " + httpServer.arg(0) + " | " + "flashsize " + flashSize + " Mb");
     DebugTln("Remote update path: " + path);
 //    httpServer.send(200, "text/html", "Update request with filename : " + otaFile);
     

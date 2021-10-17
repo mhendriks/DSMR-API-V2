@@ -21,6 +21,8 @@
 *      - Piekvermogen bijhouden Belgie
 *      - check reconnect MQTT indien geen gegevens zijn ingevuld
 *      - Water Sensor -> Send MQTT data
+*      √ MQTT LWT -> TopTopic/LWT geeft status aan
+*      - Blynk 2.0 implentatie
 *      
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 
@@ -108,7 +110,7 @@ void setup()
   P1StatusPrint(); //print latest values
   readSettings(true);
 //  writeLastStatus(); //update reboots
-  Rebootlog(); // write reboot status to file
+  LogFile(""); // write reboot status to file
   
 //=============start Networkstuff==================================
   
@@ -192,6 +194,14 @@ void setup()
   
 //================ Start Slimme Meter ===============================
 
+#ifdef USE_BLYNK
+  SetupBlynk();
+#endif
+
+#ifdef USE_WATER_SENSOR  
+  setupWater();
+#endif //USE_WATER_SENSOR
+
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
   DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
   Debug(F("\nGebruik 'telnet "));
@@ -206,14 +216,6 @@ void setup()
 #else
   Debug(F("\n!!! DEBUG MODE AAN !!!\n\n")); 
 #endif // is_esp12
-
-#ifdef USE_BLYNK
-  SetupBlynk();
-#endif
-#ifdef USE_WATER_SENSOR  
-  setupWater();
-#endif //USE_WATER_SENSOR
-
 } // setup()
 
 
@@ -274,19 +276,19 @@ void loop ()
   //--- update statusfile + ringfiles
   if (DUE(antiWearRing)) writeRingFiles(); //eens per 25min + elk uur overgang
 
-  if (DUE(WaterTimer)) { //eens per 15min of indien extra m3
+  if (DUE(StatusTimer)) { //eens per 15min of indien extra m3
     P1StatusWrite();
-    CHANGE_INTERVAL_MIN(WaterTimer, 15);
+    CHANGE_INTERVAL_MIN(StatusTimer, 15);
   }
   
-  #ifdef USE_BLYNK
-  if (LittleFS.exists("/BlynkSetup")){
+#ifdef USE_BLYNK
+  if (LittleFS.exists(_BLYNK_FILE)){
     slimmeMeter.loop(); //ivm evt verliezen data
     yield();
     Blynk.run();
-    if (DUE(RefreshBlynk)) handleBlynk(); //eens per 5sec
+    if (DUE(RefreshBlynk) && Blynk.connected()) handleBlynk(); //eens per 5sec
   }
-  #endif
+#endif
   
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )

@@ -43,7 +43,6 @@ void configModeCallback (WiFiManager *myWiFiManager)
 
 } // configModeCallback()
 
-
 //===========================================================================================
 void startWiFi(const char* hostname, int timeOut) 
 {
@@ -90,6 +89,7 @@ void startWiFi(const char* hostname, int timeOut)
 //  httpUpdater.setSuccessPage(UpdateServerSuccess);
 #endif
   DebugTf("took [%d] seconds => OK!\n", (millis() - lTime) / 1000);
+
   
 } // startWiFi()
 

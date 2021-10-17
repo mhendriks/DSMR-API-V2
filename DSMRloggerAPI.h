@@ -22,8 +22,11 @@
 #include "Network.h"
 
 #ifdef USE_BLYNK 
+  //#define BLYNK_PRINT Serial // Defines the object that is used for printing
+  //#define BLYNK_DEBUG        // Optional, this enables more detailed prints
+  #define BLYNK_TEMPLATE_ID  "" //"TMPLAYJ29gfV"
   #include <BlynkSimpleEsp8266.h>
-  BlynkTimer timer;
+  #define _BLYNK_FILE   "/BlynkSetup"
 #endif
 
 static      FSInfo fs_info;
@@ -31,7 +34,7 @@ static      FSInfo fs_info;
 //  https://github.com/mrWheel/dsmr2Lib.git             
 #include <dsmr2.h>               // commit 0ed3916813850af43200863853bfb4b26e9655eb on 7 juni 2021
 
-#define _DEFAULT_HOSTNAME   "DSMR-API" 
+#define _DEFAULT_HOSTNAME   "DSMR-API/" 
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
 #define DTR_ENABLE          14
@@ -164,9 +167,10 @@ struct Status {
    char     timestamp[14];
    volatile uint32_t wtr_m3;
    volatile uint16_t wtr_l;
+   char     check; //check if data is well format (persistdata available or not)
 };
 
-Status P1Status = {0,0,"010101010101X",0,0};
+Status P1Status = {0,0,"010101010101X",0,0,'Y'};
 
   MyData      DSMRdata;
   time_t      actT, newT;
@@ -220,7 +224,7 @@ DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(antiWearRing,       25); 
 DECLARE_TIMER_SEC(RefreshBlynk,        5); 
-DECLARE_TIMER_MIN(WaterTimer,          15);
+DECLARE_TIMER_MIN(StatusTimer,          15);
 
 //DECLARE_TIMER_SEC(synchrNTP,          30);
 

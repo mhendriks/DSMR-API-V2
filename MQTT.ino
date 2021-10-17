@@ -48,9 +48,7 @@ void connectMQTT()
 
   mqttIsConnected = connectMQTT_FSM();
   
-  if (Verbose1) DebugTf("connected()[%d], mqttIsConnected[%d], stateMQTT [%d]\r\n"
-                                              , MQTTclient.connected()
-                                              , mqttIsConnected, stateMQTT);
+  if (Verbose1) DebugTf("connected()[%d], mqttIsConnected[%d], stateMQTT [%d]\r\n", MQTTclient.connected(), mqttIsConnected, stateMQTT);
 
   CHANGE_INTERVAL_SEC(reconnectMQTTtimer, 5);
 
@@ -97,21 +95,25 @@ bool connectMQTT_FSM()
           reconnectAttempts++;
 
           //--- If no username, then anonymous connection to broker, otherwise assume username/password.
+          sprintf(cMsg,"%sLWT",settingMQTTtopTopic);
           if (String(settingMQTTuser).length() == 0) 
           {
             DebugT(F("without a Username/Password "));
-            MQTTclient.connect(MQTTclientId.c_str());
+            MQTTclient.connect(MQTTclientId.c_str(),"","",cMsg,1,true,"Offline");
+//            MQTTclient.connect(MQTTclientId.c_str());
           } 
           else 
           {
             DebugTf("with Username [%s] and password ", settingMQTTuser);
-            MQTTclient.connect(MQTTclientId.c_str(), settingMQTTuser, settingMQTTpasswd);
+            MQTTclient.connect(MQTTclientId.c_str(), settingMQTTuser, settingMQTTpasswd,cMsg,1,true,"Offline");
           }
           //--- If connection was made succesful, move on to next state...
           if (MQTTclient.connected())
           {
             reconnectAttempts = 0;  
             Debugf(" .. connected -> MQTT status, rc=%d\r\n", MQTTclient.state());
+            MQTTclient.publish(cMsg,"Online", true);
+
             LogFile("MQTT connected");
             MQTTclient.loop();
             stateMQTT = MQTT_STATE_IS_CONNECTED;
@@ -172,6 +174,10 @@ struct buildJsonMQTT {
       if (i.present()) 
       {
         String Name = String(Item::name);
+        if (Name == "mbus1_delivered") Name = "gas_delivered";
+//        else if (Name == "mbus1_equipment_id_tc") Name = "gas_equipment_id";
+//        else if (Name == "mbus1_device_type") Name = "gas_device_type";
+//        else if (Name == "mbus1_valve_position") Name = "gas_valve_position";      
         strcpy(cMsg,settingMQTTtopTopic);
         strcat(cMsg, Name.c_str());
         if (strlen(Item::unit()) > 0) msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
@@ -199,7 +205,11 @@ void sendMQTTData()
   //make proper TopTopic
   if (settingMQTTtopTopic[strlen(settingMQTTtopTopic)-1] != '/') snprintf(settingMQTTtopTopic, sizeof(settingMQTTtopTopic), "%s/",  settingMQTTtopTopic);
 
-  if (MQTTclient.connected() && !mqttIsConnected) MQTTclient.disconnect(); //disconnect when connection is not allowed
+  if (MQTTclient.connected() && !mqttIsConnected) {
+    sprintf(cMsg,"%sLWT",settingMQTTtopTopic);
+    MQTTclient.publish(cMsg,"Offline", true); //LWT status update
+    MQTTclient.disconnect(); //disconnect when connection is not allowed
+  }
 
   if (!MQTTclient.connected() || !mqttIsConnected) DebugTf("MQTTclient.connected(%d), mqttIsConnected[%d], stateMQTT [%d]\r\n", MQTTclient.connected(), mqttIsConnected, stateMQTT);
   

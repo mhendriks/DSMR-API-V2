@@ -1,6 +1,8 @@
 #define Eaddr   0
 #define Esize  50
+#define Ypos   30
 //EEPROM lengte = 3*4+2+13 = 27 postities
+
 
 void P1StatusBegin(){ 
     EEPROM.begin(Esize);
@@ -38,10 +40,10 @@ void P1StatusBegin(){
   }
 
   bool P1StatusAvailable(){
-    int val;
-    EEPROM.get(0,val); //check of reboots is a valid value
-    DebugT("Status Data Available: ");Debugln(val);
-    if (val == -1 ) {
+    char val;
+    EEPROM.get(Ypos,val); //check of reboots is a valid value
+    DebugT(F("P1Status Check Data: "));Debugln(val);
+    if (val != 'Y' ) {
       DebugTln("Persist data NOT available");
       return false;
     }
@@ -55,10 +57,7 @@ void ReadEepromBlock(){
   byte value;
   for(byte address = 0; address < Esize; address++){
     value = EEPROM.read(address);
-    Serial.print("EEPROM - " + address);
-    Serial.print("\t");
-    Serial.print(value, DEC);
-    Serial.println();
+    Debugf("EEPROM - %i \t", address);Debug(value, DEC);Debug(" - ");Debugln((char)value);
   }
 }
 

@@ -112,13 +112,17 @@ void handleKeyInput()
       case 'a':     
       case 'A':     { char c;
                       while (TelnetStream.available() > 0) { 
-                        c = TelnetStream.read();
-                        if (c=='a') P1StatusAvailable();
-                        if (c=='`r') P1StatusRead(); 
-                        if (c=='w') P1StatusWrite(); 
-                        if (c=='p') P1StatusPrint();
-                        if (c=='Z') P1StatusReset();
-                      }
+                        c = (char)TelnetStream.read();
+                        switch(c){
+                        case 'a': P1StatusAvailable(); break;
+                        case 'r': P1StatusRead(); break;
+                        case 'w': P1StatusWrite(); break;
+                        case 'p': P1StatusPrint(); break;
+                        case 'x': ReadEepromBlock();break;
+                        case 'z': P1StatusReset(); break;
+//                        default: Debugln(F("P1 Status info \na = available\nr = read\nw = write\np = print\nz = erase"));
+                        } //switch
+                      } //while
                       break; }
       case 'b':     
       case 'B':     displayBoardInfo();

@@ -162,6 +162,14 @@ void handleFileUpload()
     httpServer.sendContent(Header);
 //    if (upload.filename == "DSMRstatus.json") readLastStatus();
     if (upload.filename == "DSMRsettings.json") readSettings(false);
+#ifdef USE_BLYNK
+    if (upload.filename == "BlynkSetup") {
+      SetupBlynk();
+      DebugTln(F("Blynk setup changed ... Reboot in 3 sec!"));
+      P1Reboot();
+      }
+#endif
+    
   }
   
 } // handleFileUpload() 
