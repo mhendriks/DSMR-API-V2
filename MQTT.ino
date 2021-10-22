@@ -22,10 +22,19 @@
 
   enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_IS_CONNECTED, MQTT_STATE_ERROR };
   enum states_of_MQTT stateMQTT = MQTT_STATE_INIT;
-
+   
   String            MQTTclientId;
 
 //===========================================================================================
+//
+//bool MQTTDoNotSent(const char* lookUp)
+//{                        
+//  for (int i=0; i<INFOELEMENTS; i++) { if (strcmp_P(lookUp, infoArray[i]) == 0 ) return true; }
+//  return false; 
+//} // MQTTDoNotSent()
+
+//===========================================================================================
+
 void connectMQTT() 
 {
   
@@ -170,15 +179,15 @@ struct buildJsonMQTT {
     
     template<typename Item>
     void apply(Item &i) {
-      if (i.present()) 
-      {   
-        strcpy(cMsg,settingMQTTtopTopic);
-        strcat(cMsg, (char*)Item::name);
-        if (strlen(Item::unit()) > 0) msg = "{\""+String(Item::name)+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
-        else msg = "{\""+String(Item::name)+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
-        if (Verbose2) DebugTln("mqtt bericht: "+msg);
-        if (!MQTTclient.publish(cMsg, msg.c_str()) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
-      } // if i.present
+      if (!isInFieldsArray((char*)Item::name) ) {
+        if (i.present()) {   
+          sprintf(cMsg,"%s%s",settingMQTTtopTopic,Item::name);
+          if (strlen(Item::unit()) > 0) msg = "{\""+String(Item::name)+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
+          else msg = "{\""+String(Item::name)+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
+          if (Verbose2) DebugTln("mqtt bericht: "+msg);
+          if (!MQTTclient.publish(cMsg, msg.c_str()) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
+        } // if i.present
+      }// if isInFieldsArray
   } //apply
   
   template<typename Item>
@@ -194,91 +203,47 @@ struct buildJsonMQTT {
 }; // buildJsonMQTT
 
 //===========================================================================================
-void MQTTSentStaticP1Info(){
-  /**
-   * -- identification 
-*      -- p1_version
-*      -- equipment_id
-*      -- gas_device_type
-*      -- gas_equipment_id
-*      -- Firmware version : _VERSION
-*      -- IP-adres: WiFi.localIP().toString();
-   */
-  String msg;
-  StaticInfoSend = true;
-  msg = "{\"identification\":[{\"value\":"+ DSMRdata.identification + "\"}]}";
-  strcpy(cMsg,settingMQTTtopTopic);
-  strcat(cMsg, "identification");
-  if (!MQTTclient.publish(cMsg, msg.c_str()),msg.length(),true ) {
-    DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
+void MQTTSend(char* item, String value){
+  String msg = "{\"" + String(item) + "\":[{\"value\":\""+ value + "\"}]}";
+  sprintf(cMsg,"%s%s", settingMQTTtopTopic,item);
+  if (!MQTTclient.publish(cMsg, (byte*)msg.c_str(),msg.length(),true )) {
+    DebugTf("Error publish (%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
     StaticInfoSend = false; //probeer het later nog een keer
   }
-  strcpy(cMsg,settingMQTTtopTopic);
-  strcat(cMsg, "p1_version");
-  msg = "{\"p1_version\":[{\"value\":" + DSMRdata.p1_version + "\"}]}";
-  if (!MQTTclient.publish(cMsg, msg.c_str()),msg.length(),true ) {
-    DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
-    StaticInfoSend = false; //probeer het later nog een keer
-  }
-  strcpy(cMsg,settingMQTTtopTopic);
-  strcat(cMsg, "equipment_id");
-  msg = "{\"equipment_id\":[{\"value\":"+DSMRdata.equipment_id+"\"}]}";
-  if (!MQTTclient.publish(cMsg, msg.c_str()),msg.length(),true ) {
-    DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
-    StaticInfoSend = false; //probeer het later nog een keer
-  }
-  strcpy(cMsg,settingMQTTtopTopic);
-  strcat(cMsg, "firmware");
-  msg = "{\"firmware\":[{\"value\":" + String(_VERSION_ONLY) + "\"}]}";
-  if (!MQTTclient.publish(cMsg, msg.c_str()),msg.length(),true ) {
-    DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
-    StaticInfoSend = false; //probeer het later nog een keer
-  }
+}
 
-  strcpy(cMsg,settingMQTTtopTopic);
-  strcat(cMsg, "ip_address");
-  msg = "{\"ip_address\":[{\"value\":" + WiFi.localIP().toString() + "\"}]}";
-  if (!MQTTclient.publish(cMsg, msg.c_str()),msg.length(),true ) {
-    DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
+void MQTTSend(char* item, int32_t value){
+  String msg = "{\"" + String(item) + "\":[{\"value\":"+ value + "}]}";
+  sprintf(cMsg,"%s%s", settingMQTTtopTopic,item);
+  if (!MQTTclient.publish(cMsg, (byte*)msg.c_str(),msg.length(),true )) {
+    DebugTf("Error publish (%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
     StaticInfoSend = false; //probeer het later nog een keer
   }
+}
+//===========================================================================================
+void MQTTSentStaticP1Info(){
   
-  if (DSMRdata.gas_device_type_present){
-    strcpy(cMsg,settingMQTTtopTopic);
-    strcat(cMsg, "gas_device_type");
-    msg = "{\"gas_device_type\":[{\"value\":" + String(DSMRdata.gas_device_type) + "\"}]}";  
-    if (!MQTTclient.publish(cMsg, msg.c_str()),msg.length(),true ) {
-      DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
-    StaticInfoSend = false; //probeer het later nog een keer
-    }
-  }
+  StaticInfoSend = true;
+  MQTTSend("identification",DSMRdata.identification);
+  MQTTSend("p1_version",DSMRdata.p1_version);
+  MQTTSend("equipment_id",DSMRdata.equipment_id);
+  MQTTSend("firmware",_VERSION_ONLY);
+  MQTTSend("ip_address",WiFi.localIP().toString());
+  if (DSMRdata.gas_device_type_present){ MQTTSend("gas_device_type", (uint32_t)DSMRdata.gas_device_type ); }
+  if (DSMRdata.gas_equipment_id_present){ MQTTSend("gas_equipment_id",DSMRdata.gas_equipment_id); }
   
-  if (DSMRdata.gas_equipment_id_present){
-    strcpy(cMsg,settingMQTTtopTopic);
-    strcat(cMsg, "gas_equipment_id");
-    msg = "{\"gas_equipment_id\":[{\"value\":"+DSMRdata.gas_equipment_id+"\"}]}";
-    if (!MQTTclient.publish(cMsg, msg.c_str()),msg.length(),true ) {
-      DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
-      StaticInfoSend = false; //probeer het later nog een keer
-    }
-  }
 }
 
 //===========================================================================================
 void MQTTSentStaticDevInfo(){
-  String msg;
-  strcpy(cMsg,settingMQTTtopTopic);
-  strcat(cMsg, "wifi_rssi");
-  msg = "{\"wifi_rssi\":[{\"value\":" + String(WiFi.RSSI()) + "\"}]}";
-  if (!MQTTclient.publish(cMsg, msg.c_str()),msg.length(),true ) {
-      DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
-    }
+  
+  MQTTSend( "wifi_rssi",WiFi.RSSI() );
+  
 }
 
 //===========================================================================================
 void sendMQTTData() 
 {
-
   if ((settingMQTTinterval == 0) || bailout() ) return;
 
   //make proper TopTopic
@@ -293,7 +258,9 @@ void sendMQTTData()
     if ( DUE( reconnectMQTTtimer) || mqttIsConnected)
     {
       mqttIsConnected = false;
+      StaticInfoSend = false; //zorg voor resend retained info
       connectMQTT();
+      return; //verlaat verzending
     }
     else
     {
@@ -308,9 +275,10 @@ void sendMQTTData()
 
   DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", settingMQTTbroker, settingMQTTbrokerPort);
   if ((telegramCount - telegramErrors) > 2 && !StaticInfoSend){
-//    MQTTSentStaticP1Info();
-//    MQTTSentStaticDevInfo();
+    MQTTSentStaticP1Info();
+    MQTTSentStaticDevInfo();
   }
+  fieldsElements = INFOELEMENTS;
   DSMRdata.applyEach(buildJsonMQTT());
 
 } // sendMQTTData()

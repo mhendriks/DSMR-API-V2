@@ -59,6 +59,7 @@ void startWiFi(const char* hostname, int timeOut)
   manageWiFi.setDebugOutput(false);
   
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+  WiFi.setSleepMode(WIFI_NONE_SLEEP);
   manageWiFi.setAPCallback(configModeCallback);
 
   //--- sets timeout until configuration portal gets turned off

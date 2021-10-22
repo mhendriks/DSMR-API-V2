@@ -9,11 +9,11 @@
 ***************************************************************************      
 */
 
-void DisplayLogFile(char *fname) {   
+void DisplayLogFile(const char* fname) {   
   if (bailout() || !SPIFFSmounted) return; //exit when heapsize is too small
   if (!SPIFFS.exists(fname))
   {
-    DebugT(F("LogFile doesn't exist: "));
+    DebugT(F("LogFile doesn't exist: "));Debugln(fname);
     return;
     }
   File RingFile = SPIFFS.open(fname, "r"); // open for reading
@@ -137,7 +137,7 @@ void handleKeyInput()
                     break;
 #endif
       case 'n':
-      case 'N':     DisplayLogFile("P1.log");
+      case 'N':     DisplayLogFile("/P1.log");
                     break;
       case 'W':     Debugf("\r\nConnect to AP [%s] and go to ip address shown in the AP-name\r\n", settingHostname);
                     delay(1000);
@@ -193,6 +193,8 @@ void handleKeyInput()
                       Verbose2 = false;
                     }
                     break;
+      case 'X':     StaticInfoSend = false; //verzend alle retained info nog een keer
+                    break;              
       case 'Z':     nrReboots       = 0;
                     telegramCount   = 0;
                     telegramErrors  = 0;
@@ -219,6 +221,7 @@ void handleKeyInput()
                     Debugln(F("  *R - Reboot\r"));
                     Debugln(F("   S - File info on SPIFFS\r"));
                     Debugln(F("  *U+ - Update Remote; Enter Firmware version -> U 3.0.4 \r"));
+                    Debugln(F("  *X - MQTT resend all static info\r\n"));
                     Debugln(F("  *Z - Zero counters\r\n"));
                     if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));
                     else if (Verbose1)        Debugln(F("   V - Toggle Verbose 2\r"));
@@ -228,7 +231,7 @@ void handleKeyInput()
     while (TelnetStream.available() > 0) 
     {
        yield();
-       (char)TelnetStream.read();
+       (char)TelnetStream.read(); //clear buffer such as \r\n
     }
   }
   

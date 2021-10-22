@@ -16,15 +16,18 @@
 *      - Aanpassen front-end ivm MQTT_CORE feaure
 *      √ MQTT LWT -> TopTopic/LWT geeft status aan (2.3.12)
 *      √ Reboot.log opgenomen in P1.log !! Na update Reboot.log en Reboot.old files verwijderen (2.3.13) 
-*      - retained mqtt values voor (2.3.14)
-*      -- Identification 
-*      -- p1_version
-*      -- Equipement_id
-*      -- Gas_device_type
-*      -- Gas_equipement_id
-*      -- Firmware version
-*      -- IP-adres
-*      - Wifi RSSI als mqtt bericht sturen
+*      √- retained mqtt values voor (2.3.14)
+*      √-- Identification 
+*      √-- p1_version
+*      √-- Equipement_id
+*      √-- Gas_device_type
+*      √-- Gas_equipement_id
+*      √-- Firmware version
+*      √-- IP-adres
+*      √ Wifi RSSI als mqtt bericht sturen -> eens per 15min update (2.3.14)
+*      √- verwijder retained items uit mqtt bulk verzending (2.3.14)
+*      - check wat er gebeurd indien broker reboot met retained info
+*      √ Deep sleep NONE WIFI (2.3.14)
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
@@ -300,12 +303,16 @@ void loop()
   if (DUE(antiWearRing)) writeRingFiles(); //eens per 25min + elk uur overgang in processtelegram
 #endif
 
-  if (DUE(antiWearStatus)) writeLastStatus(); //eens per 15min
+  if (DUE(antiWearStatus)) {
+    writeLastStatus(); //eens per 15min
+    MQTTSentStaticP1Info();
+  }
   
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
   {
-    LogFile("Wifi connection lost");  
+    sprintf(cMsg,"Wifi connection lost | rssi: %d",WiFi.RSSI());
+    LogFile(cMsg);   
 //    writeToSysLog("Restart wifi with [%s]...", settingHostname);
     startWiFi(settingHostname, 10);
     if (WiFi.status() != WL_CONNECTED) {

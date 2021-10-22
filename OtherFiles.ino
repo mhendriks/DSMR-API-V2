@@ -304,33 +304,6 @@ void updateSetting(const char *field, const char *newValue)
   writeSettings();
   
 } // updateSetting()
-//
-////=======================================================================
-//void Rebootlog(){
-//  if (!SPIFFSmounted) return;
-//  File RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
-//  if (!RebootFile) {
-//    DebugTln(F("open RebootLog file FAILED!!!--> Bailout\r\n"));
-//    return;
-//  }
-//  
-//  //log rotate
-//  if (RebootFile.size() > 2500){ 
-////    DebugT(F("RebootLog filesize: "));Debugln(RebootFile.size());
-//    SPIFFS.remove("/Rebootlog.old");     //remove .old if existing 
-//    //rename file
-//    DebugTln(F("RebootLog: rename file"));
-//    RebootFile.close(); 
-//    SPIFFS.rename("/Reboot.log", "/Rebootlog.old");
-//    RebootFile = SPIFFS.open("/Reboot.log", "a"); // open for appending  
-//    }
-//  
-//    //make one record : {"time":"2020-09-23 17:03:25","reason":"Software/System restart","reboots":42}
-//    RebootFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"reason\":\"" + lastReset + "\",\"reboots\":" +  (int)nrReboots + "}");
-//  
-//    //closing the file
-//    RebootFile.close(); 
-//}
 
 //=======================================================================
 void LogFile( const char* payload ){
