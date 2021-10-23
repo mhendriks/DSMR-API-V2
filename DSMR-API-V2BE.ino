@@ -14,20 +14,7 @@
 *      √-- api/v2/sm
 *      √-- api/v2/hist
 *      - Aanpassen front-end ivm MQTT_CORE feaure
-*      √ MQTT LWT -> TopTopic/LWT geeft status aan (2.3.12)
-*      √ Reboot.log opgenomen in P1.log !! Na update Reboot.log en Reboot.old files verwijderen (2.3.13) 
-*      √- retained mqtt values voor (2.3.14)
-*      √-- Identification 
-*      √-- p1_version
-*      √-- Equipement_id
-*      √-- Gas_device_type
-*      √-- Gas_equipement_id
-*      √-- Firmware version
-*      √-- IP-adres
-*      √ Wifi RSSI als mqtt bericht sturen -> eens per 15min update (2.3.14)
-*      √- verwijder retained items uit mqtt bulk verzending (2.3.14)
 *      - check wat er gebeurd indien broker reboot met retained info
-*      √ Deep sleep NONE WIFI (2.3.14)
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 

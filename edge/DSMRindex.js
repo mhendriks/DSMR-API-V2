@@ -1976,7 +1976,7 @@ function UpdateDash()
   function readGitHubVersion()
   {
     if (GitHubVersion != 0) return;
-    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@master/edge/DSMRversion.dat")
+    fetch("https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@2.3/edge/DSMRversion.dat")
       .then(response => {
         if (response.ok) {
           return response.text();
