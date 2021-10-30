@@ -373,6 +373,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     }
     jsonDoc.clear();
     DSMRdata.applyEach(buildJson());
+    if (strlen(word5) == 0) JsonGas();
     sendJson(jsonDoc);
   break;  
   case 't': //telegramm 

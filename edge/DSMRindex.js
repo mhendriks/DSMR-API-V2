@@ -801,7 +801,7 @@ function handle_menu_click()
 	  console.log("firmwareVersion["+firmwareVersion+"] >= GitHubVersion["+GitHubVersion+"]");
 	  if (GitHubVersion == 0 || firmwareVersion >= GitHubVersion)
 			newVersionMsg = "";
-	  else  newVersionMsg = firmwareVersion_dspl + " nieuwere versie ("+GitHubVersion_dspl+") beschikbaar";
+	  else  newVersionMsg = " nieuwere versie ("+GitHubVersion_dspl+") beschikbaar";
 	  document.getElementById('message').innerHTML = newVersionMsg;
 	  console.log(newVersionMsg);
 
