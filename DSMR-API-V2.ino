@@ -21,8 +21,9 @@
 *      - check reconnect MQTT indien geen gegevens zijn ingevuld
 *      - Water Sensor -> Send MQTT data
 *      - Blynk 2.0 implentatie
-*      - MQTT broker "" dan geen connectie maken (3.1.3)
-*      - gasmeter op andere mbus (3.1.3)
+*      √ MQTT broker "" dan geen connectie maken (3.1.3)
+*      √ gasmeter op andere mbus (3.1.3)
+*      √ front-end wacht melding is verwijderd (3.1.3)
 *      
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 

@@ -273,7 +273,7 @@ function visibilityListener() {
 	  openTab();
       break;
   }
-	alert_message("Connectie met Dongle stond op pauze...nieuwe data ophalen");
+	//alert_message("Connectie met Dongle stond op pauze...nieuwe data ophalen");
 }
 
 document.addEventListener("visibilitychange", visibilityListener);

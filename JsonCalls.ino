@@ -18,9 +18,18 @@ char Onefield[25];
 bool onlyIfPresent = false;
 
 const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","mbus1_device_type","mbus1_equipment" };
-const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3","mbus1_delivered"};
+const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3"};
 
 DynamicJsonDocument jsonDoc(4000);  // generic doc to return, clear() before use!
+
+void JsonGas(){
+  if (gasDelivered){
+    jsonDoc["gas_delivered"]["value"] =  gasDelivered;
+    jsonDoc["gas_delivered"]["unit"]  = "m3";
+  }
+}
+
+//--------------------------
 
 struct buildJson {
     
@@ -32,14 +41,9 @@ struct buildJson {
         {          
           String Unit = Item::unit();
           jsonDoc[Name]["value"] = value_to_json(i.val());
-          if (Name == "mbus1_delivered") {
-            jsonDoc["gas_delivered"]["value"] =  value_to_json(i.val());
-            jsonDoc["gas_delivered"]["unit"]  = "m3";
-          }
           if (Unit.length() > 0) jsonDoc[Name]["unit"]  = Unit;
         }  else if (!onlyIfPresent) {
           jsonDoc[Name]["value"] = "-";
-          if (Name == "mbus1_delivered") jsonDoc["gas_delivered"]["value"]  = "-";
         }
     } //infielsarrayname
   }
@@ -355,6 +359,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     onlyIfPresent = true;
     jsonDoc.clear();
     DSMRdata.applyEach(buildJson());
+    JsonGas();
     sendJson(jsonDoc);
   break;
   

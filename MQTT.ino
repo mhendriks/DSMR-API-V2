@@ -35,7 +35,7 @@ void connectMQTT()
                                               , MQTTclient.connected()
                                               , mqttIsConnected, stateMQTT);
 
-  if (settingMQTTinterval == 0) {
+  if ( (settingMQTTinterval == 0) || (strlen(settingMQTTbroker) < 4) ) {
     mqttIsConnected = false;
     return;
   }
@@ -157,6 +157,17 @@ bool connectMQTT_FSM()
 } // connectMQTT_FSM()
 
 //=======================================================================
+void MQTTsendGas(){
+
+  if (gasDelivered){
+    sprintf(cMsg,"%s%s",settingMQTTtopTopic,"gas_delivered");
+    char msg[60];
+    sprintf(msg,"{\"gas_delivered\":[{\"value\":%.3f,\"unit\":\"m3\"}]}",gasDelivered);
+    if (!MQTTclient.publish(cMsg, msg) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg, (strlen(cMsg) + strlen(msg)));
+  }
+}
+
+//=======================================================================
 
 struct buildJsonMQTT {
 /* twee types
@@ -175,10 +186,7 @@ struct buildJsonMQTT {
       if (!isInFieldsArray(Name.c_str()) ) {
         if (i.present()) 
         {
-          if (Name == "mbus1_delivered") Name = "gas_delivered";
-  //        else if (Name == "mbus1_equipment_id_tc") Name = "gas_equipment_id";
-  //        else if (Name == "mbus1_device_type") Name = "gas_device_type";
-  //        else if (Name == "mbus1_valve_position") Name = "gas_valve_position";      
+//          if (Name == "mbus1_delivered") Name = "gas_delivered";    
           sprintf(cMsg,"%s%s",settingMQTTtopTopic,Name.c_str());
           if (strlen(Item::unit()) > 0) msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
           else msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
@@ -240,7 +248,7 @@ void MQTTSentStaticDevInfo(){
 //===========================================================================================
 void sendMQTTData() 
 {
-  if ((settingMQTTinterval == 0) || bailout() ) return;
+  if ((settingMQTTinterval == 0) || (strlen(settingMQTTbroker) < 4) || bailout() ) return;
 
   //make proper TopTopic
   if (settingMQTTtopTopic[strlen(settingMQTTtopTopic)-1] != '/') snprintf(settingMQTTtopTopic, sizeof(settingMQTTtopTopic), "%s/",  settingMQTTtopTopic);
@@ -280,6 +288,7 @@ void sendMQTTData()
   }
   fieldsElements = INFOELEMENTS;
   DSMRdata.applyEach(buildJsonMQTT());
+  MQTTsendGas();
 
 } // sendMQTTData()
 
