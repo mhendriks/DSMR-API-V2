@@ -171,20 +171,21 @@ struct buildJsonMQTT {
     
     template<typename Item>
     void apply(Item &i) {
-      if (i.present()) 
-      {
-        String Name = String(Item::name);
-        if (Name == "mbus1_delivered") Name = "gas_delivered";
-//        else if (Name == "mbus1_equipment_id_tc") Name = "gas_equipment_id";
-//        else if (Name == "mbus1_device_type") Name = "gas_device_type";
-//        else if (Name == "mbus1_valve_position") Name = "gas_valve_position";      
-        strcpy(cMsg,settingMQTTtopTopic);
-        strcat(cMsg, Name.c_str());
-        if (strlen(Item::unit()) > 0) msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
-        else msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
-        if (Verbose2) DebugTln("mqtt bericht: "+msg);
-        if (!MQTTclient.publish(cMsg, msg.c_str()) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
-      } // if i.present
+      String Name = String(Item::name);
+      if (!isInFieldsArray(Name.c_str()) ) {
+        if (i.present()) 
+        {
+          if (Name == "mbus1_delivered") Name = "gas_delivered";
+  //        else if (Name == "mbus1_equipment_id_tc") Name = "gas_equipment_id";
+  //        else if (Name == "mbus1_device_type") Name = "gas_device_type";
+  //        else if (Name == "mbus1_valve_position") Name = "gas_valve_position";      
+          sprintf(cMsg,"%s%s",settingMQTTtopTopic,Name.c_str());
+          if (strlen(Item::unit()) > 0) msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
+          else msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
+          if (Verbose2) DebugTln("mqtt bericht: "+msg);
+          if (!MQTTclient.publish(cMsg, msg.c_str()) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
+        } // if i.present
+      } // if isInFieldsArray
   } //apply
   
   template<typename Item>
@@ -196,6 +197,45 @@ struct buildJsonMQTT {
     return "\"" + i+ "\"";
   } 
 }; // buildJsonMQTT
+
+//===========================================================================================
+void MQTTSend(char* item, String value){
+  String msg = "{\"" + String(item) + "\":[{\"value\":\""+ value + "\"}]}";
+  sprintf(cMsg,"%s%s", settingMQTTtopTopic,item);
+  if (!MQTTclient.publish(cMsg, (byte*)msg.c_str(),msg.length(),true )) {
+    DebugTf("Error publish (%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
+    StaticInfoSend = false; //probeer het later nog een keer
+  }
+}
+
+void MQTTSend(char* item, int32_t value){
+  String msg = "{\"" + String(item) + "\":[{\"value\":"+ value + "}]}";
+  sprintf(cMsg,"%s%s", settingMQTTtopTopic,item);
+  if (!MQTTclient.publish(cMsg, (byte*)msg.c_str(),msg.length(),true )) {
+    DebugTf("Error publish (%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
+    StaticInfoSend = false; //probeer het later nog een keer
+  }
+}
+//===========================================================================================
+void MQTTSentStaticP1Info(){
+  
+  StaticInfoSend = true;
+  MQTTSend("identification",DSMRdata.identification);
+  MQTTSend("p1_version",DSMRdata.p1_version);
+  MQTTSend("equipment_id",DSMRdata.equipment_id);
+  MQTTSend("firmware",_VERSION_ONLY);
+  MQTTSend("ip_address",WiFi.localIP().toString());
+  if (DSMRdata.mbus1_device_type_present){ MQTTSend("gas_device_type", (uint32_t)DSMRdata.mbus1_device_type ); }
+  if (DSMRdata.mbus1_equipment_id_tc_present){ MQTTSend("gas_equipment_id",DSMRdata.mbus1_equipment_id_tc); }
+  
+}
+
+//===========================================================================================
+void MQTTSentStaticDevInfo(){
+  
+  MQTTSend( "wifi_rssi",WiFi.RSSI() );
+  
+}
 
 //===========================================================================================
 void sendMQTTData() 
@@ -218,7 +258,9 @@ void sendMQTTData()
     if ( DUE( reconnectMQTTtimer) || mqttIsConnected)
     {
       mqttIsConnected = false;
+      StaticInfoSend = false; //zorg voor resend retained info
       connectMQTT();
+      return; //verlaat verzending
     }
     else
     {
@@ -232,7 +274,11 @@ void sendMQTTData()
   }
 
   DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", settingMQTTbroker, settingMQTTbrokerPort);
-  
+  if ((telegramCount - telegramErrors) > 2 && !StaticInfoSend){
+    MQTTSentStaticP1Info();
+    MQTTSentStaticDevInfo();
+  }
+  fieldsElements = INFOELEMENTS;
   DSMRdata.applyEach(buildJsonMQTT());
 
 } // sendMQTTData()

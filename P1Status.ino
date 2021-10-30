@@ -1,8 +1,6 @@
 #define Eaddr   0
 #define Esize  50
 #define Ypos   30
-//EEPROM lengte = 3*4+2+13 = 27 postities
-
 
 void P1StatusBegin(){ 
     EEPROM.begin(Esize);

@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 **
-**  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
+**  Copyright (c) 2021 Martijn Hendriks
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -11,7 +11,6 @@
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - indien api niet beschikbaar (chck time) dan overige calls ook niet meer doen
 *      - frontend instellingen mutabel in webpagina
-*      - mqtt broker benaderen via host name http://www.iotsharing.com/2017/06/how-to-get-ip-address-from-mdns-host-name-in-arduino-esp32.html 
 *      - herzien navigate
 *      - webclient GEEN FOCUS -> stop met uitvragen api
 *      - verplaatsen update/reset/restart
@@ -21,8 +20,11 @@
 *      - Piekvermogen bijhouden Belgie
 *      - check reconnect MQTT indien geen gegevens zijn ingevuld
 *      - Water Sensor -> Send MQTT data
-*      √ MQTT LWT -> TopTopic/LWT geeft status aan
 *      - Blynk 2.0 implentatie
+*      √ retained mqtt values voor (3.1.2)
+*      √ Telnet: ResetDataFiles ... verwijderen file (3.1.2)
+*      √ verwijder retained items uit mqtt bulk verzending (3.1.2)
+*      √ Deep sleep NONE WIFI (3.1.2)
 *      
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 
@@ -279,6 +281,7 @@ void loop ()
   if (DUE(StatusTimer)) { //eens per 15min of indien extra m3
     P1StatusWrite();
     CHANGE_INTERVAL_MIN(StatusTimer, 15);
+    MQTTSentStaticP1Info();
   }
   
 #ifdef USE_BLYNK
@@ -293,7 +296,8 @@ void loop ()
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
   {
-    LogFile("Wifi connection lost");  
+    sprintf(cMsg,"Wifi connection lost | rssi: %d",WiFi.RSSI());
+    LogFile(cMsg);  
     startWiFi(settingHostname, 10);
     if (WiFi.status() != WL_CONNECTED){
           LogFile("Wifi connection still lost");  

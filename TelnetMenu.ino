@@ -26,6 +26,19 @@ void DisplayLogFile(char *fname) {
 
 //--------------------------------
 
+void ResetDataFiles() {
+  LittleFS.remove("/RINGdays.json");
+  LittleFS.remove("/RINGweeks.json");
+  LittleFS.remove("/RINGmonths.json");
+  LittleFS.remove("/P1.old");
+  LittleFS.remove("/P1.log");
+  LittleFS.remove("/Reboot.log");      //pre 3.1.1 
+  LittleFS.remove("/Reboot.old");      //pre 3.1.1  
+  LittleFS.remove("/DSMRStatus.json"); //pre 3.1.1 
+  DebugTln(F("Datafiles are reset"));
+}
+
+//--------------------------------
 void displayBoardInfo() 
 {
   LittleFS.info(fs_info);
@@ -162,6 +175,8 @@ void handleKeyInput()
                     if (showRaw)  digitalWrite(LED, HIGH);
                     else          digitalWrite(LED, LOW);
                     break;
+      case 'Q':     ResetDataFiles();
+                    break;              
       case 'R':     DebugT(F("Reboot in 3 seconds ... \r\n"));
                     DebugFlush();
                     P1Reboot();

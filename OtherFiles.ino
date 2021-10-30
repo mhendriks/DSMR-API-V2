@@ -31,61 +31,6 @@ void writeToJsonFile(const TSource &doc, File &_file)
   _file.close(); 
 }
 
-/**
-//====================================================================
-void readLastStatus()
-{  
-//  uint32_t msec = millis();
-  StaticJsonDocument<110> doc;  
-  DeserializationError error;
-  
-  if (!FSmounted) return;
-  File statusFile = LittleFS.open("/DSMRstatus.json", "r");
-  if (statusFile) error = deserializeJson(doc, statusFile);
-
-  if (!statusFile || error) {
-    DebugTln(F("read(): No /DSMRstatus.json found or failed to read"));
-    statusFile.close();
-    writeLastStatus();
-    return;
-  }
-
-  statusFile.close();
-  
-  P1Status.reboots = doc["Reboots"];
-  P1Status.sloterrors = doc["slotErrors"];
-  if (strlen( doc["Timestamp"]) != 13)  snprintf(actTimestamp, sizeof(actTimestamp), "%s", "010101010101X");
-  else  strcpy(actTimestamp, doc["Timestamp"]);
-//  DebugT("readLastStatus duration: "); Debugln(millis() - msec);
-}  // readLastStatus()
-
-//====================================================================
-void writeLastStatus()
-{     
-//  uint32_t msec = millis();
-
-  if (bailout() || !FSmounted ) return;
-  DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, P1Status.reboots, P1Status.sloterrors);
-  
-  File statusFile = LittleFS.open("/DSMRstatus.json", "w");
-  if (!statusFile) DebugTln(F("write(): No /DSMRstatus.json found"));
-
-  char buffer[74];
-  sprintf_P(buffer,PSTR("{\"Timestamp\":\"%s\",\"Reboots\":%d,\"slotErrors\":%d}"), actTimestamp, P1Status.reboots, P1Status.sloterrors);
-  
-  int bytesWritten = statusFile.print(buffer);
-  if (bytesWritten > 0) {
-    DebugT(F("File was written:"));Debugln(bytesWritten);
-  } else DebugTln(F("File write failed"));
- 
-  statusFile.flush();
-  statusFile.close();
-//  DebugT("writelastStatus duration: "); Debugln(millis() - msec);
-
-} // writeLastStatus()
-
-**/
-
 //=======================================================================
 void writeSettings() 
 {
@@ -133,7 +78,6 @@ void writeSettings()
   writeToJsonFile(doc, SettingsFile);
   
 } // writeSettings()
-
 
 //=======================================================================
 void readSettings(bool show) 
@@ -323,33 +267,6 @@ void updateSetting(const char *field, const char *newValue)
   writeSettings();
   
 } // updateSetting()
-
-////=======================================================================
-//void Rebootlog(){
-//  if (!FSmounted) return;
-//  File RebootFile = LittleFS.open("/Reboot.log", "a"); // open for appending  
-//  if (!RebootFile) {
-//    DebugTln(F("open RebootLog file FAILED!!!--> Bailout\r\n"));
-//    return;
-//  }
-//  
-//  //log rotate
-//  if (RebootFile.size() > 7000){ 
-////    DebugT(F("RebootLog filesize: "));Debugln(RebootFile.size());
-//    LittleFS.remove("/Rebootlog.old");     //remove .old if existing 
-//    //rename file
-//    DebugTln(F("RebootLog: rename file"));
-//    RebootFile.close(); 
-//    LittleFS.rename("/Reboot.log", "/Rebootlog.old");
-//    RebootFile = LittleFS.open("/Reboot.log", "a"); // open for appending  
-//    }
-//  
-//    //make one record : {"time":"2020-09-23 17:03:25","reason":"Software/System restart","reboots":42}
-//    RebootFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"reason\":\"" + lastReset + "\",\"reboots\":" +  (int)P1Status.reboots + "}");
-//  
-//    //closing the file
-//    RebootFile.close(); 
-//}
 
 //=======================================================================
 void LogFile(const char* payload) {

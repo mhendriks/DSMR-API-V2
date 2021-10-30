@@ -29,6 +29,42 @@ Klik dan op [Done]
 Klik in het overzichtscherm op [Save] rechtsboven
 
 Stap 4: Instellen Blynk : Device
+Klik op het vergrootglas (Search)
+Klik op [New Device]
+Klik op [From Template]
+TEMPLATE: P1 Dongle
+Klik op [Create]
+
+kopieer de gegevens in het rechtervenster zoals het voorbeeld hieronder:
+#define BLYNK_TEMPLATE_ID "TMPLPuW-DEMO"
+#define BLYNK_DEVICE_NAME "P1 Dongel"
+#define BLYNK_AUTH_TOKEN "2V-AJxupJf6uSGUDcXMjnh_zDEMO"
+
+
+Stap 5: creëer Datastreams
+Klik op de ... (menu) achter P1 Dongle (offline) zoals hieronder en daarna op Edit Dashboard.
+Klik dan op [Datastreams]
+Klik op [+New Datastreams] -> [VirtualPin]
+Vul onderstaande in:
+Name: Energie-Geleverd
+Alias: Energie
+PIN : V0
+Data type: Integer
+Units: Watts
+Min: 0 
+Max: 999999
+Klik daarna op [Create]
+
+herhaal bovenstaande voor de overige VirtualPins.
+
+Druk dan op [Save] + [update 1 active device]
+
+
+
+Stap 6: creëer Dashboard
+Klik op de ... (menu) achter P1 Dongle (offline) zoals hieronder
+en daarna op Edit Dashboard
+
 
 
 **New account**  

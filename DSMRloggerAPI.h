@@ -167,7 +167,7 @@ struct Status {
    char     timestamp[14];
    volatile uint32_t wtr_m3;
    volatile uint16_t wtr_l;
-   char     check; //check if data is well format (persistdata available or not)
+   char     check; //check if data is well formated (persistdata available or not)
 };
 
 Status P1Status = {0,0,"010101010101X",0,0,'Y'};
@@ -201,6 +201,8 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   uint8_t   settingSmHasFaseInfo    = 1;
   char      settingHostname[30]     = _DEFAULT_HOSTNAME;
   char      settingIndexPage[50]    = _DEFAULT_HOMEPAGE;
+
+  bool      StaticInfoSend = false;
   char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
   int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
   float     gasDelivered;
