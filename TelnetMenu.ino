@@ -167,7 +167,6 @@ void handleKeyInput()
                     delay(1000);
                     WiFi.disconnect(true);  // deletes credentials !
                     //setupWiFi(true);
-//                    writeLastStatus();
                     P1Reboot();
                     break;
       case 'p':
@@ -177,8 +176,7 @@ void handleKeyInput()
                     break;
       case 'Q':     ResetDataFiles();
                     break;              
-      case 'R':     DebugT(F("Reboot in 3 seconds ... \r\n"));
-                    DebugFlush();
+      case 'R':     DebugFlush();
                     P1Reboot();
                     break;
       case 's':
@@ -247,8 +245,8 @@ void handleKeyInput()
                     Debugln(F("  *R - Reboot\r"));
                     Debugln(F("   S - File info on FS\r"));
                     Debugln(F("  *U+ - Update Remote; Enter Firmware version -> U 3.0.4 \r"));
-                    Debugln(F("  *Z - Zero counters\r\n"));
-                    Debugln(F("   X - Save Ringfiles\r\n"));
+                    Debugln(F("  *Z - Zero counters\r"));
+                    Debugln(F("   X - Save Ringfiles\r"));
                     if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));
                     else if (Verbose1)        Debugln(F("   V - Toggle Verbose 2\r"));
                     else                      Debugln(F("   V - Toggle Verbose 1\r"));

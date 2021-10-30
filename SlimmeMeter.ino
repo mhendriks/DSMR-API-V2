@@ -164,6 +164,7 @@ float modifyMbusDelivered()
   
     tmpGasDelivered = (float)(DSMRdata.mbus1_delivered * 1.0);
 //    DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
+    mbusGas = 1;
   }
   
   if ( DSMRdata.mbus2_device_type == 3 ){ //gasmeter
@@ -176,6 +177,7 @@ float modifyMbusDelivered()
   //  if ( (settingMbus2Type == 3) && (DSMRdata.mbus2_device_type == 3) )
       tmpGasDelivered = (float)(DSMRdata.mbus2_delivered * 1.0);
   //    DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
+    mbusGas = 2;
   }
 
   if ( (DSMRdata.mbus3_device_type == 3) ){ //gasmeter
@@ -188,6 +190,7 @@ float modifyMbusDelivered()
   //  if ( (settingMbus3Type == 3) && (DSMRdata.mbus3_device_type == 3) )
       tmpGasDelivered = (float)(DSMRdata.mbus3_delivered * 1.0);
   //    DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
+    mbusGas = 3;
   }
 
   if ( (DSMRdata.mbus4_device_type == 3) ){ //gasmeter
@@ -200,6 +203,7 @@ float modifyMbusDelivered()
   //  if ( (settingMbus4Type == 3) && (DSMRdata.mbus4_device_type == 3) )
       tmpGasDelivered = (float)(DSMRdata.mbus4_delivered * 1.0);
   //    DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
+    mbusGas = 4;
   }
 
   return tmpGasDelivered;

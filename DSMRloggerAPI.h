@@ -142,10 +142,6 @@ using MyData = ParsedData<
   /* TimestampedFixedValue */ ,mbus4_delivered_dbl
 >;
 
-//enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
-
-//const PROGMEM char *weekDayName[]  { "Unknown", "Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Unknown" };
-//const PROGMEM char *monthName[]    { "00", "Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December", "13" };
 const PROGMEM char *flashMode[]    { "QIO", "QOUT", "DIO", "DOUT", "Unknown" };
 
 //===========================prototype's=======================================
@@ -176,8 +172,6 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   time_t      actT, newT;
   char        newTimestamp[20] = "";
   char        actTimestamp[20] = "";
-//  uint32_t    slotErrors = 0;
-//  uint32_t    nrReboots  = 0;
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw       = false;
   bool        LEDenabled    = true;
@@ -194,10 +188,6 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   uint64_t  upTimeSeconds;
   IPAddress ipDNS, ipGateWay, ipSubnet;
   uint8_t   settingTelegramInterval = 2; //seconden 10 pre v3.1 ... 1 second v3.1
-//  uint8_t   settingMbus1Type        = 3;
-//  uint8_t   settingMbus2Type     = 0;
-//  uint8_t   settingMbus3Type     = 0;
-//  uint8_t   settingMbus4Type     = 0;
   uint8_t   settingSmHasFaseInfo    = 1;
   char      settingHostname[30]     = _DEFAULT_HOSTNAME;
   char      settingIndexPage[50]    = _DEFAULT_HOMEPAGE;
@@ -206,10 +196,13 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
   int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
   float     gasDelivered;
-
+  byte      mbusGas = 0;
+  byte      RingCylce = 0;
 //specifiek voor dongle functies
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
   float     settingENBK = 15.15, settingGNBK = 11.11;
+  bool      UpdateRequested = false;
+  char        UpdateVersion[25] = "";
 
 #if defined(HAS_NO_SLIMMEMETER)
   bool        forceBuildRingFiles = false;
@@ -226,7 +219,7 @@ DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(antiWearRing,       25); 
 DECLARE_TIMER_SEC(RefreshBlynk,        5); 
-DECLARE_TIMER_MIN(StatusTimer,          15);
+DECLARE_TIMER_MIN(StatusTimer,        15);
 
 //DECLARE_TIMER_SEC(synchrNTP,          30);
 

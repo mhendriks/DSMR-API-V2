@@ -74,7 +74,7 @@ void RemoteUpdate(const char* versie){
       httpServer.send(200, "text/html", "ERROR: Update Failed - No version argument");
       LogFile("Remote update ERROR: Update Failed - No version argument" );
     }
-  
+  UpdateRequested = false;
 } //RemoteUpdate
 
 

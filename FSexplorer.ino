@@ -26,7 +26,6 @@ const PROGMEM char Header[] = "HTTP/1.1 303 OK\r\nLocation:/#FileExplorer\r\nCac
 //=====================================================================================
 void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebunden werden
 {    
-//  LittleFS.begin(); //double
   httpServer.on("/api/listfiles", APIlistFiles);
   httpServer.on("/FSformat", formatFS);
   httpServer.on("/upload", HTTP_POST, []() {}, handleFileUpload);
@@ -165,7 +164,7 @@ void handleFileUpload()
 #ifdef USE_BLYNK
     if (upload.filename == "BlynkSetup") {
       SetupBlynk();
-      DebugTln(F("Blynk setup changed ... Reboot in 3 sec!"));
+      DebugTln(F("Blynk setup changed..."));
       P1Reboot();
       }
 #endif

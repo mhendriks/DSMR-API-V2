@@ -7,21 +7,24 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 *      
-*      TODO
-*      - check length Ringfiles voor en na lezen/schrijven ivm fouten
-*      - indien api niet beschikbaar (chck time) dan overige calls ook niet meer doen
-*      - frontend instellingen mutabel in webpagina
-*      - herzien navigate
-*      - webclient GEEN FOCUS -> stop met uitvragen api
-*      - verplaatsen update/reset/restart
-*      - nieuwe update scherm
-*      - instellingen FrontEnd zichtbaar in webpagina read only
-*      - fix sm data gas data indien deze niet aanwezig is
-*      - Piekvermogen bijhouden Belgie
-*      - check reconnect MQTT indien geen gegevens zijn ingevuld
-*      - Water Sensor -> Send MQTT data
-*      - Blynk 2.0 implentatie
+TODO
+- check length Ringfiles voor en na lezen/schrijven ivm fouten
+- frontend instellingen mutabel in webpagina
+- herzien navigate
+- instellingen FrontEnd zichtbaar in webpagina read only
+- Piekvermogen bijhouden Belgie
+- Water Sensor -> Send MQTT data
+- Blynk 2.0 implentatie
+√ aanpassing DSMR-index.html ivm subversie ophoging (3.1.4)
+√ bugfix sendjson (3.1.4)
+√ mbus ID gasmeter info field (3.1.4)
+√ schrijven ringfiles in 3 cylces (i.v.m. performance) (3.1.4)
+- Aanpassen front-end ivm MQTT_CORE feaure
+- check wat er gebeurd indien broker reboot met retained info
+√ via mqtt subsribe update starten (3.1.4)
 *      
+*           
+*   
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
@@ -61,7 +64,7 @@ void setup()
   pinMode(DTR_ENABLE, OUTPUT);
   pinMode(LED, OUTPUT); //LED ESP12S
   
-  // sign off life
+  // sign of life
   digitalWrite(LED, LOW); //ON
   delay(1500);
   digitalWrite(LED, HIGH); //OFF
@@ -91,14 +94,6 @@ void setup()
     FSmounted = true;   
   } else DebugTln(F("/!\\File System Mount failed/!\\"));   // Serious problem with LittleFS 
 
-
-//------ read status file for last Timestamp --------------------
-  
-  //==========================================================//
-  // writeLastStatus();  // only for firsttime initialization //
-  //==========================================================//
-
-//  readLastStatus(); // place it in actTimestamp
   
   // set the time to actTimestamp!
   actT = epoch(actTimestamp, strlen(actTimestamp), true);
@@ -272,13 +267,15 @@ void loop ()
   doSystemTasks(); 
 
   //--- update statusfile + ringfiles
-  if (DUE(antiWearRing)) writeRingFiles(); //eens per 25min + elk uur overgang
+  if ( DUE(antiWearRing) || RingCylce ) writeRingFiles(); //eens per 25min + elk uur overgang
 
   if (DUE(StatusTimer)) { //eens per 15min of indien extra m3
     P1StatusWrite();
     CHANGE_INTERVAL_MIN(StatusTimer, 15);
     MQTTSentStaticP1Info();
   }
+
+  if (UpdateRequested) RemoteUpdate(UpdateVersion);
   
 #ifdef USE_BLYNK
   if (LittleFS.exists(_BLYNK_FILE)){

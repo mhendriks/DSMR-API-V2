@@ -55,6 +55,15 @@ void connectMQTT()
 }
 
 //===========================================================================================
+
+void MQTTcallback(char* topic, byte* payload, unsigned int length) {
+  if (length > 24) return;
+  for (int i=0;i<length;i++) UpdateVersion[i] = (char)payload[i];
+  DebugT("Message arrived [");Debug(topic);Debug("] ");Debugln(UpdateVersion);
+  UpdateRequested = true;
+}
+
+//===========================================================================================
 bool connectMQTT_FSM() 
 {  
   switch(stateMQTT) 
@@ -82,6 +91,7 @@ bool connectMQTT_FSM()
           MQTTclient.setServer(MQTTbrokerIPchar, settingMQTTbrokerPort);
           DebugTf("setServer  -> MQTT status, rc=%d \r\n", MQTTclient.state());
           MQTTclientId  = String(settingHostname) + "-" + WiFi.macAddress();
+          MQTTclient.setCallback(MQTTcallback); //set listner update callback
           stateMQTT = MQTT_STATE_TRY_TO_CONNECT;
           DebugTln(F("Next State: MQTT_STATE_TRY_TO_CONNECT"));
           reconnectAttempts = 0;
@@ -113,6 +123,8 @@ bool connectMQTT_FSM()
             reconnectAttempts = 0;  
             Debugf(" .. connected -> MQTT status, rc=%d\r\n", MQTTclient.state());
             MQTTclient.publish(cMsg,"Online", true);
+            sprintf(cMsg,"%supdate",settingMQTTtopTopic);
+            MQTTclient.subscribe(cMsg); //subscribe mqtt update
 
             LogFile("MQTT connected");
             MQTTclient.loop();

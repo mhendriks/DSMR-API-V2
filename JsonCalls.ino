@@ -17,7 +17,7 @@ byte fieldsElements = 0;
 char Onefield[25];
 bool onlyIfPresent = false;
 
-const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff","mbus1_device_type","mbus1_equipment" };
+const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id","electricity_tariff" };
 const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3"};
 
 DynamicJsonDocument jsonDoc(4000);  // generic doc to return, clear() before use!
@@ -29,6 +29,24 @@ void JsonGas(){
   }
 }
 
+//--------------------------
+void JsonGasID(){
+  switch (mbusGas) {
+    case 1: if ( DSMRdata.mbus1_equipment_id_tc_present ) jsonDoc["gas_equipment_id"]["value"] =  DSMRdata.mbus1_equipment_id_tc;
+            else if (DSMRdata.mbus1_equipment_id_ntc_present) jsonDoc["gas_equipment_id"]["value"] =  DSMRdata.mbus1_equipment_id_ntc;
+            break;
+    case 2: if ( DSMRdata.mbus2_equipment_id_tc_present ) jsonDoc["gas_equipment_id"]["value"] =  DSMRdata.mbus2_equipment_id_tc;
+            else if (DSMRdata.mbus2_equipment_id_ntc_present) jsonDoc["gas_equipment_id"]["value"] =  DSMRdata.mbus2_equipment_id_ntc;
+            break;
+    case 3: if ( DSMRdata.mbus3_equipment_id_tc_present ) jsonDoc["gas_equipment_id"]["value"] =  DSMRdata.mbus3_equipment_id_tc;
+            else if (DSMRdata.mbus3_equipment_id_ntc_present) jsonDoc["gas_equipment_id"]["value"] =  DSMRdata.mbus3_equipment_id_ntc;
+            break;
+    case 4: if ( DSMRdata.mbus4_equipment_id_tc_present ) jsonDoc["gas_equipment_id"]["value"] =  DSMRdata.mbus4_equipment_id_tc;
+            else if (DSMRdata.mbus4_equipment_id_ntc_present) jsonDoc["gas_equipment_id"]["value"] =  DSMRdata.mbus4_equipment_id_ntc;
+            break;
+    default: break; //do nothing 
+  }
+}
 //--------------------------
 
 struct buildJson {
@@ -46,6 +64,7 @@ struct buildJson {
           jsonDoc[Name]["value"] = "-";
         }
     } //infielsarrayname
+    yield();
   }
   
   template<typename Item>
@@ -123,23 +142,22 @@ void processAPI() {
 template <typename TSource>
 void sendJson(const TSource &doc) 
 {  
-  const size_t strsize = measureJson(doc)+1;
   if (doc.isNull()) {
 //    DebugT(F("sendjson isNull"));
     sendJsonBuffer("{}");
     return;
   }
-  char buffer[strsize];
   
-  if (Verbose1) serializeJsonPretty(doc,buffer,strsize); 
-  else serializeJson(doc,buffer,strsize);
+  String buffer;
+  if (Verbose1) serializeJsonPretty(doc,buffer); 
+  else serializeJson(doc,buffer);
 //  DebugT(F("Sending json: ")); Debugln(buffer);
 //  DebugT("strsize:"); Debugln(strsize);
-  sendJsonBuffer(buffer);
+  sendJsonBuffer(buffer.c_str());
   DebugTln(F("sendJson: json sent .."));   
 }
 
-void sendJsonBuffer(char* buffer){
+void sendJsonBuffer(const char* buffer){
   httpServer.sendHeader("Access-Control-Allow-Origin", "*");
   httpServer.setContentLength(strlen(buffer));
   httpServer.send(200, "application/json", buffer);
@@ -351,6 +369,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     fieldsElements = INFOELEMENTS;
     jsonDoc.clear();
     DSMRdata.applyEach(buildJson());
+    JsonGasID();
     sendJson(jsonDoc);
   break;
   

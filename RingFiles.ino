@@ -166,9 +166,16 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
 void writeRingFiles() 
 {
   if (!EnableHistory) return; //do nothing
-  writeRingFile(RINGHOURS, "");
-  writeRingFile(RINGDAYS, "");
-  writeRingFile(RINGMONTHS, "");
+  switch(RingCylce){
+    case 0: writeRingFile(RINGHOURS, "");
+            break;
+    case 1: writeRingFile(RINGDAYS, "");
+            break;
+    case 2: writeRingFile(RINGMONTHS, "");
+            break;
+  }
+  RingCylce++;
+  if (RingCylce > 2) RingCylce = 0;
 
 } // writeRingFiles()
 
