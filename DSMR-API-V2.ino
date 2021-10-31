@@ -15,13 +15,9 @@ TODO
 - Piekvermogen bijhouden Belgie
 - Water Sensor -> Send MQTT data
 - Blynk 2.0 implentatie
-√ aanpassing DSMR-index.html ivm subversie ophoging (3.1.4)
-√ bugfix sendjson (3.1.4)
-√ mbus ID gasmeter info field (3.1.4)
-√ schrijven ringfiles in 3 cylces (i.v.m. performance) (3.1.4)
 - Aanpassen front-end ivm MQTT_CORE feaure
 - check wat er gebeurd indien broker reboot met retained info
-√ via mqtt subsribe update starten (3.1.4)
+- eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek)
 *      
 *           
 *   
