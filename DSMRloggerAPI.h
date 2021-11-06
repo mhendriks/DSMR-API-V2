@@ -37,7 +37,7 @@ static      FSInfo fs_info;
 #define _DEFAULT_HOSTNAME   "DSMR-API/" 
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
-#define DTR_ENABLE          14
+#define DTR_ENABLE          0
 #define LED                 2
 
 P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
@@ -149,12 +149,12 @@ int strcicmp(const char *a, const char *b);
 void delayms(unsigned long);
 
 //===========================GLOBAL VAR'S======================================
-  WiFiClient  wifiClient;
-  #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
-  static PubSubClient MQTTclient(wifiClient);
+WiFiClient  wifiClient;
+#include <PubSubClient.h>           // MQTT client publish and subscribe functionality
+static PubSubClient MQTTclient(wifiClient);
   
 #ifdef USE_WATER_SENSOR  
-  #define PIN_WATER_SENSOR 14
+  #define PIN_WATER_SENSOR 5
 #endif //USE_WATER_SENSOR
 
 struct Status {
@@ -202,7 +202,7 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
   float     settingENBK = 15.15, settingGNBK = 11.11;
   bool      UpdateRequested = false;
-  char        UpdateVersion[25] = "";
+  char      UpdateVersion[25] = "";
 
 #if defined(HAS_NO_SLIMMEMETER)
   bool        forceBuildRingFiles = false;
@@ -220,6 +220,7 @@ DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time b
 DECLARE_TIMER_MIN(antiWearRing,       25); 
 DECLARE_TIMER_SEC(RefreshBlynk,        5); 
 DECLARE_TIMER_MIN(StatusTimer,        15);
+DECLARE_TIMER_MIN(WaterTimer,         30);
 
 //DECLARE_TIMER_SEC(synchrNTP,          30);
 

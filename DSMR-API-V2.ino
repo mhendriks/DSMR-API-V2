@@ -8,17 +8,17 @@
 ***************************************************************************      
 *      
 TODO
-- check length Ringfiles voor en na lezen/schrijven ivm fouten
+- Core verion met alleen MQTT en essentiele api functies, Niet meer beschikbaar in de MQTT_CORE versie:
+-- RING Files
+-- api/v2/sm
+-- api/v2/hist
+- Aanpassen front-end ivm MQTT_CORE feaure- check length Ringfiles voor en na lezen/schrijven ivm fouten
 - frontend instellingen mutabel in webpagina
-- herzien navigate
-- instellingen FrontEnd zichtbaar in webpagina read only
 - Piekvermogen bijhouden Belgie
-- Water Sensor -> Send MQTT data
 - Blynk 2.0 implentatie
 - Aanpassen front-end ivm MQTT_CORE feaure
-- check wat er gebeurd indien broker reboot met retained info
-- eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek)
-*      
+- eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek en voor maar 15 minuten)
+- issue met de datafiles ... dan zelf herstellend verder gaan
 *           
 *   
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
@@ -46,7 +46,7 @@ TODO
 //#define DEBUG_MODE
 
 //----- EXTENSIONS
-//#define USE_WATER_SENSOR
+#define USE_WATER_SENSOR
 //#define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //#define USE_BLYNK                 // define if the blynk app could be used
 
@@ -254,7 +254,12 @@ void doSystemTasks()
 void loop () 
 {  
   //--- verwerk volgend telegram
-  if DUE(nextTelegram) doTaskTelegram();
+  if DUE(nextTelegram) {
+    doTaskTelegram();
+    #ifdef USE_WATER_SENSOR  
+      if (Verbose1) DebugTf("Watermeter : %d m3 %u Liters\n", P1Status.wtr_m3, P1Status.wtr_l);
+    #endif
+  }
 
   //--- update upTime counter
   if DUE(updateSeconds) upTimeSeconds++;
@@ -281,6 +286,15 @@ void loop ()
     if (DUE(RefreshBlynk) && Blynk.connected()) handleBlynk(); //eens per 5sec
   }
 #endif
+
+#ifdef USE_WATER_SENSOR  
+  if (DUE(WaterTimer)) {
+    P1StatusWrite();
+    sendMQTTWater();
+    CHANGE_INTERVAL_MIN(WaterTimer, 30);
+  }
+#endif //USE_WATER_SENSOR
+
   
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )

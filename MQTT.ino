@@ -13,10 +13,8 @@
 
 // Declare some variables within global scope
 
-  static IPAddress  MQTTbrokerIP;
-  static char       MQTTbrokerIPchar[20];
-
-  
+  static IPAddress    MQTTbrokerIP;
+  static char         MQTTbrokerIPchar[20];
   int8_t              reconnectAttempts = 0;
   char                lastMQTTtimestamp[15] = "-";
   char                mqttBuff[100];
@@ -31,9 +29,7 @@
 void connectMQTT() 
 {
   
-  if (Verbose2) DebugTf("MQTTclient.connected(%d), mqttIsConnected[%d], stateMQTT [%d]\r\n"
-                                              , MQTTclient.connected()
-                                              , mqttIsConnected, stateMQTT);
+  if (Verbose2) DebugTf("MQTTclient.connected(%d), mqttIsConnected[%d], stateMQTT [%d]\r\n", MQTTclient.connected(), mqttIsConnected, stateMQTT);
 
   if ( (settingMQTTinterval == 0) || (strlen(settingMQTTbroker) < 4) ) {
     mqttIsConnected = false;
@@ -125,6 +121,9 @@ bool connectMQTT_FSM()
             MQTTclient.publish(cMsg,"Online", true);
             sprintf(cMsg,"%supdate",settingMQTTtopTopic);
             MQTTclient.subscribe(cMsg); //subscribe mqtt update
+            #ifdef USE_WATER_SENSOR  
+              if (P1Status.wtr_m3) sendMQTTWater();
+            #endif
 
             LogFile("MQTT connected");
             MQTTclient.loop();

@@ -34,7 +34,7 @@ void ResetDataFiles() {
   LittleFS.remove("/P1.log");
   LittleFS.remove("/Reboot.log");      //pre 3.1.1 
   LittleFS.remove("/Reboot.old");      //pre 3.1.1  
-  LittleFS.remove("/DSMRStatus.json"); //pre 3.1.1 
+  LittleFS.remove("/DSMRstatus.json"); //pre 3.1.1 
   DebugTln(F("Datafiles are reset"));
 }
 
@@ -133,8 +133,9 @@ void handleKeyInput()
                         case 'p': P1StatusPrint(); break;
                         case 'x': ReadEepromBlock();break;
                         case 'z': P1StatusReset(); break;
-//                        default: Debugln(F("P1 Status info \na = available\nr = read\nw = write\np = print\nz = erase"));
+                        default: Debugln(F("P1 Status info: \na = available\nr = read\nw = write\np = print\nx = EEPROM dump\nz = erase"));
                         } //switch
+                        while (TelnetStream.available() > 0) {(char)TelnetStream.read();} //verwijder extra input
                       } //while
                       break; }
       case 'b':     
@@ -171,8 +172,6 @@ void handleKeyInput()
                     break;
       case 'p':
       case 'P':     showRaw = !showRaw;
-                    if (showRaw)  digitalWrite(LED, HIGH);
-                    else          digitalWrite(LED, LOW);
                     break;
       case 'Q':     ResetDataFiles();
                     break;              
