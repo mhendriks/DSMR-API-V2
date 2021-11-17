@@ -101,6 +101,19 @@ void displayBoardInfo()
 
 } // displayBoardInfo()
 
+//--------------------------------
+void P1Update(bool sketch){
+  String versie;
+  char c;
+  while (TelnetStream.available() > 0) { 
+    c = TelnetStream.read();
+    if (!(c==32 || c==10 || c==13) ) versie+=c; //remove spaces
+  }
+  // Debug("Update version: "); Debugln(versie);
+  if (versie.length()>4) RemoteUpdate(versie.c_str(),sketch); 
+  else Debugln(F("Fout in versie opgave: formaat = x.x.x")); 
+}
+
 //===========================================================================================
 void handleKeyInput() 
 {
@@ -161,19 +174,13 @@ void handleKeyInput()
       case 's':
       case 'S':     listSPIFFS();
                     break;
-      
-      case 'U':     {
-                    String versie;
-                    char c;
-                    while (TelnetStream.available() > 0) { 
-                      c = TelnetStream.read();
-                      if (!(c==32 || c==10 || c==13) ) versie+=c; //remove spaces
-                    }
-                    Debug("Update version: "); Debugln(versie);
-                    if (versie.length()>2) RemoteUpdate(versie.c_str()); 
-                    else Debugln(F("Fout in versie opgave"));
-                    break; }
-
+                    
+      case 'T':     P1Update(false);
+                    break;
+                    
+      case 'U':     P1Update(true);
+                    break;
+                    
       case 'v':
       case 'V':     if (Verbose2) 
                     {
@@ -220,6 +227,7 @@ void handleKeyInput()
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
                     Debugln(F("  *R - Reboot\r"));
                     Debugln(F("   S - File info on SPIFFS\r"));
+                    Debugln(F("  *T+ - Update File System: Enter version -> T4.0.1\r"));
                     Debugln(F("  *U+ - Update Remote; Enter Firmware version -> U 3.0.4 \r"));
                     Debugln(F("  *X - MQTT resend all static info\r\n"));
                     Debugln(F("  *Z - Zero counters\r\n"));

@@ -78,7 +78,7 @@ void RingFileTo(E_ringfiletype ringfiletype, bool toFile)
       while (RingFile.available()) //read the content and output to serial interface
       { 
         //Serial.write(RingFile.read());
-        TelnetStream.write(RingFile.read());
+        TelnetStream.println(RingFile.readStringUntil('\n'));
       }
       Debugln();
   }

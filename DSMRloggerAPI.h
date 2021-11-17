@@ -169,6 +169,8 @@ void delayms(unsigned long);
   bool        StaticInfoSend = false;
   char        settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_MQTT_TOPIC;
   int32_t     settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
+  bool        UpdateRequested = false;
+  char        UpdateVersion[25] = "";
  
  #ifndef MQTT_CORE
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;

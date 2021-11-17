@@ -32,7 +32,7 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   httpServer.on("/upload", HTTP_POST, []() {}, handleFileUpload);
   httpServer.on("/ReBoot", reBootESP);
   httpServer.on("/update", updateFirmware);
-  httpServer.on("/remote-update", [](){RemoteUpdate("");});
+  httpServer.on("/remote-update", [](){RemoteUpdate();});
   httpServer.on("/ResetWifi", resetWifi);
   httpServer.onNotFound([]() 
   {

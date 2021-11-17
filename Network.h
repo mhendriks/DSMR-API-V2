@@ -20,8 +20,6 @@
 #include <WiFiManager.h>        // version 0.16.0 - https://github.com/tzapu/WiFiManager
 #include <FS.h>                 // part of ESP8266 Core https://github.com/esp8266/Arduino
 
-#include "../../WifiCredentials.h"  //maakt het testen eenvoudiger
-
 ESP8266WebServer        httpServer (80);
 #ifdef USE_UPDATE_SERVER
   ESP8266HTTPUpdateServer httpUpdater(true);

@@ -106,20 +106,19 @@ void processSlimmemeter()
       if (Verbose2) 
       {
         DSMRdata.applyEach(showValues());
-      }      
+      }     
+      slimmeMeter.clear(); //schoon buffer indien er meerdere readings zijn blijven staan
     } 
     else                  // Parser error, print error
     {
       telegramErrors++;
-      #ifdef USE_SYSLOGGER
-        sysLog.writef("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
-      #endif
       DebugTf("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
       //--- set DTR to get a new telegram as soon as possible
+      slimmeMeter.clear();
       slimmeMeter.enable(true);
       slimmeMeter.loop();
     }
-    slimmeMeter.clear(); //schoon buffer indien er meerdere readings zijn blijven staan
+    
       
 } // handleSlimmeMeter()
 

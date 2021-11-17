@@ -10,11 +10,12 @@
 *      TODO
 *      - check length Ringfiles voor en na lezen/schrijven ivm fouten
 *      - Core verion met alleen MQTT en essentiele api functies, Niet meer beschikbaar in de MQTT_CORE versie:
-*      √-- RING Files
-*      √-- api/v2/sm
-*      √-- api/v2/hist
+*      -- RING Files
+*      -- api/v2/sm
+*      -- api/v2/hist
 *      - Aanpassen front-end ivm MQTT_CORE feaure
-*      - check wat er gebeurd indien broker reboot met retained info
+*      √ via mqtt subscribe update starten (2.3.15)
+*      √ remote update spiffs (2.3.16)
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
@@ -284,6 +285,8 @@ void loop()
   //--- do the tasks that has to be done 
   //--- as often as possible
   doSystemTasks();
+
+  if (UpdateRequested) RemoteUpdate(UpdateVersion,true);
   
   //--- update statusfile + ringfiles
 #ifndef MQTT_CORE
@@ -292,9 +295,11 @@ void loop()
 
   if (DUE(antiWearStatus)) {
     writeLastStatus(); //eens per 15min
-    MQTTSentStaticP1Info();
+    MQTTSentStaticInfo();
   }
-  
+
+  if (UpdateRequested) RemoteUpdate(UpdateVersion,true);
+
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
   {
