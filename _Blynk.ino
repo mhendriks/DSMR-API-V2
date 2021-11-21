@@ -1,5 +1,7 @@
 #ifdef USE_BLYNK 
 
+DECLARE_TIMER_SEC(RefreshBlynk,        5); 
+
 char BlynkAuth[33] = ""; //"-GuFj2BUe63ny_XYMCLKo7j2gKCxcGuA"; //"Ch9aV0mh7NYXE3CZj5VHXrzYuECS9rYF";
 
 //BlynkTimer Btimer;

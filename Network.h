@@ -19,8 +19,6 @@
 #endif
 #include <WiFiManager.h>        // version 0.16.0 - https://github.com/tzapu/WiFiManager
 
-#include "../../WifiCredentials.h"  //maakt het testen eenvoudiger
-
 ESP8266WebServer        httpServer (80);
 #ifdef USE_UPDATE_SERVER
   ESP8266HTTPUpdateServer httpUpdater(true);

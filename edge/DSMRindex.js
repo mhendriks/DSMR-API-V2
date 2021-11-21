@@ -323,7 +323,7 @@ function UpdateDash()
 		
 		//check of teruglevering actief is 
 		var teruglevering = Injection;
-		if (!teruglevering) isNaN(json.energy_returned_tariff1.value)?false:json.energy_returned_tariff1.value;
+		if (!teruglevering) teruglevering = isNaN(json.energy_returned_tariff1.value)?false:json.energy_returned_tariff1.value;
 
 		//-------TOON METERS
 		document.getElementById("w8api").style.display = "none"; //hide wait message

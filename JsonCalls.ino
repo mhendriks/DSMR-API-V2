@@ -23,10 +23,17 @@ const static PROGMEM char actualArray[][25] = { "timestamp","energy_delivered_ta
 DynamicJsonDocument jsonDoc(4100);  // generic doc to return, clear() before use!
 
 void JsonGas(){
-  if (gasDelivered){
-    jsonDoc["gas_delivered"]["value"] =  gasDelivered;
-    jsonDoc["gas_delivered"]["unit"]  = "m3";
-  }
+  if (!gasDelivered) return;
+  
+  jsonDoc["gas_delivered"]["value"] =  gasDelivered;
+  jsonDoc["gas_delivered"]["unit"]  = "m3";
+}
+
+void JsonWater(){
+  if (!WtrMtr) return;
+  
+  jsonDoc["water"]["value"] =  (float)P1Status.wtr_m3 + P1Status.wtr_l/1000.0;
+  jsonDoc["water"]["unit"]  = "m3";
 }
 
 //--------------------------
@@ -370,6 +377,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     jsonDoc.clear();
     DSMRdata.applyEach(buildJson());
     JsonGasID();
+    JsonWater();
     sendJson(jsonDoc);
   break;
   
@@ -379,6 +387,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     jsonDoc.clear();
     DSMRdata.applyEach(buildJson());
     JsonGas();
+    JsonWater();
     sendJson(jsonDoc);
   break;
   
@@ -393,17 +402,20 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     jsonDoc.clear();
     DSMRdata.applyEach(buildJson());
     if (strlen(word5) == 0) JsonGas();
+    JsonWater();
     sendJson(jsonDoc);
   break;  
   case 't': //telegramm 
-  {  byte i = 0;
-    if (!slimmeMeter.available()){
-      slimmeMeter.enable(true);
-      while (!slimmeMeter.loop() && (i < 12)){ delay(100); i++;}
-    }
-    String buff = slimmeMeter.raw();
-    if (buff.length() > 50) sendJsonBuffer(&buff[0]);
-    else httpServer.send(200, "application/plain", F("Empty telegram buffer, try again"));
+  {  
+//    byte i = 0;
+//    if (!slimmeMeter.available()){
+//      slimmeMeter.enable(true);
+      JsonRaw = true;
+      //while (!slimmeMeter.loop() && (i < 12)){ delay(100); i++;}
+//    }
+//    String buff = slimmeMeter.raw();
+//    if (buff.length() > 50) sendJsonBuffer(&buff[0]);
+//    else httpServer.send(200, "application/plain", F("Empty telegram buffer, try again"));
     break;  }
   default:
     sendApiNotFound(URI);

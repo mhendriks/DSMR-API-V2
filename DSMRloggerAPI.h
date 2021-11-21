@@ -37,7 +37,7 @@ static      FSInfo fs_info;
 #define _DEFAULT_HOSTNAME   "DSMR-API/" 
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
-#define DTR_ENABLE          0
+#define DTR_ENABLE          12
 #define LED                 2
 
 P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
@@ -46,20 +46,43 @@ enum { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 enum E_ringfiletype {RINGHOURS, RINGDAYS, RINGMONTHS};
 
 typedef struct {
-    char filename[17];
-    int8_t slots;
-    unsigned int seconds;
+    char          filename[17];
+    int8_t        slots;
+    unsigned int  seconds;
+    int f_len;
   } S_ringfile;
 
+
+//pre-3.2.00
+//const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RINGdays.json",14+1,SECS_PER_DAY},{"/RINGmonths.json",24+1,0}}; 
+//#define DATA_FORMAT       "{\"date\":\"%-8.8s\",\"values\":[%10.3f,%10.3f,%10.3f,%10.3f,%10.3f]}" 
+//#define DATA_RECLEN       87  //total length incl comma and new line
+
+//vanaf 3.2.0 met watermeter
 //+1 voor de vergelijking, laatste record wordt niet getoond 
 //onderstaande struct kan niet in PROGMEM opgenomen worden. gaat stuk bij SPIFF.open functie
-
-const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RINGdays.json",14+1,SECS_PER_DAY},{"/RINGmonths.json",24+1,0}}; 
-
-#define DATA_FORMAT       "{\"date\":\"%-8.8s\",\"values\":[%10.3f,%10.3f,%10.3f,%10.3f,%10.3f]}"
-#define DATA_RECLEN       87  //total length incl comma and new line
+const S_ringfile RingFiles[3] = {{"/RNGhours.json", 48+1,SECS_PER_HOUR, 4826}, {"/RNGdays.json",14+1,SECS_PER_DAY, 1494},{"/RNGmonths.json",24+1,0,2474}}; 
+#define DATA_FORMAT      "{\"date\":\"%-8.8s\",\"values\":[%10.3f,%10.3f,%10.3f,%10.3f,%10.3f,%10.3f]}"
+#define DATA_RECLEN       98  //total length incl comma and new line
 #define JSON_HEADER_LEN   23  //total length incl new line
 #define DATA_CLOSE        2   //length last row of datafile
+
+
+//in mem houden van de ringfile gegevens voor een snelle oplevering naar de client. Vooral de Day gegevens die worden door het dashboard gebruikt.
+//struct P1DataRec {
+//  uint32_t  date;
+//  uint32_t  T1;
+//  uint32_t  T2;
+//  uint32_t  T1r;
+//  uint32_t  T2r;
+//  uint32_t  G;
+//  uint16_t  Water;
+//};
+//
+//P1DataRec P1_Day[15]; //420 bytes 
+//P1DataRec P1_Hour[25]; //700 bytes 
+//P1DataRec P1_Month[49]; //1372 bytes 
+
 
 /**
  * Define the DSMRdata we're interested in, as well as the DSMRdatastructure to
@@ -164,6 +187,7 @@ struct Status {
    volatile uint32_t wtr_m3;
    volatile uint16_t wtr_l;
    char     check; //check if data is well formated (persistdata available or not)
+   //byte     P1config; //1e bit = water, 2e bit = NTP, 3e bit = Blynk etc
 };
 
 Status P1Status = {0,0,"010101010101X",0,0,'Y'};
@@ -174,9 +198,11 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   char        actTimestamp[20] = "";
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw       = false;
+  bool        JsonRaw       = false;
   bool        LEDenabled    = true;
   bool        DSMR_NL       = true;
   bool        EnableHistory = true;
+  bool        WtrMtr        = false;
   char        BaseOTAurl[75] = "http://smart-stuff.nl/ota/";
 
   char      cMsg[150];
@@ -218,9 +244,7 @@ DECLARE_TIMER_SEC(nextTelegram,        2);
 DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(antiWearRing,       25); 
-DECLARE_TIMER_SEC(RefreshBlynk,        5); 
 DECLARE_TIMER_MIN(StatusTimer,        15);
-DECLARE_TIMER_MIN(WaterTimer,         30);
 
 //DECLARE_TIMER_SEC(synchrNTP,          30);
 

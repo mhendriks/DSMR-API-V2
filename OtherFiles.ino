@@ -74,7 +74,8 @@ void writeSettings()
   doc["LED"] = LEDenabled;
   doc["ota"] = BaseOTAurl;
   doc["enableHistory"] = EnableHistory;
-
+  doc["watermeter"] = WtrMtr;
+  
   writeToJsonFile(doc, SettingsFile);
   
 } // writeSettings()
@@ -136,6 +137,8 @@ void readSettings(bool show)
   LEDenabled = doc["LED"];
   if (doc.containsKey("ota")) strcpy(BaseOTAurl, doc["ota"]);
   if (doc.containsKey("enableHistory")) EnableHistory = doc["enableHistory"];
+  if (doc.containsKey("watermeter")) WtrMtr = doc["watermeter"];
+
   SettingsFile.close();
   //end json
 
@@ -176,9 +179,12 @@ void readSettings(bool show)
 #endif
   Debugf("          MQTT send Interval : %d\r\n", settingMQTTinterval);
   Debugf("              MQTT top Topic : %s\r\n", settingMQTTtopTopic);
+  Debugln(F("\r\n==== Other settings =============================================\r"));
   Debug(F("                 LED enabled : ")); Debugln(LEDenabled);
   Debug(F("                Base OTA url : ")); Debugln(BaseOTAurl);
   Debug(F("              History Enabled: ")); Debugln(EnableHistory);
+  Debug(F("          Water Meter Enabled: ")); Debugln(WtrMtr);
+
   Debugln(F("\r"));
 
 } // readSettings()

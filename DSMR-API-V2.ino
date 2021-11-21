@@ -19,6 +19,14 @@ TODO
 - Aanpassen front-end ivm MQTT_CORE feaure
 - eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek en voor maar 15 minuten)
 - issue met de datafiles ... dan zelf herstellend verder gaan
+- water -> json 
+- water fontend
+- water 
+- Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
+*** FIXES
+- frontend Edge ... legenda dashboard meters onderaan
+- frontend grafisch ... dan naar dash ... grafisch blijft aan
+- json telegram ophalen fix
 *           
 *   
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
@@ -32,7 +40,7 @@ TODO
     - Reset Method: "none"   // but will depend on the programmer!
     - Crystal Frequency: "26 MHz"
     - VTables: "Flash"
-    - Flash Frequency: "40MHz"
+    - Flash Frequency: "40MHz"`
     - CPU Frequency: "160MHz"
     - Buildin Led: 2
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
@@ -46,11 +54,16 @@ TODO
 //#define DEBUG_MODE
 
 //----- EXTENSIONS
-#define USE_WATER_SENSOR
-//#define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
-//#define USE_BLYNK                 // define if the blynk app could be used
+#define USE_WATER_SENSOR 1
+//#define USE_NTP_TIME   2           // define to generate Timestamp from NTP (Only Winter Time for now)
+//#define USE_BLYNK      4           // define if the blynk app could be used
 
-#define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS]"
+#ifdef USE_WATER_SENSOR
+  #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS][WATER]"
+#else if
+  #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS]"
+#endif
+
 #include "DSMRloggerAPI.h"
 
 //===========================================================================================
@@ -59,6 +72,7 @@ void setup()
   Serial.begin(115200, SERIAL_8N1);
   pinMode(DTR_ENABLE, OUTPUT);
   pinMode(LED, OUTPUT); //LED ESP12S
+  
   
   // sign of life
   digitalWrite(LED, LOW); //ON
@@ -205,6 +219,10 @@ void setup()
 #else
   Debug(F("\n!!! DEBUG MODE AAN !!!\n\n")); 
 #endif // is_esp12
+
+  ConvRing3_2_0();
+  CheckRingExists();
+
 } // setup()
 
 
@@ -254,12 +272,7 @@ void doSystemTasks()
 void loop () 
 {  
   //--- verwerk volgend telegram
-  if DUE(nextTelegram) {
-    doTaskTelegram();
-    #ifdef USE_WATER_SENSOR  
-      if (Verbose1) DebugTf("Watermeter : %d m3 %u Liters\n", P1Status.wtr_m3, P1Status.wtr_l);
-    #endif
-  }
+  if DUE(nextTelegram) doTaskTelegram();
 
   //--- update upTime counter
   if DUE(updateSeconds) upTimeSeconds++;
@@ -270,13 +283,16 @@ void loop ()
   //--- update statusfile + ringfiles
   if ( DUE(antiWearRing) || RingCylce ) writeRingFiles(); //eens per 25min + elk uur overgang
 
-  if (DUE(StatusTimer)) { //eens per 15min of indien extra m3
+  if (DUE(StatusTimer)) { //eens per 15min
     P1StatusWrite();
+    MQTTSentStaticInfo();
+    #ifdef USE_WATER_SENSOR  
+      sendMQTTWater();
+    #endif
     CHANGE_INTERVAL_MIN(StatusTimer, 15);
-    MQTTSentStaticP1Info();
   }
 
-  if (UpdateRequested) RemoteUpdate(UpdateVersion);
+  if (UpdateRequested) RemoteUpdate(UpdateVersion, true);
   
 #ifdef USE_BLYNK
   if (LittleFS.exists(_BLYNK_FILE)){
@@ -286,15 +302,6 @@ void loop ()
     if (DUE(RefreshBlynk) && Blynk.connected()) handleBlynk(); //eens per 5sec
   }
 #endif
-
-#ifdef USE_WATER_SENSOR  
-  if (DUE(WaterTimer)) {
-    P1StatusWrite();
-    sendMQTTWater();
-    CHANGE_INTERVAL_MIN(WaterTimer, 30);
-  }
-#endif //USE_WATER_SENSOR
-
   
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )

@@ -458,7 +458,7 @@ body > div.bottom.right-0 {
     position: relative;
     margin-left: 12px;
     background: transparent;
-    position:inherit;
+    position:block;
     margin-bottom:-5px;
     }
 

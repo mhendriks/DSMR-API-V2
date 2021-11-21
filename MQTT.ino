@@ -68,6 +68,18 @@ bool connectMQTT_FSM()
           DebugTln(F("MQTT State: MQTT Initializing"));
           LogFile("MQTT Starting");
           WiFi.hostByName(settingMQTTbroker, MQTTbrokerIP);  // lookup the MQTTbroker convert to IP
+/*
+int n = MDNS.queryService("espserver", "tcp");
+ 
+  if (n == 0)  DebugTln("No MQTT host found");
+  else {
+    Serial.println("Service found");
+    Serial.println("Host: " + String(MDNS.hostname(0)));
+    Serial.print("IP  : " );
+    Serial.println(MDNS.IP(0));
+    Serial.println("Port: " + String(MDNS.port(0)));
+  }
+*/   
           snprintf(MQTTbrokerIPchar, sizeof(MQTTbrokerIPchar), "%d.%d.%d.%d", MQTTbrokerIP[0]
                                                                             , MQTTbrokerIP[1]
                                                                             , MQTTbrokerIP[2]
@@ -76,7 +88,6 @@ bool connectMQTT_FSM()
           {
             DebugTf("ERROR: [%s] => is not a valid URL\r\n", settingMQTTbroker);
             settingMQTTinterval = 0;
-            DebugTln(F("Next State: MQTT_STATE_ERROR"));
             stateMQTT = MQTT_STATE_ERROR;
             return false;
           }
@@ -89,7 +100,6 @@ bool connectMQTT_FSM()
           MQTTclientId  = String(settingHostname) + "-" + WiFi.macAddress();
           MQTTclient.setCallback(MQTTcallback); //set listner update callback
           stateMQTT = MQTT_STATE_TRY_TO_CONNECT;
-          DebugTln(F("Next State: MQTT_STATE_TRY_TO_CONNECT"));
           reconnectAttempts = 0;
 
     case MQTT_STATE_TRY_TO_CONNECT:
@@ -218,44 +228,37 @@ struct buildJsonMQTT {
 }; // buildJsonMQTT
 
 //===========================================================================================
-void MQTTSend(char* item, String value){
+void MQTTSend(const char* item, String value){
   String msg = "{\"" + String(item) + "\":[{\"value\":\""+ value + "\"}]}";
   sprintf(cMsg,"%s%s", settingMQTTtopTopic,item);
-  if (!MQTTclient.publish(cMsg, (byte*)msg.c_str(),msg.length(),true )) {
+  if (!MQTTclient.publish(cMsg, (byte*)msg.c_str(),msg.length(),true ) ) {
     DebugTf("Error publish (%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
     StaticInfoSend = false; //probeer het later nog een keer
   }
 }
 
-void MQTTSend(char* item, int32_t value){
+void MQTTSend(const char* item, int32_t value){
   String msg = "{\"" + String(item) + "\":[{\"value\":"+ value + "}]}";
   sprintf(cMsg,"%s%s", settingMQTTtopTopic,item);
-  if (!MQTTclient.publish(cMsg, (byte*)msg.c_str(),msg.length(),true )) {
+  if (!MQTTclient.publish(cMsg, (byte*)msg.c_str(),msg.length(),true ) ) {
     DebugTf("Error publish (%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
     StaticInfoSend = false; //probeer het later nog een keer
   }
 }
 //===========================================================================================
-void MQTTSentStaticP1Info(){
-  
+void MQTTSentStaticInfo(){
+  if ((settingMQTTinterval == 0) || (strlen(settingMQTTbroker) < 4) ) return;
   StaticInfoSend = true;
   MQTTSend("identification",DSMRdata.identification);
   MQTTSend("p1_version",DSMRdata.p1_version);
   MQTTSend("equipment_id",DSMRdata.equipment_id);
   MQTTSend("firmware",_VERSION_ONLY);
   MQTTSend("ip_address",WiFi.localIP().toString());
+  MQTTSend( "wifi_rssi",WiFi.RSSI() );
   if (DSMRdata.mbus1_device_type_present){ MQTTSend("gas_device_type", (uint32_t)DSMRdata.mbus1_device_type ); }
   if (DSMRdata.mbus1_equipment_id_tc_present){ MQTTSend("gas_equipment_id",DSMRdata.mbus1_equipment_id_tc); }
   
 }
-
-//===========================================================================================
-void MQTTSentStaticDevInfo(){
-  
-  MQTTSend( "wifi_rssi",WiFi.RSSI() );
-  
-}
-
 //===========================================================================================
 void sendMQTTData() 
 {
@@ -294,8 +297,7 @@ void sendMQTTData()
 
   DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", settingMQTTbroker, settingMQTTbrokerPort);
   if ((telegramCount - telegramErrors) > 2 && !StaticInfoSend){
-    MQTTSentStaticP1Info();
-    MQTTSentStaticDevInfo();
+    MQTTSentStaticInfo();
   }
   fieldsElements = INFOELEMENTS;
   DSMRdata.applyEach(buildJsonMQTT());

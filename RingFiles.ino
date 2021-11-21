@@ -9,6 +9,67 @@
 ***************************************************************************      
 */
 
+void CheckRingExists(){
+  for (byte i = 0; i< 3; i++){
+    if ( !LittleFS.exists(RingFiles[i].filename) ) createRingFile( (E_ringfiletype)i );
+  }
+}
+
+//===========================================================================================
+
+void ConvRing3_2_0(){
+  if (!LittleFS.exists("/RNGhours.json")) ConvRing("/RNGhours.json","/RINGhours.json");
+  else DebugTln(F("RNGhours.json bestaat al"));
+  
+  if (!LittleFS.exists("/RNGdays.json")) ConvRing("/RNGdays.json","/RINGdays.json");
+  else DebugTln(F("RNGdays.json bestaat al"));
+  
+  if (!LittleFS.exists("/RNGmonths.json")) ConvRing("/RNGmonths.json","/RINGmonths.json");
+  else DebugTln(F("RNGmonths.json bestaat al"));
+}
+//===========================================================================================
+
+void ConvRing(const char *newfile, const char *oldfile){
+  String rbuf; char wbuf[100];  
+
+  File FileNew = LittleFS.open(newfile, "w");
+  if (!FileNew) {
+    DebugT(F("open ring file FAILED!!! --> Bailout: "));Debugln(newfile);DebugTln(FileNew);
+    return;
+  }
+
+  File FileOld = LittleFS.open(oldfile, "r+"); // open for reading  
+  if (!FileOld) {
+    DebugT(F("open ring file FAILED!!! --> Bailout: "));Debugln(oldfile);
+    return;
+  }
+  byte row = 0;
+  while (FileOld.available()){
+    rbuf = FileOld.readStringUntil('\n');
+    if (row == 0) {
+      FileNew.print(rbuf+'\n');
+    }
+    else {
+      if (strcmp(rbuf.c_str(), "]}") != 0) {
+        if (rbuf[rbuf.length()-1] == ',') {
+          rbuf[rbuf.length()-3] = '\0';
+          sprintf(wbuf,"%s,     0.000]},\n",rbuf.c_str());
+        } else {
+          rbuf[rbuf.length()-2] = '\0';
+          sprintf(wbuf,"%s,     0.000]}\n",rbuf.c_str());
+        }
+        FileNew.print(wbuf);
+      }
+      else FileNew.print(rbuf);
+    }
+    row++;
+  }
+  FileNew.close();
+  FileOld.close();
+  Debug(oldfile);Debugln(F(" geconverteerd"));
+}
+//===========================================================================================
+
 void createRingFile(E_ringfiletype ringfiletype) 
 {
   if (!FSmounted) return;
@@ -24,9 +85,14 @@ void createRingFile(E_ringfiletype ringfiletype)
   RingFile.print("{\"actSlot\": 0,\"data\":[\n"); //start the json file 
   for (uint8_t slot=0; slot < RingFiles[ringfiletype].slots; slot++ ) 
   { 
-    RingFile.print("{\"date\":\"21000000\",\"values\":[     0.000,     0.000,     0.000,     0.000,     0.000]}"); // one empty record
+//    RingFile.print("{\"date\":\"21000000\",\"values\":[     0.000,     0.000,     0.000,     0.000,     0.000]}"); // one empty record
+    RingFile.print("{\"date\":\"21000000\",\"values\":[     0.000,     0.000,     0.000,     0.000,     0.000,     0.000]}"); // one empty record + water
    if (slot < (RingFiles[ringfiletype].slots - 1) ) RingFile.print(",\n");
 
+  }
+  if (RingFile.size() != RingFiles[ringfiletype].f_len) {
+    DebugTln(F("ringfile size incorrect"));
+    //todo log error to logfile
   }
   RingFile.print("\n]}"); //terminate the json string
   RingFile.close();
@@ -57,10 +123,10 @@ uint8_t CalcSlot(E_ringfiletype ringfiletype, const char* Timestamp)
 
 void createRingFile(const char* filename) 
 {
-  if (strcmp(filename,"/RINGhours.json")==0) createRingFile(RINGHOURS);
-  else if (strcmp(filename,"/RINGdays.json")==0) createRingFile(RINGDAYS);
-  else if (strcmp(filename,"/RINGmonths.json")==0) createRingFile(RINGMONTHS);
-  }
+  if (filename==RingFiles[0].filename) createRingFile(RINGHOURS);
+  else if (filename==RingFiles[1].filename) createRingFile(RINGDAYS);
+  else if (filename==RingFiles[2].filename) createRingFile(RINGMONTHS);
+}
 
 //===========================================================================================
 
@@ -77,19 +143,27 @@ void RingFileTo(E_ringfiletype ringfiletype, bool toFile)
 
   File RingFile = LittleFS.open(RingFiles[ringfiletype].filename, "r"); // open for reading
 
-  if (toFile) {
-      DebugTln(F("http: json sent .."));
-      httpServer.sendHeader("Access-Control-Allow-Origin", "*");
-      httpServer.streamFile(RingFile, "application/json"); 
-  } else {
-      DebugT(F("Ringfile output: "));
-      while (RingFile.available()) //read the content and output to serial interface
-      { 
-        //Serial.write(RingFile.read());
-        TelnetStream.write(RingFile.read());
+  if (RingFile.size() != RingFiles[ringfiletype].f_len) {
+    DebugT(F("ringfile size incorrect: "));Debugln(RingFile.size());
+    //todo log error to logfile
+    if (toFile) {
+        DebugTln(F("http: json sent .."));
+        httpServer.send(503, "application/json", "{\"error\":\"Ringfile error: incorrect file length\"}");
+      } else{
+        TelnetStream.write("Ringfile error: incorrect file length");
       }
-      Debugln();
-  }
+  } else if (toFile) {
+          DebugTln(F("http: json sent .."));
+          httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+          httpServer.streamFile(RingFile, "application/json"); 
+      } else {
+          DebugT(F("Ringfile output (telnet only): "));
+          while (RingFile.available()) //read the content and output to serial interface
+          { 
+            TelnetStream.println(RingFile.readStringUntil('\n'));
+          }
+          Debugln();
+      }
     
   RingFile.close();
 } //RingFileTo
@@ -119,9 +193,8 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
   DebugT(F("read(): Ring file ")); Debugln(RingFiles[ringfiletype].filename);
   
   File RingFile = LittleFS.open(RingFiles[ringfiletype].filename, "r+"); // open for reading  
-  if (!RingFile) {
-    DebugT(F("open ring file FAILED!!! --> Bailout\r\n"));
-    Debugln(RingFiles[ringfiletype].filename);
+  if ( !RingFile || (RingFile.size() != RingFiles[ringfiletype].f_len) ) {
+    DebugTf("open ring file %s FAILED!!! | file size: %d",RingFiles[ringfiletype].filename, RingFile.size());
     return;
   }
 
@@ -137,7 +210,8 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
 //    DebugT(F("update date: "));Debugln(key);
 
     //create record
-    snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)rec["edt1"], (float)rec["edt2"], (float)rec["ert1"], (float)rec["ert2"], (float)rec["gdt"]);
+    //snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)rec["edt1"], (float)rec["edt2"], (float)rec["ert1"], (float)rec["ert2"], (float)rec["gdt"]);
+      snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)rec["edt1"], (float)rec["edt2"], (float)rec["ert1"], (float)rec["ert2"], (float)rec["gdt"], (float)rec["wtr"]);
     httpServer.send(200, "application/json", httpServer.arg(0));
   } else {
     //write actual data
@@ -146,7 +220,9 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
 //    DebugTln("actslot: "+actSlot);
 //    DebugT(F("update date: "));Debugln(key);
     //create record
-    snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1, (float)DSMRdata.energy_delivered_tariff2, (float)DSMRdata.energy_returned_tariff1, (float)DSMRdata.energy_returned_tariff2, (float)gasDelivered);
+    //snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1, (float)DSMRdata.energy_delivered_tariff2, (float)DSMRdata.energy_returned_tariff1, (float)DSMRdata.energy_returned_tariff2, (float)gasDelivered);
+      snprintf(buffer, sizeof(buffer), (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1, (float)DSMRdata.energy_delivered_tariff2, (float)DSMRdata.energy_returned_tariff1, (float)DSMRdata.energy_returned_tariff2, (float)gasDelivered, (float)P1Status.wtr_m3+(float)P1Status.wtr_l/1000.0);
+
   }
   //DebugT("update timeslot: ");Debugln(slot);
   //goto writing starting point  

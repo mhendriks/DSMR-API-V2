@@ -19,7 +19,7 @@ void DisplayLogFile(char *fname) {
   File RingFile = LittleFS.open(fname, "r"); // open for reading
   DebugTln(F("Ringfile output: "));
   //read the content and output to serial interface
-  while (RingFile.available()) TelnetStream.write(RingFile.read());
+  while (RingFile.available()) TelnetStream.println(RingFile.readStringUntil('\n'));
   Debugln();    
   RingFile.close();
 } //displaylogfile
@@ -27,15 +27,35 @@ void DisplayLogFile(char *fname) {
 //--------------------------------
 
 void ResetDataFiles() {
-  LittleFS.remove("/RINGdays.json");
-  LittleFS.remove("/RINGweeks.json");
-  LittleFS.remove("/RINGmonths.json");
-  LittleFS.remove("/P1.old");
+  LittleFS.remove("/RNGdays.json");
+  LittleFS.remove("/RNGhours.json");
+  LittleFS.remove("/RNGmonths.json");
+  LittleFS.remove("/P1_log.old");
   LittleFS.remove("/P1.log");
   LittleFS.remove("/Reboot.log");      //pre 3.1.1 
   LittleFS.remove("/Reboot.old");      //pre 3.1.1  
   LittleFS.remove("/DSMRstatus.json"); //pre 3.1.1 
   DebugTln(F("Datafiles are reset"));
+}
+
+//--------------------------------
+
+void P1Update(bool sketch){
+  char versie[30] = "";
+
+  //clear buffer
+  while (TelnetStream.available() > 0) { (char)TelnetStream.read(); yield(); }
+  
+  Debugln(F("\n/!\\ UPDATE MODULE /!\\"));
+  Debugf("Geef update %s versie op (bv. 3.1.1): ",sketch?"SKETCH":"FILE");
+  TelnetStream.setTimeout(10000);
+  TelnetStream.readBytesUntil('\n', versie, sizeof(versie)); 
+  TelnetStream.setTimeout(1000);
+  
+  versie[strlen(versie)-1] = '\0'; //remove enter
+
+  if (strlen(versie)>4) RemoteUpdate(versie,sketch); 
+  else Debugln(F("Fout in versie opgave: formaat = x.x.x")); 
 }
 
 //--------------------------------
@@ -108,7 +128,6 @@ void displayBoardInfo()
   Debug(F("]\r\n             Top Topic ["));  Debug(settingMQTTtopTopic );
   Debug(F("]\r\n       Update Interval ["));  Debug(settingMQTTinterval);
   Debugln(F("]\r"));
-  Debugln(F("==================================================================\r\n\r"));
 
 } // displayBoardInfo()
 
@@ -123,8 +142,8 @@ void handleKeyInput()
     inChar = (char)TelnetStream.read();
     switch(inChar) {
       case 'a':     
-      case 'A':     { char c;
-                      while (TelnetStream.available() > 0) { 
+      case 'A':     {   char c;
+                        while (TelnetStream.available() > 0) { 
                         c = (char)TelnetStream.read();
                         switch(c){
                         case 'a': P1StatusAvailable(); break;
@@ -178,21 +197,12 @@ void handleKeyInput()
       case 'R':     DebugFlush();
                     P1Reboot();
                     break;
-      case 's':
-      case 'S':     listFS();
+                    
+      case 'S':     P1Update(false);
                     break;
-
-      case 'U':     {
-                    String versie;
-                    char c;
-                    while (TelnetStream.available() > 0) { 
-                      c = TelnetStream.read();
-                      if (!(c==32 || c==10 || c==13) ) versie+=c; //remove spaces
-                    }
-                    Debug("Update version: "); Debugln(versie);
-                    if (versie.length()>2) RemoteUpdate(versie.c_str()); 
-                    else Debugln(F("Fout in versie opgave"));
-                    break; }
+                    
+      case 'U':     P1Update(true);
+                    break; 
       case 'v':
       case 'V':     if (Verbose2) 
                     {
@@ -221,10 +231,8 @@ void handleKeyInput()
                     P1Status.reboots    = 0;
                     P1Status.wtr_m3     = 0;
                     P1Status.wtr_l      = 0;
-//                    P1Status._status; //reinitialize the settings
                     telegramCount       = 0;
                     telegramErrors      = 0;
-//                    writeLastStatus();
                     P1StatusWrite();
                     break;
       default:      Debugln(F("\r\nCommands are:\r\n"));

@@ -11,7 +11,7 @@
 #include <ESP8266httpUpdate.h>
 
 void update_finished() {
-  LogFile("Firmware update geslaagd");
+  LogFile("Update geslaagd");
 }
 
 void update_started() {
@@ -30,7 +30,12 @@ void update_error(int err) {
 }
 
 //---------------
-void RemoteUpdate(const char* versie){
+void RemoteUpdate(){
+  RemoteUpdate("", true);
+}
+
+//---------------
+void RemoteUpdate(const char* versie, bool sketch){
 /*
  * nodig bij de update:
  * - Flashsize
@@ -38,37 +43,34 @@ void RemoteUpdate(const char* versie){
  * voorbeeld aanroep : /remote-update?version=3.0.4
  * voorbeeld : invoer 2.3.7BE -> DMSR-API-V2.3.7BE_<FLASHSIZE>Mb.bin.gz
  * voorbeeld : invoer 2.3.7 -> DMSR-API-V2.3.7_<FLASHSIZE>Mb.bin.gz
- *  strcpy(BaseOTAurl,"http://192.168.2.250/ota/");
-    strcpy(BaseOTAurl,"http://raw.githubusercontent.com/mhendriks/DSMR-API-V2/master/ota/");
-    https://raw.githubusercontent.com/mhendriks/DSMR-API-V2/master/ota//DSMR-API-V3.0.4_4Mb.bin.gz
-    fingerprint sha-1: 70 94 DE DD E6 C4 69 48 3A 92 70 A1 48 56 78 2D 18 64 E0 B7
- *  issue met geheugengebruik voor https waardoor de update niet kan plaatsvinden (out of mem) -> altijd http helaas
  */
  
   int flashSize = (ESP.getFlashChipRealSize() / 1024.0 / 1024.0);
-  String path = BaseOTAurl;
-  String otaFile;
-  if (strlen(versie) == 0) otaFile = "DSMR-API-V" + httpServer.arg(0) + "_" + flashSize + "Mb.bin";
-  else otaFile = "DSMR-API-V" + String(versie) + "_" + flashSize + "Mb.bin";
-  path += otaFile;
+  String otaFile, _versie, path;
+  t_httpUpdate_return ret;
+
+  Debugln(F("\n!!! OTA UPDATE !!!"));
+  Debugln(sketch ? "Update type: Sketch" : "Update type: File"); 
+  
+  if (strlen(versie) == 0) _versie = httpServer.arg(0);
+  else _versie = versie;
   if ((httpServer.argName(0) == "version") || strlen(versie) > 0) {
-    if (versie) DebugTln("RemoteUpdate: versie " + String(versie) + " | " + "flashsize " + flashSize + " Mb");
-    else DebugTln("RemoteUpdate: versie " + httpServer.arg(0) + " | " + "flashsize " + flashSize + " Mb");
-    DebugTln("Remote update path: " + path);
-//    httpServer.send(200, "text/html", "Update request with filename : " + otaFile);
-    
     // Add optional callback notifiers
     ESPhttpUpdate.onStart(update_started);
     ESPhttpUpdate.onEnd(update_finished);
     ESPhttpUpdate.onProgress(update_progress);
     ESPhttpUpdate.onError(update_error);
-    
+
+    otaFile = "DSMR-API-V" + _versie + "_" + flashSize; 
+    otaFile+= sketch ? "Mb.bin" : "Mb.spiffs.bin";
+    path = String(BaseOTAurl) + otaFile;
+    Debugf("OTA versie %s | flashsize %i Mb\n", _versie.c_str(), flashSize);
+    Debugln("OTA path: " + path);
+        
       //start update proces
-      DebugTln("OTA --> start update proces <--");
-      //Alleen http op dit moment vanwege memory gebruik
-      t_httpUpdate_return ret = ESPhttpUpdate.update(path);//,"","70 94 DE DD E6 C4 69 48 3A 92 70 A1 48 56 78 2D 18 64 E0 B7");
-//      if (strlen(otaFingerprint) == 0) ret = ESPhttpUpdate.update(BaseOTAurl + otaFile );
-//      else ret = ESPhttpUpdate.update(BaseOTAurl + otaFile, "", otaFingerprint );
+      if (sketch) ret = ESPhttpUpdate.update(path);
+      else ret = ESPhttpUpdate.updateSpiffs(path);
+      
     } else {
       //onjuist argument in url aanroep
       httpServer.send(200, "text/html", "ERROR: Update Failed - No version argument");
