@@ -47,7 +47,7 @@ void P1Update(bool sketch){
   while (TelnetStream.available() > 0) { (char)TelnetStream.read(); yield(); }
   
   Debugln(F("\n/!\\ UPDATE MODULE /!\\"));
-  Debugf("Geef update %s versie op (bv. 3.1.1): ",sketch?"SKETCH":"FILE");
+  Debugf("Geef %s versie op (bv. 3.1.1): ",sketch?"SKETCH":"FILE");
   TelnetStream.setTimeout(10000);
   TelnetStream.readBytesUntil('\n', versie, sizeof(versie)); 
   TelnetStream.setTimeout(1000);
@@ -198,9 +198,11 @@ void handleKeyInput()
                     P1Reboot();
                     break;
                     
+      case 's':
       case 'S':     P1Update(false);
                     break;
                     
+      case 'u': 
       case 'U':     P1Update(true);
                     break; 
       case 'v':
@@ -250,10 +252,10 @@ void handleKeyInput()
                     Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
                     Debugln(F("  *R - Reboot\r"));
-                    Debugln(F("   S - File info on FS\r"));
-                    Debugln(F("  *U+ - Update Remote; Enter Firmware version -> U 3.0.4 \r"));
+                    Debugln(F("   S - Update File Remote\r"));"));
+                    Debugln(F("   U - Update Sketch Remote\r"));
                     Debugln(F("  *Z - Zero counters\r"));
-                    Debugln(F("   X - Save Ringfiles\r"));
+                    Debugln(F("   X - Save Ringfiles now\r"));
                     if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));
                     else if (Verbose1)        Debugln(F("   V - Toggle Verbose 2\r"));
                     else                      Debugln(F("   V - Toggle Verbose 1\r"));

@@ -270,6 +270,7 @@ function visibilityListener() {
 //       console.log("visibilityState: visable");
 	  PauseAPI=false;
 	  timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
+	  refreshDevTime();
 	  openTab();
       break;
   }
@@ -1053,9 +1054,9 @@ function handle_menu_click()
   //============================================================================  
   function refreshHours()
   { Spinner(true);
-    console.log("fetch("+APIGW+"../RINGhours.json)");
+    console.log("fetch("+APIGW+"../RNGhours.json)");
 
-    fetch(APIGW+"../RINGhours.json", {"setTimeout": 5000})
+    fetch(APIGW+"../RNGhours.json", {"setTimeout": 5000})
       .then(function (response) {
 		if (response.status !== 200) {
 			throw new Error(response.status);
@@ -1086,8 +1087,8 @@ function handle_menu_click()
   {
 	// if (PauseAPI) return;
 	Spinner(true);
-    console.log("fetch("+APIGW+"../RINGdays.json)");
-    fetch(APIGW+"../RINGdays.json", {"setTimeout": 5000})
+    console.log("fetch("+APIGW+"../RNGdays.json)");
+    fetch(APIGW+"../RNGdays.json", {"setTimeout": 5000})
     .then(function (response) {
 		if (response.status !== 200) {
 			throw new Error(response.status);
@@ -1128,8 +1129,8 @@ function handle_menu_click()
   function refreshMonths()
   {
   	Spinner(true);
-    console.log("fetch("+APIGW+"../RINGmonths.json)");
-    fetch(APIGW+"../RINGmonths.json", {"setTimeout": 5000})
+    console.log("fetch("+APIGW+"../RNGmonths.json)");
+    fetch(APIGW+"../RNGmonths.json", {"setTimeout": 5000})
       .then(function (response) {
 		if (response.status !== 200) {
 			throw new Error(response.status);

@@ -19,14 +19,16 @@ TODO
 - Aanpassen front-end ivm MQTT_CORE feaure
 - eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek en voor maar 15 minuten)
 - issue met de datafiles ... dan zelf herstellend verder gaan
-- water -> json 
 - water fontend
 - water 
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
 *** FIXES
 - frontend Edge ... legenda dashboard meters onderaan
 - frontend grafisch ... dan naar dash ... grafisch blijft aan
-- json telegram ophalen fix
+√ json telegram ophalen fix
+√ Ringfiles aangepast tbv waterdata
+√ Ringfile converse naar nieuw formaat t.b.v. 3.2.0 versie
+√ check fout in ringfile bestand
 *           
 *   
   Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
@@ -72,7 +74,6 @@ void setup()
   Serial.begin(115200, SERIAL_8N1);
   pinMode(DTR_ENABLE, OUTPUT);
   pinMode(LED, OUTPUT); //LED ESP12S
-  
   
   // sign of life
   digitalWrite(LED, LOW); //ON
