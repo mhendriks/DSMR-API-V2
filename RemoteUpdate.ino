@@ -48,6 +48,7 @@ void RemoteUpdate(const char* versie, bool sketch){
   int flashSize = (ESP.getFlashChipRealSize() / 1024.0 / 1024.0);
   String otaFile, _versie, path;
   t_httpUpdate_return ret;
+  WiFiClient client;
 
   Debugln(F("\n!!! OTA UPDATE !!!"));
   Debugln(sketch ? "Update type: Sketch" : "Update type: File"); 
@@ -68,8 +69,8 @@ void RemoteUpdate(const char* versie, bool sketch){
     Debugln("OTA path: " + path);
         
       //start update proces
-      if (sketch) ret = ESPhttpUpdate.update(path);
-      else ret = ESPhttpUpdate.updateSpiffs(path);
+      if (sketch) ret = ESPhttpUpdate.update(client,path);
+      else ret = ESPhttpUpdate.updateFS(client,path);
       
     } else {
       //onjuist argument in url aanroep

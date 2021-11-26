@@ -56,7 +56,7 @@ input[type=submit]:disabled {
  	cursor: auto;
 }
 
-#settings_btns a:hover {
+#settings_btns a:hover, .button:hover {
 	background-color: #999;
 }
 
@@ -458,7 +458,7 @@ body > div.bottom.right-0 {
     position: relative;
     margin-left: 12px;
     background: transparent;
-    position:block;
+    position:inherit;
     margin-bottom:-5px;
     }
 
@@ -468,9 +468,7 @@ body > div.bottom.right-0 {
   opacity: 1;
   position: absolute;
   z-index: 1;
-  bottom: 1%;
-  left: 63%;
-  margin-left: -60px;
+  left: 33%;
 }
 
 /* Tooltip text */

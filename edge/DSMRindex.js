@@ -53,8 +53,8 @@
 
 // ---- DASH
 // var MaxAmps = 0.0;
-var TotalAmps=0.0,minKW = 0.0, maxKW = 0.0,minV = 0.0, maxV = 0.0, Pmax,Gmax;
-var hist_arrG=[4], hist_arrPa=[4], hist_arrPi=[4], hist_arrP=[4]; //berekening verbruik
+var TotalAmps=0.0,minKW = 0.0, maxKW = 0.0,minV = 0.0, maxV = 0.0, Pmax,Gmax, Wmax;
+var hist_arrW=[4], hist_arrG=[4], hist_arrPa=[4], hist_arrPi=[4], hist_arrP=[4]; //berekening verbruik
 var day = 0;
 
 let GaugeOptions = {
@@ -153,7 +153,7 @@ let TrendG = {
     options: {
     title: {
             display: true,
-            text: 'GAS',
+            text: 'm3',
             position: "bottom",
             padding: -18,
             fontSize: 17,
@@ -175,10 +175,56 @@ let TrendG = {
     legend: {display: false},
     }, //options
 };
+
+let TrendW = {
+    type: 'doughnut',
+    data: {
+      labels: ["verbruik", "verschil met hoogste"],
+      datasets: [
+        {
+          label: "vandaag",
+          backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "gisteren",
+          backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "eergisteren",
+          backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
+        }
+      ]
+    },
+    options: {
+    title: {
+            display: true,
+            text: 'm3',
+            position: "bottom",
+            padding: -18,
+            fontSize: 17,
+            fontColor: "#000",
+            fontFamily:"Dosis",
+        },
+      responsive:true,
+      circumference: Math.PI,
+			rotation: -Math.PI,
+      plugins: {
+      labels: {
+        render: function (args) {
+          return args.value + " \u33A5";
+        },//render
+        arc: true,
+        fontColor: ["#fff","rgba(0,0,0,0)"],
+      },//labels      
+    }, //plugins
+    legend: {display: false},
+    }, //options
+};
+
 let optionsP = {
 title: {
             display: true,
-            text: 'ELECTRA',
+            text: 'kWh',
             position: "bottom",
             padding: -18,
             fontSize: 17,
@@ -286,26 +332,27 @@ function UpdateDash()
 	// if (PauseAPI) return;
 /*** 
 	Het dashboard toont verschillende kolommen, namelijk
-	- actueel*1	: actueel verbruik/teruglevering
-	- totaal*1 	: afname - injectie(teruglevering)
+	- actueel	: actueel verbruik/teruglevering (altijd)
+	- totaal 	: afname - injectie(teruglevering) (altijd)
 	- afname*3 	: onttrokken van stroomnet
 	- injectie*3: teruglevering aan stroomnet
 	- gas*2 	: indien er een gasmeter aanwezig is
-	- spanning* 	: spanningsniveau + aantal fases
+	- water     : indien watermeter aanwezig 
+	- spanning* : spanningsniveau + aantal fases
 	
-	*1 = altijd getoond
-	*2 = alleen getoond indien aanwezig
+
 	*3 = alleen getoond indien energy_returned_tariff1 > 0
-	*4 = alleen indien geen teruglevering
+	* = alleen indien geen teruglevering
 */
-	var Parr=[3],Parra=[3],Parri=[3], Garr=[3];
+	var Parr=[3],Parra=[3],Parri=[3], Garr=[3],Warr=[3];
+	var HeeftWater;
 	console.log("Update dash");
 	
 	//check new day = refresh
 	var DayEpochTemp = Math.floor(new Date().getTime() / 86400000.0);
 	if (DayEpoch != DayEpochTemp || hist_arrP.length < 4 ) {
 		refreshDays(); //load data first visit
-		DayEpoch = DayEpochTemp;	
+		DayEpoch = DayEpochTemp;
 	}
 	Spinner(true);
 	fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
@@ -316,6 +363,8 @@ function UpdateDash()
 		//-------CHECKS
 		//check of gasmeter beschikbaar is	(indien HeeftGas = true uit Frontend,json of eerdere meeting dan niet meer checken uit meterdata, bij false wel checken in meterdata)
 		if (!HeeftGas) HeeftGas = "gas_delivered" in json ? !isNaN(json.gas_delivered.value) : false ;
+		HeeftWater =  "water" in json ? !isNaN(json.water.value) : false ;
+		
 		//check of p1 gegevens via api binnen komen
 		if (json.timestamp.value == "-") {
 			console.log("timestamp missing : p1 gegevens correct?");
@@ -339,6 +388,10 @@ function UpdateDash()
 			if (ShowVoltage) document.getElementById("l2").style.display = "block";
 		}
 		if (HeeftGas) document.getElementById("l4").style.display = "block";
+		if (HeeftWater) { 
+			document.getElementById("l7").style.display = "block";
+			document.getElementById("l2").style.display = "none";
+		}
 
 		//-------SPANNING METER				
 		if (!teruglevering || !ShowVoltage)
@@ -469,12 +522,27 @@ function UpdateDash()
 			};
 			trend_g.update();
 			document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString();
-		
-			//verbruik G    
-	// 		document.getElementById(`Gmax`).innerHTML = Number(Gmax).toLocaleString();
-// 			document.getElementById(`Gmin`).innerHTML = Math.min.apply(Math, Garr).toLocaleString();
 		}
-												
+		
+		//-------WATER METER	
+		if (HeeftWater) 
+		{
+					//bereken verschillen gas, afname, teruglevering en totaal
+			for(let i=0;i<3;i++){
+				if (i==0) Warr[0]=Number(json.water.value - hist_arrW[1]).toFixed(3) ;
+				else Warr[i]=Number(hist_arrW[i] - hist_arrW[i+1]).toFixed(3);
+				if (Warr[i] < 0) Warr[i] = 0;
+			}
+
+			Wmax = math.max(Warr);
+			for(let i=0;i<3;i++){
+				trend_w.data.datasets[i].data=[Number(Warr[i]).toFixed(1),Number(Wmax-Warr[i]).toFixed(1)];
+			};
+			trend_w.update();
+			document.getElementById("W").innerHTML = Number(Warr[0]).toLocaleString();
+		}
+		
+								
 		Spinner(false);
 		}); //end fetch fields
 }
@@ -540,6 +608,8 @@ function handle_menu_click()
 	trend_p = new Chart(document.getElementById("container-3"), {type: 'doughnut', data:dataP, options: optionsP});
 	trend_pi = new Chart(document.getElementById("container-5"), {type: 'doughnut', data:dataPi, options: optionsP});
 	trend_pa = new Chart(document.getElementById("container-6"), {type: 'doughnut', data:dataPa, options: optionsP} );
+	trend_w = new Chart(document.getElementById("container-7"), TrendW);
+	
 	handle_menu_click();
 	FrontendConfig();
     refreshDevTime();
@@ -1108,7 +1178,7 @@ function handle_menu_click()
 		for (let i=0;i<4;i++)
 		{	let tempslot = math.mod(act_slot-i,15);
 			hist_arrG[i] = json.data[tempslot].values[4];
-
+			hist_arrW[i] = json.data[tempslot].values[5];
 			hist_arrPa[i] = json.data[tempslot].values[0] + json.data[tempslot].values[1];
 			hist_arrPi[i] = json.data[tempslot].values[2] + json.data[tempslot].values[3];
 		};

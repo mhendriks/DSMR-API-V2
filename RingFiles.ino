@@ -190,7 +190,7 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
   }
 
   //json openen
-  DebugT(F("read(): Ring file ")); Debugln(RingFiles[ringfiletype].filename);
+  DebugT(F("write Ring file: ")); Debugln(RingFiles[ringfiletype].filename);
   
   File RingFile = LittleFS.open(RingFiles[ringfiletype].filename, "r+"); // open for reading  
   if ( !RingFile || (RingFile.size() != RingFiles[ringfiletype].f_len) ) {

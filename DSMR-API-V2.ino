@@ -22,16 +22,11 @@ TODO
 - water fontend
 - water 
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
-*** FIXES
+!!! FIXES
 - frontend Edge ... legenda dashboard meters onderaan
-- frontend grafisch ... dan naar dash ... grafisch blijft aan
-√ json telegram ophalen fix
-√ Ringfiles aangepast tbv waterdata
-√ Ringfile converse naar nieuw formaat t.b.v. 3.2.0 versie
-√ check fout in ringfile bestand
-*           
-*   
-  Arduino-IDE settings for DSMR-logger hardware V3.1 - ESP12S module:
+- frontend grafisch ... dan naar dash ... grafisch blijft aan*           
+
+  Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
     - Flash mode: "QIO"
@@ -103,7 +98,7 @@ void setup()
   {
     DebugTln(F("File System Mount succesful"));
     FSmounted = true;   
-  } else DebugTln(F("/!\\File System Mount failed/!\\"));   // Serious problem with LittleFS 
+  } else DebugTln(F("/!\\File System Mount failed/!\\"));   // Serious problem with FS 
 
   
   // set the time to actTimestamp!

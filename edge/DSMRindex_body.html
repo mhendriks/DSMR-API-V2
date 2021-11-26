@@ -475,7 +475,7 @@
     <h3 id=w8api style="margin-top:50%">Wacht op gegevens van Slimme Meter</h3>
     <div class=outer>
         <div class=card id=l1 style="display:none">
-            <h1 id=power_delivered_l1h>Actueel</h1>
+            <h1 id=power_delivered_l1h >Actueel</h1>
 	        <div class="chart-container" id="gauge"></div>
             <hr/>
             <div style="text-align:center">Actueel [kW]</div>
@@ -484,7 +484,7 @@
             <h3>min: <span id="power_delivered_1min">0.0</span> kW</h3>
         </div>
         <div class=card id=l3 style="display:none">
-            <h1 id=Ph>Verbruik</h1>
+            <h1 id=Ph class="mdi mdi-lightning-bolt">Electra</h1>
             <canvas class="chart-container" id="container-3"></canvas>
 <!--             <div class="label">ELECTRA</div>         -->
 			<div id=legenda>
@@ -499,7 +499,7 @@
             <h3>min: <span id="Pmin">0.0</span></h3-->
         </div>
         <div class=card id=l5 style="display:none">
-            <h1 id=Ph>Teruglevering</h1>
+            <h1 id=Ph class="mdi mdi-home-export-outline">Teruglevering</h1>
             <canvas class="chart-container" id="container-5"></canvas>
 <!--             <div class="label">ELECTRA</div>         -->
 			<div id=legenda>
@@ -514,7 +514,7 @@
             <h3>min: <span id="Pimin">0.0</span></h3-->
         </div>
         <div class=card id=l6 style="display:none">
-            <h1 id=Ph>Afname</h1>
+            <h1 id=Ph class="mdi mdi-home-import-outline">Afname</h1>
             <canvas class="chart-container" id="container-6"></canvas>
 <!--             <div class="label">ELECTRA</div>         -->
 			<div id=legenda>
@@ -529,7 +529,7 @@
             <h3>min: <span id="Pamin">0.0</span></h3-->
         </div>
         <div class=card id=l4 style="display:none">
-            <h1 id=Gh>Gasverbruik</h1>
+            <h1 id=Gh class="mdi mdi-fire">Gas</h1>
             <canvas class="chart-container" id="container-4"></canvas>
 <!-- 			<div class="label stroom">GAS</div> -->
 			<div id=legenda>
@@ -540,8 +540,18 @@
             <hr/>
             <div style="text-align:center">Vandaag [㎥]</div>
             <h2 id="G">0.0</h2>
-            <!--h3>max: <span id="Gmax">0.0</span></h3>
-            <h3>min: <span id="Gmin">0.0</span></h3-->
+        </div>
+                <div class=card id=l7 style="display:none">
+            <h1 id=Gh class="mdi mdi-water">Water</h1>
+            <canvas class="chart-container" id="container-7"></canvas>
+			<div id=legenda>
+				<div class="lblVerbuik vandaag">v<span class="tooltiptext">Vandaag</span></div>
+				<div class="lblVerbuik gisteren">g<span class="tooltiptext">Gisteren</span></div>
+				<div class="lblVerbuik eergisteren">e<span class="tooltiptext">Eergisteren</span></div>
+			</div>
+            <hr/>
+            <div style="text-align:center">Vandaag [㎥]</div>
+            <h2 id="W">0.0</h2>
         </div>
         <div class=card id=l2 style="display:none">
             <h1 id=power_delivered_l2h>Spanning</h1>
@@ -563,7 +573,7 @@
     <canvas id="gasChart"  style="display: none;" width="900" height="125"></canvas>
   </div>
 <!-- Pin to bottom right corner -->
-    <div class="bottom right-0"><span id="devVersion">[version]</span>  |  2021 &copy; Martijn Hendriks</div>
+    <div class="bottom right-0"><span id="devVersion">[version]</span>  |  &copy; <a style="color:gray" target="_blank" href='http://smart-stuff.nl'>smart-stuff.nl</a></div>
     <!-- Pin to bottom left corner -->
     <div id="message" class="bottom left-0">-</div>    
 </div> <!-- main page-->

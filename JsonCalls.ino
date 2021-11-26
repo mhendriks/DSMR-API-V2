@@ -30,8 +30,12 @@ void JsonGas(){
 }
 
 void JsonWater(){
-  if (!WtrMtr) return;
-  
+
+#ifndef USE_WATER_SENSOR
+  return;
+#endif
+
+  if (!WtrMtr) return;  
   jsonDoc["water"]["value"] =  (float)P1Status.wtr_m3 + P1Status.wtr_l/1000.0;
   jsonDoc["water"]["unit"]  = "m3";
 }

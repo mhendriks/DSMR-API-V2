@@ -252,7 +252,7 @@ void handleKeyInput()
                     Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
                     Debugln(F("  *R - Reboot\r"));
-                    Debugln(F("   S - Update File Remote\r"));"));
+                    Debugln(F("   S - Update File Remote\r"));
                     Debugln(F("   U - Update Sketch Remote\r"));
                     Debugln(F("  *Z - Zero counters\r"));
                     Debugln(F("   X - Save Ringfiles now\r"));
