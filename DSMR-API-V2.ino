@@ -8,25 +8,27 @@
 ***************************************************************************      
 *      
 TODO
-- Core verion met alleen MQTT en essentiele api functies, Niet meer beschikbaar in de MQTT_CORE versie:
--- RING Files
--- api/v2/sm
--- api/v2/hist
-- Aanpassen front-end ivm MQTT_CORE feaure- check length Ringfiles voor en na lezen/schrijven ivm fouten
 - frontend instellingen mutabel in webpagina
 - Piekvermogen bijhouden Belgie
 - Blynk 2.0 implentatie
-- Aanpassen front-end ivm MQTT_CORE feaure
 - eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek en voor maar 15 minuten)
 - issue met de datafiles ... dan zelf herstellend verder gaan
-- water fontend
-- water 
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
-!!! FIXES
-- frontend Edge ... legenda dashboard meters onderaan
-- frontend grafisch ... dan naar dash ... grafisch blijft aan*           
+- Aanpassen front-end ivm no-history feaure
+- water grafisch
+- water in tabellen
 
-  Arduino-IDE settings for DSMR-logger hardware ESP12S module:
+!!! FIXES
+√ frontend Edge ... legenda dashboard meters onderaan
+√ frontend grafisch ... dan naar dash ... grafisch blijft aan*           
+√ uitlijning water dash
+√ dash : water naar liters
+√ Core verion met alleen MQTT en essentiele api functies, Niet meer beschikbaar in de no-history versie:
+√- RING Files
+√- api/v2/hist
+- waterstand ook verzenden zonder slimme meter
+
+Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
     - Flash mode: "QIO"

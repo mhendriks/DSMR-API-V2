@@ -72,7 +72,7 @@ void ConvRing(const char *newfile, const char *oldfile){
 
 void createRingFile(E_ringfiletype ringfiletype) 
 {
-  if (!FSmounted) return;
+  if (!FSmounted || !EnableHistory) return;
   File RingFile = LittleFS.open(RingFiles[ringfiletype].filename, "w"); // open for writing  
   if (!RingFile) {
     DebugT(F("open ring file FAILED!!! --> Bailout\r\n"));Debugln(RingFiles[ringfiletype].filename);
