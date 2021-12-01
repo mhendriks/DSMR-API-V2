@@ -3,16 +3,13 @@
 **  Program  : ntpStuff, part of DSMRloggerAPI
 **  Version  : v3.0.0
 **
-**  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
+**  Copyright (c) 2021 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-#if defined(USE_NTP_TIME)
-
-#include <WiFiUdp.h>            // - part of ESP8266 Core https://github.com/esp8266/Arduino
-WiFiUDP           Udp;
-
+#ifdef USE_NTP_TIME
+/**
 #define           timeZone 1       // Central European (Winter) Time
 #define           localPort  8888   // local port to listen for UDP packets
 
@@ -177,7 +174,7 @@ time_t dateTime2Epoch(char const *date, char const *time)
     return makeTime(t);
     
 } // dateTime2Epoch()
-
+*/
 #endif
 /***************************************************************************
 *

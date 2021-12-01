@@ -17,6 +17,7 @@ TODO
 - Aanpassen front-end ivm no-history feaure
 - water grafisch
 - water in tabellen
+- NTP tijd
 
 !!! FIXES
 √ frontend Edge ... legenda dashboard meters onderaan
@@ -27,6 +28,7 @@ TODO
 √- RING Files
 √- api/v2/hist
 - waterstand ook verzenden zonder slimme meter
+√ lege RNG file indien de files niet bestaan
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
@@ -54,7 +56,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
 //----- EXTENSIONS
 #define USE_WATER_SENSOR 1
-//#define USE_NTP_TIME   2           // define to generate Timestamp from NTP (Only Winter Time for now)
+#define USE_NTP_TIME     2           // define to generate Timestamp from NTP (Only Winter Time for now)
 //#define USE_BLYNK      4           // define if the blynk app could be used
 
 #ifdef USE_WATER_SENSOR
@@ -110,13 +112,18 @@ void setup()
   P1StatusWrite();
   P1StatusPrint(); //print latest values
   readSettings(true);
-//  writeLastStatus(); //update reboots
   LogFile(""); // write reboot status to file
+
+//================  NTP config=========================================
+
+#ifdef USE_NTP_TIME
+  configTime(MY_TZ, MY_NTP_SERVER);   
+#endif  //USE_NTP_TIME 
   
 //=============start Networkstuff==================================
   
   startWiFi(settingHostname, 240);  // timeout 4 minuten
-  
+//  WiFi.onEvent(onWifiEvent);
   Debugln();
   Debug (F("Connected to " )); Debugln (WiFi.SSID());
   Debug (F("IP address: " ));  Debugln (WiFi.localIP());
@@ -129,21 +136,6 @@ void setup()
  
 //=============end Networkstuff======================================
 
-#if defined(USE_NTP_TIME)                                   //USE_NTP
-//================ startNTP =========================================
-                                                        //USE_NTP
-                                                            //USE_NTP
-  if (!startNTP())                                          //USE_NTP
-  {                                                         //USE_NTP
-    DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));   //USE_NTP
-//    writeLastStatus();                                      //USE_NTP
-    P1Reboot();
-  }                                                         //USE_NTP
-                                                    //USE_NTP
-  prevNtpHour = hour();                                     //USE_NTP
-                                                            //USE_NTP
-#endif  //USE_NTP_TIME                                      //USE_NTP
-//================ end NTP =========================================
 
   DebugTf("Last reset reason: [%s]\r", ESP.getResetReason().c_str());
 
@@ -152,11 +144,14 @@ void setup()
     
 //=============end FS =========================================
   
-#if defined(USE_NTP_TIME)                                                           //USE_NTP
-  time_t t = now(); // store the current time in time variable t                    //USE_NTP
-  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
-                                               , (year(t) - 2000), month(t), day(t) //USE_NTP
-                                               , hour(t), minute(t), second(t));    //USE_NTP
+#if defined(USE_NTP_TIME)  
+  time(&newT);
+  prevNtpHour = hour(newT); //USE_NTP
+//  time_t t = now(); // store the current time in time variable t                    //USE_NTP
+//  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
+//                                               , (year(newT) - 2000), month(newT), day(newT) //USE_NTP
+//                                               , hour(newT), minute(newT), second(newT));    //USE_NTP
+snprintf(cMsg, sizeof(cMsg), "%sW\0\0",getEpochStringByParams(newT).c_str());
 //  pTimestamp = cMsg;                                                              //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
 #endif  // use_dsmr_30
@@ -270,7 +265,9 @@ void doSystemTasks()
 void loop () 
 {  
   //--- verwerk volgend telegram
-  if DUE(nextTelegram) doTaskTelegram();
+  if DUE(nextTelegram) {
+    doTaskTelegram();
+  }
 
   //--- update upTime counter
   if DUE(updateSeconds) upTimeSeconds++;
@@ -313,17 +310,22 @@ void loop ()
   }
 
 //--- if NTP set, see if it needs synchronizing
-#if defined(USE_NTP_TIME)                                           //USE_NTP
-  if DUE(synchrNTP)                                                 //USE_NTP
-  {
-    if (timeStatus() == timeNeedsSync || prevNtpHour != hour())     //USE_NTP
+#ifdef USE_NTP_TIME
+    if (timeStatus() == timeNeedsSync || prevNtpHour != hour()) 
     {
-      prevNtpHour = hour();                                         //USE_NTP
-      setSyncProvider(getNtpTime);                                  //USE_NTP
-      setSyncInterval(600);                                         //USE_NTP
-    }
-  }
-#endif                                                              //USE_NTP
+      
+      setSyncProvider(getNtpTime);
+      setSyncInterval(60);
+//        unsigned long epoch = now();
+    newT = time(nullptr);
+    setTime(newT);
+    localtime_r(&newT, &timeinfo);
+    prevNtpHour = hour();
+    Debugf("NTP epoch: %d\r\n", newT);
+    DebugTln("NTP epoch2string: " + getEpochStringByParams(newT));
+    DebugTln(timeinfo.tm_isdst?"NTP Zomertijd":"NTP Wintertijd" );
+      }
+#endif 
   yield();
 
 } // loop()

@@ -89,9 +89,8 @@ void processSlimmemeter()
 #ifdef USE_NTP_TIME
       if (!DSMRdata.timestamp_present)                        //USE_NTP
       {                                                       //USE_NTP
-        sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0"         //USE_NTP
-                        , (year() - 2000), month(), day()     //USE_NTP
-                        , hour(), minute(), second());        //USE_NTP
+//        sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0", (year() - 2000), month(), day(), hour(), minute(), second());
+        sprintf(cMsg, "%sW\0\0",getEpochStringByParams(newT).c_str() );
         DSMRdata.timestamp         = cMsg;                    //USE_NTP
         DSMRdata.timestamp_present = true;                    //USE_NTP
       }                                                       //USE_NTP

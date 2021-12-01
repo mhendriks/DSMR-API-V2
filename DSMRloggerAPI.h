@@ -11,6 +11,8 @@
 #ifndef DSMRloggerAPI_h
 #define DSMRloggerAPI_h
 
+static tm timeinfo;
+
 #include "version.h"
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time
 #include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream/commit/1294a9ee5cc9b1f7e51005091e351d60c8cddecf
@@ -20,6 +22,54 @@
 #include "LittleFS.h"
 #include <EEPROM.h>
 #include "Network.h"
+
+
+#ifdef USE_NTP_TIME
+//uitleg ; http://www.weigu.lu/microcontroller/tips_tricks/esp_NTP_tips_tricks/index.html
+//https://werner.rothschopf.net/202011_arduino_esp8266_ntp_en.htm
+#include <TZ.h>
+//#include <time.h>
+
+#define MY_NTP_SERVER "europe.pool.ntp.org"           
+#define MY_TZ TZ_Europe_Amsterdam 
+
+time_t getNtpTime() 
+{
+  return time(nullptr);
+}
+
+/**
+ * Input time in epoch format and return tm time format
+ * by Renzo Mischianti <www.mischianti.org> 
+ */
+static tm getDateTimeByParams(long time){
+    struct tm *newtime;
+    const time_t tim = time;
+    newtime = localtime(&tim);
+    return *newtime;
+}
+/**
+ * Input tm time format and return String with format pattern
+ * by Renzo Mischianti <www.mischianti.org>
+ */
+static String getDateTimeStringByParams(tm *newtime, char* pattern = (char *)"%d/%m/%Y %H:%M:%S"){
+    char buffer[30];
+    strftime(buffer, 30, pattern, newtime);
+    return buffer;
+}
+ 
+/**
+ * Input time in epoch format format and return String with format pattern
+ * by Renzo Mischianti <www.mischianti.org> 
+ */
+static String getEpochStringByParams(long time, char* pattern = (char *)"%Y%m%d%H%M%S"){
+//    struct tm *newtime;
+    tm newtime;
+    newtime = getDateTimeByParams(time);
+    return getDateTimeStringByParams(&newtime, pattern);
+}
+
+#endif
 
 #ifdef USE_BLYNK 
   //#define BLYNK_PRINT Serial // Defines the object that is used for printing

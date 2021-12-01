@@ -32,17 +32,18 @@ void ConvRing3_2_0(){
 void ConvRing(const char *newfile, const char *oldfile){
   String rbuf; char wbuf[100];  
 
+  File FileOld = LittleFS.open(oldfile, "r+"); // open for reading  
+  if (!FileOld) {
+    DebugT(F("open ring file FAILED!!! --> Bailout: "));Debugln(oldfile);
+    return;
+  }
+  
   File FileNew = LittleFS.open(newfile, "w");
   if (!FileNew) {
     DebugT(F("open ring file FAILED!!! --> Bailout: "));Debugln(newfile);DebugTln(FileNew);
     return;
   }
 
-  File FileOld = LittleFS.open(oldfile, "r+"); // open for reading  
-  if (!FileOld) {
-    DebugT(F("open ring file FAILED!!! --> Bailout: "));Debugln(oldfile);
-    return;
-  }
   byte row = 0;
   while (FileOld.available()){
     rbuf = FileOld.readStringUntil('\n');

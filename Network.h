@@ -29,6 +29,34 @@ bool        isConnected = false;
 void P1StatusWrite();
 void P1Reboot();
 void LogFile(const char*);
+bool wifiFirstConnected = false;
+
+// naar idee van https://github.com/gmag11/ESPNtpClient/blob/main/examples/advancedExample/advancedExample.ino
+void onWifiEvent (WiFiEvent_t event) {
+    Serial.printf ("[WiFi-event] event: %d\n", event);
+    switch (event) {
+    case WIFI_EVENT_STAMODE_CONNECTED:
+        Serial.printf ("Connected to %s. Asking for IP address.\r\n", WiFi.BSSIDstr().c_str());
+        break;
+    case WIFI_EVENT_STAMODE_GOT_IP:
+        Serial.printf ("Got IP: %s\r\n", WiFi.localIP().toString().c_str ());
+        Serial.printf ("Connected: %s\r\n", WiFi.status () == WL_CONNECTED ? "yes" : "no");
+//        digitalWrite (ONBOARDLED, LOW); // Turn on LED
+        wifiFirstConnected = true;
+        break;
+    case WIFI_EVENT_STAMODE_DISCONNECTED:
+        Serial.printf ("Disconnected from SSID: %s\n", WiFi.BSSIDstr ().c_str ());
+        //Serial.printf ("Reason: %d\n", info.disconnected.reason);
+//        digitalWrite (ONBOARDLED, HIGH); // Turn off LED
+        //NTP.stop(); // NTP sync can be disabled to avoid sync errors
+        WiFi.reconnect ();
+        break;
+    default:
+        break;
+    }
+}
+
+
 
 //gets called when WiFiManager enters configuration mode
 //===========================================================================================
