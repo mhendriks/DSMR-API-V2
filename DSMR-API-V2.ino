@@ -29,6 +29,9 @@ TODO
 √- api/v2/hist
 - waterstand ook verzenden zonder slimme meter
 √ lege RNG file indien de files niet bestaan
+- watermeter liter per omwenteling (default 1)
+- mqtt water ook liters meesturen
+
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
@@ -56,7 +59,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
 //----- EXTENSIONS
 #define USE_WATER_SENSOR 1
-#define USE_NTP_TIME     2           // define to generate Timestamp from NTP (Only Winter Time for now)
+//#define USE_NTP_TIME     2           // define to generate Timestamp from NTP (Only Winter Time for now)
 //#define USE_BLYNK      4           // define if the blynk app could be used
 
 #ifdef USE_WATER_SENSOR
@@ -73,7 +76,6 @@ void setup()
   Serial.begin(115200, SERIAL_8N1);
   pinMode(DTR_ENABLE, OUTPUT);
   pinMode(LED, OUTPUT); //LED ESP12S
-  
   // sign of life
   digitalWrite(LED, LOW); //ON
   delay(1500);
@@ -123,7 +125,6 @@ void setup()
 //=============start Networkstuff==================================
   
   startWiFi(settingHostname, 240);  // timeout 4 minuten
-//  WiFi.onEvent(onWifiEvent);
   Debugln();
   Debug (F("Connected to " )); Debugln (WiFi.SSID());
   Debug (F("IP address: " ));  Debugln (WiFi.localIP());
@@ -135,7 +136,6 @@ void setup()
   startMDNS(settingHostname);
  
 //=============end Networkstuff======================================
-
 
   DebugTf("Last reset reason: [%s]\r", ESP.getResetReason().c_str());
 
@@ -177,17 +177,9 @@ snprintf(cMsg, sizeof(cMsg), "%sW\0\0",getEpochStringByParams(newT).c_str());
   }
     
   setupFSexplorer();
- 
-  delay(1000);
-  
-//================ Start HTTP Server ================================
-  
+  delay(1000);  
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
 
-//================ End of Slimmer Meter ============================
-//================ The final part of the Setup =====================
-
-  
 //================ Start Slimme Meter ===============================
 
 #ifdef USE_BLYNK
@@ -197,6 +189,9 @@ snprintf(cMsg, sizeof(cMsg), "%sW\0\0",getEpochStringByParams(newT).c_str());
 #ifdef USE_WATER_SENSOR  
   setupWater();
 #endif //USE_WATER_SENSOR
+
+  ConvRing3_2_0();
+  CheckRingExists();
 
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
   DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
@@ -212,9 +207,6 @@ snprintf(cMsg, sizeof(cMsg), "%sW\0\0",getEpochStringByParams(newT).c_str());
 #else
   Debug(F("\n!!! DEBUG MODE AAN !!!\n\n")); 
 #endif // is_esp12
-
-  ConvRing3_2_0();
-  CheckRingExists();
 
 } // setup()
 
@@ -261,7 +253,6 @@ void doSystemTasks()
   yield();
 } // doSystemTasks()
 
-  
 void loop () 
 {  
   //--- verwerk volgend telegram

@@ -33,19 +33,19 @@ bool wifiFirstConnected = false;
 
 // naar idee van https://github.com/gmag11/ESPNtpClient/blob/main/examples/advancedExample/advancedExample.ino
 void onWifiEvent (WiFiEvent_t event) {
-    Serial.printf ("[WiFi-event] event: %d\n", event);
+    DebugTf ("[WiFi-event] event: %d\n", event);
     switch (event) {
     case WIFI_EVENT_STAMODE_CONNECTED:
-        Serial.printf ("Connected to %s. Asking for IP address.\r\n", WiFi.BSSIDstr().c_str());
+        DebugTf ("Connected to %s. Asking for IP address.\r\n", WiFi.BSSIDstr().c_str());
         break;
     case WIFI_EVENT_STAMODE_GOT_IP:
-        Serial.printf ("Got IP: %s\r\n", WiFi.localIP().toString().c_str ());
-        Serial.printf ("Connected: %s\r\n", WiFi.status () == WL_CONNECTED ? "yes" : "no");
+        DebugTf ("Got IP: %s\r\n", WiFi.localIP().toString().c_str ());
+        DebugTf ("Connected: %s\r\n", WiFi.status () == WL_CONNECTED ? "yes" : "no");
 //        digitalWrite (ONBOARDLED, LOW); // Turn on LED
         wifiFirstConnected = true;
         break;
     case WIFI_EVENT_STAMODE_DISCONNECTED:
-        Serial.printf ("Disconnected from SSID: %s\n", WiFi.BSSIDstr ().c_str ());
+        DebugTf ("Disconnected from SSID: %s\n", WiFi.BSSIDstr ().c_str ());
         //Serial.printf ("Reason: %d\n", info.disconnected.reason);
 //        digitalWrite (ONBOARDLED, HIGH); // Turn off LED
         //NTP.stop(); // NTP sync can be disabled to avoid sync errors
@@ -102,6 +102,8 @@ void startWiFi(const char* hostname, int timeOut)
     P1Reboot();
     return;
   }
+    WiFi.onEvent(onWifiEvent);
+
 //  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
     WiFi.hostname("p1-dongle");
     DebugTf("Device name [%s]\n", "p1-dongle");

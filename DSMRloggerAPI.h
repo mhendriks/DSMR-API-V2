@@ -33,11 +33,6 @@ static tm timeinfo;
 #define MY_NTP_SERVER "europe.pool.ntp.org"           
 #define MY_TZ TZ_Europe_Amsterdam 
 
-time_t getNtpTime() 
-{
-  return time(nullptr);
-}
-
 /**
  * Input time in epoch format and return tm time format
  * by Renzo Mischianti <www.mischianti.org> 
@@ -228,8 +223,14 @@ static PubSubClient MQTTclient(wifiClient);
   
 #ifdef USE_WATER_SENSOR  
   #define PIN_WATER_SENSOR 5
+  byte        WtrFactor     = 1;
+  time_t      debounce[25];
+  byte        debounces     = 0;
+  time_t      WtrPrevReading = 0;
 #endif //USE_WATER_SENSOR
-
+#define       DEBOUNCETIMER 2000
+  bool        WtrMtr        = false;
+  
 struct Status {
    uint32_t reboots;
    uint32_t sloterrors;
@@ -252,7 +253,6 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   bool        LEDenabled    = true;
   bool        DSMR_NL       = true;
   bool        EnableHistory = true;
-  bool        WtrMtr        = false;
   char        BaseOTAurl[75] = "http://smart-stuff.nl/ota/";
 
   char      cMsg[150];
@@ -294,8 +294,8 @@ DECLARE_TIMER_SEC(nextTelegram,        2);
 DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(antiWearRing,       25); 
-DECLARE_TIMER_MIN(StatusTimer,        15);
-
+DECLARE_TIMER_MIN(StatusTimer,        10);
+DECLARE_TIMER_MS(WaterTimer,         DEBOUNCETIMER);
 //DECLARE_TIMER_SEC(synchrNTP,          30);
 
 #endif

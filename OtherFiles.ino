@@ -74,7 +74,11 @@ void writeSettings()
   doc["LED"] = LEDenabled;
   doc["ota"] = BaseOTAurl;
   doc["enableHistory"] = EnableHistory;
+#ifdef USE_WATER_SENSOR
   doc["watermeter"] = WtrMtr;
+  doc["waterfactor"] = WtrFactor;
+#endif
+  
   
   writeToJsonFile(doc, SettingsFile);
   
@@ -137,7 +141,11 @@ void readSettings(bool show)
   LEDenabled = doc["LED"];
   if (doc.containsKey("ota")) strcpy(BaseOTAurl, doc["ota"]);
   if (doc.containsKey("enableHistory")) EnableHistory = doc["enableHistory"];
+#ifdef USE_WATER_SENSOR
   if (doc.containsKey("watermeter")) WtrMtr = doc["watermeter"];
+  if (doc.containsKey("waterfactor")) WtrFactor = doc["waterfactor"];
+#endif
+
 
   SettingsFile.close();
   //end json
@@ -183,7 +191,10 @@ void readSettings(bool show)
   Debug(F("                 LED enabled : ")); Debugln(LEDenabled);
   Debug(F("                Base OTA url : ")); Debugln(BaseOTAurl);
   Debug(F("              History Enabled: ")); Debugln(EnableHistory);
+#ifdef USE_WATER_SENSOR
   Debug(F("          Water Meter Enabled: ")); Debugln(WtrMtr);
+#endif
+  
 
   Debugln(F("\r"));
 

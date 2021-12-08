@@ -16,7 +16,7 @@ De laatste dongels zijn uitgerust met een blauwe LED. Deze heeft meerdere functi
 
 **Configuratie Wifi**
 
-Na het aansluiten van de adapter op je P1 ingang van je slimmemeter bouwt de adapterals eerste een eigen Wifi hotspot op ten behoeve van configuratie. Deze hotspot is te herkennen door de Wifinaam DSRM-API-?????.
+Na het aansluiten van de adapter op je P1 ingang van je slimmemeter bouwt de adapterals eerste een eigen Wifi hotspot op ten behoeve van configuratie. Deze hotspot is te herkennen door de Wifinaam P1-Dongle.
 
 Zorg dat je met je computer of mobieldevice contact maakt met dit netwerk. Automatisch wordt een updatescherm getoond waarin de Wifi settings te zien zijn. Zie onderstaande voorbeeld op MacOS.
 

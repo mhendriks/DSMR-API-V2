@@ -160,6 +160,12 @@ void handleKeyInput()
       case 'b':     
       case 'B':     displayBoardInfo();
                     break;
+      case 'c':     //print debounce array
+                    DebugTf("Debounce array [%2d]\n", debounces);
+                    for( byte z=0; z<25; z++){
+                      Debugf("[%2d] | %d\n",z,debounce[z]);
+                    };
+                    break;
       case 'l':
       case 'L':     readSettings(true);
                     break;
