@@ -14,9 +14,9 @@ void P1Reboot(){
     DebugT(F("Reboot in 3 seconds ... \r\n"));
     MQTTclient.publish(cMsg,"Offline", true); //LWT status update
     P1StatusWrite();
-    delay(3000);
+    delay(2000);
     DebugTln(F("now Rebooting!\r"));
-    ESP.restart();
+    ESP.reset();
     delay(2000);  
 }
 

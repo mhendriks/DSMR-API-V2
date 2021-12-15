@@ -224,9 +224,9 @@ static PubSubClient MQTTclient(wifiClient);
 #ifdef USE_WATER_SENSOR  
   #define PIN_WATER_SENSOR 5
   byte        WtrFactor     = 1;
-  time_t      debounce[25];
+  time_t      debounce_t;
   byte        debounces     = 0;
-  time_t      WtrPrevReading = 0;
+  time_t      WtrPrevReading= 0;
 #endif //USE_WATER_SENSOR
 #define       DEBOUNCETIMER 2000
   bool        WtrMtr        = false;

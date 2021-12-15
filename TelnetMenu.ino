@@ -160,11 +160,8 @@ void handleKeyInput()
       case 'b':     
       case 'B':     displayBoardInfo();
                     break;
-      case 'c':     //print debounce array
-                    DebugTf("Debounce array [%2d]\n", debounces);
-                    for( byte z=0; z<25; z++){
-                      Debugf("[%2d] | %d\n",z,debounce[z]);
-                    };
+      case 'c':     //print debounce info
+                    DebugTf("Debounce array [%2d] [%d]\n", debounces,debounce_t);                    
                     break;
       case 'l':
       case 'L':     readSettings(true);
@@ -233,7 +230,10 @@ void handleKeyInput()
       case 'x':     
       case 'X':     writeRingFiles();
                     break;
-                    
+      case 'y':     
+      case 'Y':     
+                    CHANGE_INTERVAL_MS(StatusTimer, 10);
+                    break;
       case 'Z':     
                     P1Status.sloterrors = 0;
                     P1Status.reboots    = 0;
@@ -260,8 +260,9 @@ void handleKeyInput()
                     Debugln(F("  *R - Reboot\r"));
                     Debugln(F("   S - Update File Remote\r"));
                     Debugln(F("   U - Update Sketch Remote\r"));
-                    Debugln(F("  *Z - Zero counters\r"));
                     Debugln(F("   X - Save Ringfiles now\r"));
+                    Debugln(F("   Y - force Statusinfo & MQTT statics \r"));
+                    Debugln(F("  *Z - Zero counters\r"));
                     if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));
                     else if (Verbose1)        Debugln(F("   V - Toggle Verbose 2\r"));
                     else                      Debugln(F("   V - Toggle Verbose 1\r"));

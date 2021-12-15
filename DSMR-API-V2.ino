@@ -30,7 +30,7 @@ TODO
 - waterstand ook verzenden zonder slimme meter
 √ lege RNG file indien de files niet bestaan
 - watermeter liter per omwenteling (default 1)
-- mqtt water ook liters meesturen
+√ mqtt water ook liters meesturen
 
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
@@ -269,13 +269,13 @@ void loop ()
   //--- update statusfile + ringfiles
   if ( DUE(antiWearRing) || RingCylce ) writeRingFiles(); //eens per 25min + elk uur overgang
 
-  if (DUE(StatusTimer)) { //eens per 15min
+  if (DUE(StatusTimer)) { //eens per 10min
     P1StatusWrite();
     MQTTSentStaticInfo();
     #ifdef USE_WATER_SENSOR  
       sendMQTTWater();
     #endif
-    CHANGE_INTERVAL_MIN(StatusTimer, 15);
+    CHANGE_INTERVAL_MIN(StatusTimer, 10);
   }
 
   if (UpdateRequested) RemoteUpdate(UpdateVersion, true);
