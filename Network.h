@@ -78,7 +78,7 @@ void startWiFi(const char* hostname, int timeOut)
   
   DebugTln("start ...");
   LogFile("Wifi Starting");
-  digitalWrite(2, HIGH); //OFF
+  digitalWrite(LED, HIGH); //OFF
   
   manageWiFi.setDebugOutput(false);
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
@@ -108,7 +108,7 @@ void startWiFi(const char* hostname, int timeOut)
     WiFi.hostname("p1-dongle");
     DebugTf("Device name [%s]\n", "p1-dongle");
     LogFile("Wifi Connected");
-    digitalWrite(2, LOW); //ON
+    digitalWrite(LED, LOW); //ON
 
 #ifdef USE_UPDATE_SERVER
   httpUpdater.setup(&httpServer);

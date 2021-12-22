@@ -160,9 +160,11 @@ void handleKeyInput()
       case 'b':     
       case 'B':     displayBoardInfo();
                     break;
+#ifdef USE_WATERSENSOR
       case 'c':     //print debounce info
                     DebugTf("Debounce array [%2d] [%d]\n", debounces,debounce_t);                    
                     break;
+#endif                    
       case 'l':
       case 'L':     readSettings(true);
                     break;
@@ -172,10 +174,13 @@ void handleKeyInput()
       case 'E':     eraseFile();
                     break;
 #if defined(HAS_NO_SLIMMEMETER)
-      case 'F':     forceBuildRingFiles = true;
+      case 'O':     forceBuildRingFiles = true;
                     runMode = SInit;
                     break;
 #endif
+      case 'f':
+      case 'F':     listSPIFFS();
+                    break;      
       case 'h':
       case 'H':     RingFileTo(RINGHOURS, false);
                     break;
@@ -247,13 +252,14 @@ void handleKeyInput()
                     Debugln(F("   A - P1 Status info a=available|r=read|w=write|p=print|z=erase\r"));
                     Debugln(F("   B - Board Info\r"));
                     Debugln(F("  *E - erase file from File System\r"));
+                    Debugln(F("   F - File info on SPIFFS\r"));
                     Debugln(F("   L - list Settings\r"));
                     Debugln(F("   D - Display Day table from FS\r"));
                     Debugln(F("   H - Display Hour table from FS\r"));
                     Debugln(F("   N - Display LogFile P1.log\r"));
                     Debugln(F("   M - Display Month table from FS\r"));
                   #if defined(HAS_NO_SLIMMEMETER)
-                    Debugln(F("  *F - Force build RING files\r"));
+                    Debugln(F("  *O - Force build RING files\r"));
                   #endif
                     Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
                     Debugln(F("  *W - Force Re-Config WiFi\r"));

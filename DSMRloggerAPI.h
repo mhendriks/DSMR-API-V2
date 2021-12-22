@@ -23,6 +23,11 @@ static tm timeinfo;
 #include <EEPROM.h>
 #include "Network.h"
 
+#ifdef USE_APP
+  #include <ArduinoIoTCloud.h>
+//  #include <Arduino_ConnectionHandler.h>
+  DECLARE_TIMER_SEC(APPtimer, 5);
+#endif
 
 #ifdef USE_NTP_TIME
 //uitleg ; http://www.weigu.lu/microcontroller/tips_tricks/esp_NTP_tips_tricks/index.html
@@ -87,7 +92,7 @@ static      FSInfo fs_info;
 
 P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
 
-enum { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
+//enum { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 enum E_ringfiletype {RINGHOURS, RINGDAYS, RINGMONTHS};
 
 typedef struct {
