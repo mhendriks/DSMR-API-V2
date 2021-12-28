@@ -10,19 +10,20 @@ Er zijn hiermee meerdere keuzes mogelijk met deze hardware, namelijk:
 
 # Slimmemeter P1 Dongel - DSMR-API - Hardware versie 3.3
 Eigenschappen
+- hardware design voor ESPhome
 - ESP-12S (4MB) als CPU Soc -> veel pull-up weerstanden zijn al aanwezig waardoor het aantal extra componenten laag kan blijven
-- gebruikt secundaire seriale interface (UART1)
-- P1 signaal inversie via transistor, 1 weerstand minder dan V3 werkt ook prima; Software serial is niet betrouwbaar genoeg
-- RJ11 socket voor gemakkelijke aansluiting
-- usb micro connector voor externe voeding. Sommige DSMR 5.x en de DSMR 4.x leveren te weinig vermogen
-- 2 zener diodes voor de USB/P1 switch
+- gebruikt secundaire seriale hardware interface (UART1)
+- P1 signaal inversie via transistor
+- 6P6C (RJ12) socket voor gemakkelijke aansluiting
+- usb micro connector voor externe voeding. Sommige DSMR 5.x en de DSMR 4.x/3.x/2.x leveren te weinig vermogen
+- 2 zenner diodes voor de USB/P1 switch
 - Primaire componenten op bovenkant van de pcb zodat deze in oven/hotplate gemaakt kan worden
 - Secundaire componenten (MUX/usb) zitten op de onderkant
 - nieuwe spanningsregelaar met een nog lagere spanningsval, meer stroom aan kan. Resultaat minder warmte afgifte en hogere betrouwbaarheid
 - Enkele jumpers om te kiezen tussen DTR fixed of niet / P1 of USB voedingsbron
 - DTR schakeling ... wordt niet gebruikt (functioneert niet naar behoren)
-- GEEN optocoupler meer ... DTR signaal is altijd hoog. Werkt prima ... echter met iets meer errors. In de praktijk minder dan 0,005% errors = acceptabel
-- Gaatjes in het boardje om deze makkelijk in een 3D printed case te kunnen monteren (work in progress als opensource ook beschikbaar)
+- GEEN optocoupler meer ... DTR signaal is altijd hoog.
+- Gaatjes in het boardje om deze makkelijk in een 3D printed case te kunnen monteren
 - watermeter sensor logica
 
 ## SCHEMA
