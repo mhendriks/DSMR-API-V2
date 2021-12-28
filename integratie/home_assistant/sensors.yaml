@@ -28,7 +28,7 @@
 - platform: mqtt
   name: "Energy Returned T1"
   unique_id: 'sensor.p1_returned_t1'
-  device_class: "energy"
+  device_class: energy
   state_class: total_increasing
   state_topic: "DSMR-API/energy_returned_tariff1" 
   unit_of_measurement: "kWh"
