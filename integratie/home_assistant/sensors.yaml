@@ -9,6 +9,7 @@
 
 - platform: mqtt
   name: "Energy Delivered T1"
+  unique_id: 'sensor.p1_consumption_t1'
   device_class: energy
   state_class: total_increasing
   state_topic: "DSMR-API/energy_delivered_tariff1" 
@@ -17,6 +18,7 @@
 
 - platform: mqtt
   name: "Energy Delivered T2"
+  unique_id: 'sensor.p1_consumption_t2'
   device_class: energy
   state_class: total_increasing
   state_topic: "DSMR-API/energy_delivered_tariff2" 
@@ -25,6 +27,7 @@
 
 - platform: mqtt
   name: "Energy Returned T1"
+  unique_id: 'sensor.p1_returned_t1'
   device_class: "energy"
   state_class: total_increasing
   state_topic: "DSMR-API/energy_returned_tariff1" 
@@ -33,6 +36,7 @@
 
 - platform: mqtt
   name: "Energy Returned T2"
+  unique_id: 'sensor.p1_returned_t2'
   device_class: "energy"
   state_class: total_increasing
   state_topic: "DSMR-API/energy_returned_tariff2" 
@@ -41,6 +45,7 @@
 
 - platform: mqtt
   name: "Power Delivered"
+  unique_id: 'sensor.p1_power_delivered'
   device_class: "power"
   state_class: "measurement"
   state_topic: "DSMR-API/power_delivered" 
@@ -49,6 +54,7 @@
 
 - platform: mqtt
   name: "Power Returned"
+  unique_id: 'sensor.p1_power_returned'
   device_class: "power"
   state_class: "measurement"
   state_topic: "DSMR-API/power_returned"
@@ -57,6 +63,7 @@
 
 - platform: mqtt
   name: "Power Delivered l1"
+  unique_id: 'sensor.p1_power_delivered_l1'
   device_class: "power"
   state_topic: "DSMR-API/power_delivered_l1" 
   unit_of_measurement: "Watt"
@@ -64,6 +71,7 @@
 
 - platform: mqtt
   name: "Power Delivered l2"
+  unique_id: 'sensor.p1_power_delivered_l2'
   device_class: "power"
   state_topic: "DSMR-API/power_delivered_l2" 
   unit_of_measurement: "Watt"
@@ -71,6 +79,7 @@
 
 - platform: mqtt
   name: "Power Delivered l3"
+  unique_id: 'sensor.p1_power_delivered_l3'
   device_class: "power"
   state_topic: "DSMR-API/power_delivered_l3" 
   unit_of_measurement: "Watt"
@@ -78,6 +87,7 @@
 
 - platform: mqtt
   name: "Power Returned l1"
+  unique_id: 'sensor.p1_power_returned_l1'
   device_class: "power"
   state_topic: "DSMR-API/power_returned_l1"
   unit_of_measurement: "Watt"
@@ -85,6 +95,7 @@
 
 - platform: mqtt
   name: "Power Returned l2"
+  unique_id: 'sensor.p1_power_returned_l2'
   device_class: "power"
   state_topic: "DSMR-API/power_returned_l2"
   unit_of_measurement: "Watt"
@@ -92,6 +103,7 @@
 
 - platform: mqtt
   name: "Power Returned l3"
+  unique_id: 'sensor.p1_power_returned_l3'  
   device_class: "power"
   state_topic: "DSMR-API/power_returned_l3"
   unit_of_measurement: "Watt"
@@ -99,6 +111,7 @@
 
 - platform: mqtt
   name: "Gas Delivered"
+  unique_id: 'sensor.p1_gas'
   device_class: gas
   state_topic: "DSMR-API/gas_delivered"
   state_class: total_increasing
@@ -107,6 +120,7 @@
   
 - platform: mqtt
   name: "Voltage l1"
+  unique_id: 'sensor.p1_voltage_l1'
   device_class: "voltage"
   state_topic: "DSMR-API/voltage_l1"
   state_class: "measurement"
@@ -115,6 +129,7 @@
 
 - platform: mqtt
   name: "Voltage l2"
+  unique_id: 'sensor.p1_voltage_l2'  
   device_class: "voltage"
   state_topic: "DSMR-API/voltage_l2"
   state_class: "measurement"
@@ -123,6 +138,7 @@
  
 - platform: mqtt
   name: "Voltage l3"
+  unique_id: 'sensor.p1_voltage_l3'
   device_class: "voltage"
   state_topic: "DSMR-API/voltage_l3"
   state_class: "measurement"
@@ -131,6 +147,7 @@
   
 - platform: mqtt
   name: "Current l1"
+  unique_id: 'sensor.p1_current_l1'
   device_class: "current"
   state_topic: "DSMR-API/current_l1"
   state_class: "measurement"
@@ -139,6 +156,7 @@
   
 - platform: mqtt
   name: "Current l2"
+  unique_id: 'sensor.p1_current_l2'  
   device_class: "current"
   state_topic: "DSMR-API/current_l2"
   state_class: "measurement"
@@ -147,6 +165,7 @@
 
 - platform: mqtt
   name: "Current l3"
+  unique_id: 'sensor.p1_current_l3'  
   device_class: "current"
   state_topic: "DSMR-API/current_l3"
   state_class: "measurement"
