@@ -1,0 +1,155 @@
+### sensor: ###
+### DSMR-API ###
+
+- platform: mqtt
+  name: "DSMR Last Update"
+  state_topic: "DSMR-API/timestamp"
+  unit_of_measurement: ""
+  value_template: "{{ strptime(value_json.timestamp[0].value, '%y%m%d%H%M%SW') }}"
+
+- platform: mqtt
+  name: "Energy Delivered T1"
+  device_class: energy
+  state_class: total_increasing
+  state_topic: "DSMR-API/energy_delivered_tariff1" 
+  unit_of_measurement: "kWh"
+  value_template: "{{ value_json.energy_delivered_tariff1[0].value | round(3) }}"
+
+- platform: mqtt
+  name: "Energy Delivered T2"
+  device_class: energy
+  state_class: total_increasing
+  state_topic: "DSMR-API/energy_delivered_tariff2" 
+  unit_of_measurement: "kWh"
+  value_template: "{{ value_json.energy_delivered_tariff2[0].value | round(3) }}"
+
+- platform: mqtt
+  name: "Energy Returned T1"
+  device_class: "energy"
+  state_class: total_increasing
+  state_topic: "DSMR-API/energy_returned_tariff1" 
+  unit_of_measurement: "kWh"
+  value_template: "{{ value_json.energy_returned_tariff1[0].value | round(3) }}"
+
+- platform: mqtt
+  name: "Energy Returned T2"
+  device_class: "energy"
+  state_class: total_increasing
+  state_topic: "DSMR-API/energy_returned_tariff2" 
+  unit_of_measurement: "kWh"
+  value_template: "{{ value_json.energy_returned_tariff2[0].value | round(3) }}"
+
+- platform: mqtt
+  name: "Power Delivered"
+  device_class: "power"
+  state_class: "measurement"
+  state_topic: "DSMR-API/power_delivered" 
+  unit_of_measurement: "kW"
+  value_template: "{{ value_json.power_delivered[0].value | float * 1000 }}"
+
+- platform: mqtt
+  name: "Power Returned"
+  device_class: "power"
+  state_class: "measurement"
+  state_topic: "DSMR-API/power_returned"
+  unit_of_measurement: "W"
+  value_template: "{{ value_json.power_returned[0].value | float * 1000 }}"
+
+- platform: mqtt
+  name: "Power Delivered l1"
+  device_class: "power"
+  state_topic: "DSMR-API/power_delivered_l1" 
+  unit_of_measurement: "Watt"
+  value_template: "{{ value_json.power_delivered_l1[0].value | round(3) * 1000 }}"
+
+- platform: mqtt
+  name: "Power Delivered l2"
+  device_class: "power"
+  state_topic: "DSMR-API/power_delivered_l2" 
+  unit_of_measurement: "Watt"
+  value_template: "{{ value_json.power_delivered_l2[0].value | round(3) * 1000 }}"
+
+- platform: mqtt
+  name: "Power Delivered l3"
+  device_class: "power"
+  state_topic: "DSMR-API/power_delivered_l3" 
+  unit_of_measurement: "Watt"
+  value_template: "{{ value_json.power_delivered_l3[0].value | round(3) * 1000 }}"
+
+- platform: mqtt
+  name: "Power Returned l1"
+  device_class: "power"
+  state_topic: "DSMR-API/power_returned_l1"
+  unit_of_measurement: "Watt"
+  value_template: "{{ value_json.power_returned_l1[0].value | round(3) * 1000 }}"
+
+- platform: mqtt
+  name: "Power Returned l2"
+  device_class: "power"
+  state_topic: "DSMR-API/power_returned_l2"
+  unit_of_measurement: "Watt"
+  value_template: "{{ value_json.power_returned_l2[0].value | round(3) * 1000 }}"
+
+- platform: mqtt
+  name: "Power Returned l3"
+  device_class: "power"
+  state_topic: "DSMR-API/power_returned_l3"
+  unit_of_measurement: "Watt"
+  value_template: "{{ value_json.power_returned_l3[0].value | round(3) * 1000 }}"
+
+- platform: mqtt
+  name: "Gas Delivered"
+  device_class: gas
+  state_topic: "DSMR-API/gas_delivered"
+  state_class: total_increasing
+  unit_of_measurement: "m³"
+  value_template: "{{ value_json.gas_delivered[0].value | round(2) }}"
+  
+- platform: mqtt
+  name: "Voltage l1"
+  device_class: "voltage"
+  state_topic: "DSMR-API/voltage_l1"
+  state_class: "measurement"
+  unit_of_measurement: "V"
+  value_template: "{{ value_json.voltage_l1[0].value | round(0) }}"
+
+- platform: mqtt
+  name: "Voltage l2"
+  device_class: "voltage"
+  state_topic: "DSMR-API/voltage_l2"
+  state_class: "measurement"
+  unit_of_measurement: "V"
+  value_template: "{{ value_json.voltage_l2[0].value | round(0) }}"
+ 
+- platform: mqtt
+  name: "Voltage l3"
+  device_class: "voltage"
+  state_topic: "DSMR-API/voltage_l3"
+  state_class: "measurement"
+  unit_of_measurement: "V"
+  value_template: "{{ value_json.voltage_l3[0].value | round(0) }}"
+  
+- platform: mqtt
+  name: "Current l1"
+  device_class: "current"
+  state_topic: "DSMR-API/current_l1"
+  state_class: "measurement"
+  unit_of_measurement: "A"
+  value_template: "{{ value_json.current_l1[0].value | round(0) }}"
+  
+- platform: mqtt
+  name: "Current l2"
+  device_class: "current"
+  state_topic: "DSMR-API/current_l2"
+  state_class: "measurement"
+  unit_of_measurement: "A"
+  value_template: "{{ value_json.current_l2[0].value | round(0) }}"
+
+- platform: mqtt
+  name: "Current l3"
+  device_class: "current"
+  state_topic: "DSMR-API/current_l3"
+  state_class: "measurement"
+  unit_of_measurement: "A"
+  value_template: "{{ value_json.current_l3[0].value | round(0) }}"
+   
