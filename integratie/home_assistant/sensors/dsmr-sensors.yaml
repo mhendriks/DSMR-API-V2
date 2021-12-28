@@ -2,22 +2,32 @@
 ### DSMR-API ###
 
 - platform: mqtt
+  name: "LWT"
+  state_topic: "DSMR-API/LWT"
+  availability:
+    - topic: "DSMR-API/LWT"
+  payload_available: "Online"
+  payload_not_available: "Offline"
+
+- platform: mqtt
   name: "DSMR Last Update"
   state_topic: "DSMR-API/timestamp"
   unit_of_measurement: ""
-  value_template: "{{ strptime(value_json.timestamp, "%y%m%d%H%M%SW") }}"
+  value_template: "{{ strptime(value_json.timestamp[0].value, '%y%m%d%H%M%SW') }}"
 
 - platform: mqtt
   name: "Energy Delivered T1"
   state_topic: "DSMR-API/energy_delivered_tariff1" 
   unit_of_measurement: "kWh"
   value_template: "{{ value_json.energy_delivered_tariff1[0].value | round(3) }}"
+  object_id: energy_delivered_tariff1
 
 - platform: mqtt
   name: "Energy Delivered T2"
   state_topic: "DSMR-API/energy_delivered_tariff2" 
   unit_of_measurement: "kWh"
   value_template: "{{ value_json.energy_delivered_tariff2[0].value | round(3) }}"
+  object_id: energy_delivered_tariff2
 
 - platform: mqtt
   name: "Energy Returned T1"
