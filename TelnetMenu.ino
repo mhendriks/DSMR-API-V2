@@ -179,7 +179,7 @@ void handleKeyInput()
                     break;
 #endif
       case 'f':
-      case 'F':     listSPIFFS();
+      case 'F':     listFS();
                     break;      
       case 'h':
       case 'H':     RingFileTo(RINGHOURS, false);

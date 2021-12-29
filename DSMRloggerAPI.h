@@ -11,6 +11,12 @@
 #ifndef DSMRloggerAPI_h
 #define DSMRloggerAPI_h
 
+#define _DEFAULT_HOSTNAME   "DSMR-API/" 
+#define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
+#define SETTINGS_FILE       "/DSMRsettings.json"
+#define DTR_ENABLE          12
+#define LED                 2
+
 static tm timeinfo;
 
 #include "version.h"
@@ -83,12 +89,6 @@ static      FSInfo fs_info;
 
 //  https://github.com/mrWheel/dsmr2Lib.git             
 #include <dsmr2.h>               // commit 0ed3916813850af43200863853bfb4b26e9655eb on 7 juni 2021
-
-#define _DEFAULT_HOSTNAME   "DSMR-API/" 
-#define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
-#define SETTINGS_FILE       "/DSMRsettings.json"
-#define DTR_ENABLE          12
-#define LED                 2
 
 P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
 

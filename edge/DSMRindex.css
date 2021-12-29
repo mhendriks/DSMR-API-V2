@@ -511,11 +511,11 @@ body > div.bottom.right-0 {
     width: 180px!important;
     position: relative;
     margin: auto;
-    margin-top: 22px;
+    margin-top: 10px;
     position:inherit;
 }
 
-#container-3, #container-4, #container-5, #container-6 {margin-top:10px}
+#gauge,#gauge-v {margin-top:22px}
 
 #DashTab .lblVerbuik {
 	text-align: center;
