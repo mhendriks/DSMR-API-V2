@@ -53,7 +53,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 //#define DEBUG_MODE
 
 //----- EXTENSIONS
-#define USE_WATER_SENSOR 1
+//#define USE_WATER_SENSOR 1
 //#define USE_NTP_TIME     2           // define to generate Timestamp from NTP (Only Winter Time for now)
 //#define USE_BLYNK      4           // define if the blynk app could be used
 //#define USE_APP        4           // define if the Arduino IOT app could be used
