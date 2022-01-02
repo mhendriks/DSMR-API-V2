@@ -26,25 +26,26 @@
 
 void SendAutoDiscoverHA(const char* dev_name, const char* dev_class, const char* dev_title, const char* dev_unit, const char* dev_payload, const char* state_class ){
   char msg_topic[60];
-  char msg_payload[250];
+  char msg_payload[350];
     sprintf(msg_topic,"homeassistant/sensor/%s/config",dev_name);
-    sprintf(msg_payload,"{\"uniq_id\":sensor.p1_%s,\"dev_cla\": %s,\"name\": %s, \"stat_t\": %s%s, \"unit_of_meas\": %s, \"val_tpl\": %s%s%s, \"state_class\":%s }", dev_name,dev_class, dev_title, settingMQTTtopTopic, dev_name, dev_unit, dev_payload,state_class);
-    if (!MQTTclient.publish(msg_topic, (byte*)msg_payload, strlen(msg_payload),true) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", msg_topic, msg_payload, (strlen(msg_topic) + strlen(msg_payload)));
+//    Debugln(msg_topic);
+    sprintf(msg_payload,"{\"uniq_id\":\"sensor.p1_%s\",\"dev_cla\": \"%s\",\"name\": \"%s\", \"stat_t\": \"%s%s\", \"unit_of_meas\": \"%s\", \"val_tpl\": \"%s\", \"state_class\":\"%s\" }", dev_name,dev_class, dev_title, settingMQTTtopTopic, dev_name, dev_unit, dev_payload,state_class);
+//    Debugln(msg_payload);
+    if (!MQTTclient.publish(msg_topic, msg_payload) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", msg_topic, msg_payload, (strlen(msg_topic) + strlen(msg_payload)));
 }
 
 void AutoDiscoverHA(){
 //mosquitto_pub -h 192.168.2.250 -p 1883 -t "homeassistant/sensor/power_delivered/config" -m '{"dev_cla": "gas", "name": "Power Delivered", "stat_t": "DSMR-API/power_delivered", "unit_of_meas": "Wh", "val_tpl": "{{ value_json.power_delivered[0].value | round(3) }}" }'
-  char dev_name[20] = "power_delivered";
-//  bool HA_Discover = true;
-//  if (!HA_Discover) return
+  if (!HA_DISCOVER) return;
+  MQTTclient.setBufferSize(350);
   SendAutoDiscoverHA("power_delivered", "power", "Power Delivered", "Wh", "{{ value_json.power_delivered[0].value | round(3) }}","measurement");
-  SendAutoDiscoverHA("power_returned", "power", "Power Returned", "Wh", "{{ value_json.power_returned[0].value | round(3) }}","measurement");
+  SendAutoDiscoverHA("power_returned", "power", "Power Returned", "Wh", "{{ value_json.power_returned[0].value | round(3) }}","measurement");  
   SendAutoDiscoverHA("gas_delivered", "gas", "Gas Delivered", "m³", "{{ value_json.gas_delivered[0].value | round(2) }}","total_increasing");
   SendAutoDiscoverHA("energy_delivered_tariff1", "energy", "Energy Delivered T1", "kWh", "{{ value_json.energy_delivered_tariff1[0].value | round(3) }}","total_increasing");
   SendAutoDiscoverHA("energy_delivered_tariff2", "energy", "Energy Delivered T2", "kWh", "{{ value_json.energy_delivered_tariff2[0].value | round(3) }}","total_increasing");
   SendAutoDiscoverHA("energy_returned_tariff1", "energy", "Energy Returned T1", "kWh", "{{ value_json.energy_returned_tariff1[0].value | round(3) }}","total_increasing");
   SendAutoDiscoverHA("energy_returned_tariff2", "energy", "Energy Returned T2", "kWh", "{{ value_json.energy_returned_tariff2[0].value | round(3) }}","total_increasing");
-  //todo
+//  //todo
 }
 //===========================================================================================
 void connectMQTT() 

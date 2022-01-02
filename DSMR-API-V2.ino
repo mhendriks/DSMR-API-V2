@@ -20,17 +20,12 @@ TODO
 - NTP tijd
 
 !!! FIXES
-√ frontend Edge ... legenda dashboard meters onderaan
-√ frontend grafisch ... dan naar dash ... grafisch blijft aan*           
-√ uitlijning water dash
-√ dash : water naar liters
 √ Core verion met alleen MQTT en essentiele api functies, Niet meer beschikbaar in de no-history versie:
 √- RING Files
 √- api/v2/hist
 - waterstand ook verzenden zonder slimme meter
-√ lege RNG file indien de files niet bestaan
 - watermeter liter per omwenteling (default 1)
-√ mqtt water ook liters meesturen
+
 
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
@@ -58,10 +53,11 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 //#define DEBUG_MODE
 
 //----- EXTENSIONS
-//#define USE_WATER_SENSOR 1
+#define USE_WATER_SENSOR 1
 //#define USE_NTP_TIME     2           // define to generate Timestamp from NTP (Only Winter Time for now)
 //#define USE_BLYNK      4           // define if the blynk app could be used
-#define USE_APP        4           // define if the Arduino IOT app could be used
+//#define USE_APP        4           // define if the Arduino IOT app could be used
+#define HA_DISCOVER       0         //0 = off, > 0 = on (expermenteel)
 
 #ifdef USE_WATER_SENSOR
   #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS][WATER]"

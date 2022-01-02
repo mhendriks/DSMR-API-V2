@@ -365,12 +365,13 @@ function UpdateDash()
 		//check of gasmeter beschikbaar is	(indien HeeftGas = true uit Frontend,json of eerdere meeting dan niet meer checken uit meterdata, bij false wel checken in meterdata)
 		if (!HeeftGas) HeeftGas = "gas_delivered" in json ? !isNaN(json.gas_delivered.value) : false ;
 		if (!HeeftWater) HeeftWater =  "water" in json ? !isNaN(json.water.value) : false ;
+		//todo check of slimme meter is gekoppeld of standalone watermeter
 		
 		//check of p1 gegevens via api binnen komen
 		if (json.timestamp.value == "-") {
 			console.log("timestamp missing : p1 gegevens correct?");
-			if (!HeeftWater) return;
-// 			return;
+// 			if (!HeeftWater) return;
+			return;
 		}
 		
 		//check of teruglevering actief is 
