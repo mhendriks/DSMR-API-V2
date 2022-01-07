@@ -14,8 +14,6 @@
 *      -- api/v2/sm
 *      -- api/v2/hist
 *      - Aanpassen front-end ivm MQTT_CORE feaure
-*      √ via mqtt subscribe update starten (2.3.15)
-*      √ remote update spiffs (2.3.16)
 
   Arduino-IDE settings for DSMR-logger hardware V2&3 (ESP-M2):
 
@@ -37,7 +35,7 @@
 
 /******************** compiler options  ********************************************/
 #define USE_UPDATE_SERVER           // default ON : define if there is enough memory and updateServer to be used
-#define USE_BELGIUM_PROTOCOL        // define if Slimme Meter is a Belgium Smart Meter
+//#define USE_BELGIUM_PROTOCOL        // define if Slimme Meter is a Belgium Smart Meter
 //#define MQTT_CORE
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
