@@ -27,7 +27,6 @@ TODO
 - watermeter liter per omwenteling (default 1)
 
 
-
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
@@ -57,12 +56,12 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 //#define USE_NTP_TIME     2           // define to generate Timestamp from NTP (Only Winter Time for now)
 //#define USE_BLYNK      4           // define if the blynk app could be used
 //#define USE_APP        4           // define if the Arduino IOT app could be used
-#define HA_DISCOVER       0         //0 = off, > 0 = on (expermenteel)
+#define HA_DISCOVER
 
 #ifdef USE_WATER_SENSOR
-  #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS][WATER]"
+  #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS][HA DISCOVERY][WATER]"
 #else if
-  #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS]"
+  #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS][HA DISCOVERY]"
 #endif
 
 #include "DSMRloggerAPI.h"
