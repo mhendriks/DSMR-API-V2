@@ -2,11 +2,13 @@
 HA maakt gebruik van de MQTT koppeling om de data vanuit de P1 dongel te ontvangen.
 Om een koppeling te maken met HA dienen de volgende stappen doorlopen te worden.
 
+>**HOME ASSISTANT AUTO DISCOVERY</br>**
+> Vanaf firmware 3.2.2 is stap 1 & 2 niet meer nodig. De sensors worden automatisch door HA herkend.
+
 1. Pas de configuration.yaml aan met extra sensors
 2. Toevoegen van sensors.yaml
 3. Voeg de MQTT integratie toe zodra deze niet bestaat
 4. Naar behoefte dashboard + energie tabbladen configureren
-
 
 **1. aanpassen configuration.yaml**</br>
 Neem onderstaande code op in de `configuratie.yaml`
