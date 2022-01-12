@@ -1,7 +1,7 @@
 //The version number conforms to semver.org format
 #define _VERSION_MAJOR 3
 #define _VERSION_MINOR 2
-#define _VERSION_PATCH 2
+#define _VERSION_PATCH 3
 #define _VERSION_BUILD 824
 #define _VERSION_DATE "09/01/2022"
 #define _VERSION_TIME "14:50:22"

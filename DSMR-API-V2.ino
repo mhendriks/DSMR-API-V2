@@ -24,7 +24,9 @@ TODO
 √- RING Files
 √- api/v2/hist
 - waterstand ook verzenden zonder slimme meter
-- watermeter liter per omwenteling (default 1)
+- telnet update via windows ... invoeren lukt niet
+√- update pagina ... vreemde tekens onderaan (2.3.2)
+√- Dash meerdere naast elkaar uitlijning return (2.3.2)
 
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:

@@ -531,9 +531,12 @@ body > div.bottom.right-0 {
 #DashTab .gisteren{background: #316b77}
 #DashTab .eergisteren{background: #318b77}
 
+#Ph::before{ padding-right:0px; }
+h1::before{ padding-right:3px; }
+
 #DashTab .card h1 {
 	text-align: center;
-	padding: 0.5rem 1.5rem;
+	padding: 0.5rem 1.1rem;
 	background: #314b77;
 	margin: 0 0 0rem 0;
 	font-size: 1.5rem;
