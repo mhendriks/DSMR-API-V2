@@ -160,7 +160,7 @@ void handleKeyInput()
       case 'b':     
       case 'B':     displayBoardInfo();
                     break;
-#ifdef USE_WATERSENSOR
+#ifdef USE_WATER_SENSOR
       case 'c':     //print debounce info
                     DebugTf("Debounce array [%2d] [%d]\n", debounces,debounce_t);                    
                     break;
@@ -251,6 +251,9 @@ void handleKeyInput()
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   A - P1 Status info a=available|r=read|w=write|p=print|z=erase\r"));
                     Debugln(F("   B - Board Info\r"));
+                    #ifdef USE_WATER_SENSOR
+                    Debugln(F("   c - debounce Info watermeter\r"));
+                    #endif
                     Debugln(F("  *E - erase file from File System\r"));
                     Debugln(F("   F - File info on SPIFFS\r"));
                     Debugln(F("   L - list Settings\r"));
@@ -258,7 +261,7 @@ void handleKeyInput()
                     Debugln(F("   H - Display Hour table from FS\r"));
                     Debugln(F("   N - Display LogFile P1.log\r"));
                     Debugln(F("   M - Display Month table from FS\r"));
-                  #if defined(HAS_NO_SLIMMEMETER)
+                  #ifdef HAS_NO_SLIMMEMETER
                     Debugln(F("  *O - Force build RING files\r"));
                   #endif
                     Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
@@ -269,11 +272,9 @@ void handleKeyInput()
                     Debugln(F("   X - Save Ringfiles now\r"));
                     Debugln(F("   Y - force Statusinfo & MQTT statics \r"));
                     Debugln(F("  *Z - Zero counters\r"));
-                    if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));
-                    else if (Verbose1)        Debugln(F("   V - Toggle Verbose 2\r"));
-                    else                      Debugln(F("   V - Toggle Verbose 1\r"));
-                    
-
+                      Debug(F("   V - Toggle Verbose "));
+                    if (Verbose1 & Verbose2)  Debugln(F("Off\r"));
+                    else Verbose1 ? Debugln(F("2\r")) : Debugln(F("1\r"));
     } // switch()
     while (TelnetStream.available() > 0) 
     {

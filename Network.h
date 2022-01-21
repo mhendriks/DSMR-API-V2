@@ -13,16 +13,12 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266mDNS.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
 #include <WiFiUdp.h>            // part of ESP8266 Core https://github.com/esp8266/Arduino
-#ifdef USE_UPDATE_SERVER
-  #include "ModUpdateServer.h"  // https://github.com/mrWheel/ModUpdateServer
-  #include "UpdateServerHtml.h"
-#endif
+#include "ModUpdateServer.h"  // https://github.com/mrWheel/ModUpdateServer
+#include "UpdateServerHtml.h"
 #include <WiFiManager.h>        // version 0.16.0 - https://github.com/tzapu/WiFiManager
 
 ESP8266WebServer        httpServer (80);
-#ifdef USE_UPDATE_SERVER
-  ESP8266HTTPUpdateServer httpUpdater(true);
-#endif
+ESP8266HTTPUpdateServer httpUpdater(true);
 
 bool        FSmounted = false; 
 bool        isConnected = false;
@@ -56,8 +52,6 @@ void onWifiEvent (WiFiEvent_t event) {
     }
 }
 
-
-
 //gets called when WiFiManager enters configuration mode
 //===========================================================================================
 void configModeCallback (WiFiManager *myWiFiManager) 
@@ -79,7 +73,8 @@ void startWiFi(const char* hostname, int timeOut)
   DebugTln("start ...");
   LogFile("Wifi Starting");
   digitalWrite(LED, HIGH); //OFF
-  
+  WiFi.onEvent(onWifiEvent);
+
   manageWiFi.setDebugOutput(false);
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
@@ -102,22 +97,21 @@ void startWiFi(const char* hostname, int timeOut)
     P1Reboot();
     return;
   }
-    WiFi.onEvent(onWifiEvent);
-
+  
 //  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
     WiFi.hostname("p1-dongle");
     DebugTf("Device name [%s]\n", "p1-dongle");
     LogFile("Wifi Connected");
     digitalWrite(LED, LOW); //ON
 
-#ifdef USE_UPDATE_SERVER
   httpUpdater.setup(&httpServer);
-//  httpUpdater.setIndexPage(UpdateServerIndex);
   httpUpdater.setIndexPage(UpdateHTML);
-//  httpUpdater.setSuccessPage(UpdateServerSuccess);
-#endif
   DebugTf("took [%d] seconds => OK!\n", (millis() - lTime) / 1000);
-
+  Debugln();
+  Debug (F("Connected to " )); Debugln (WiFi.SSID());
+  Debug (F("IP address: " ));  Debugln (WiFi.localIP());
+  Debug (F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
+  Debugln();
   
 } // startWiFi()
 

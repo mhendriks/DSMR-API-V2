@@ -35,56 +35,6 @@ static tm timeinfo;
   DECLARE_TIMER_SEC(APPtimer, 5);
 #endif
 
-#ifdef USE_NTP_TIME
-//uitleg ; http://www.weigu.lu/microcontroller/tips_tricks/esp_NTP_tips_tricks/index.html
-//https://werner.rothschopf.net/202011_arduino_esp8266_ntp_en.htm
-#include <TZ.h>
-//#include <time.h>
-
-#define MY_NTP_SERVER "europe.pool.ntp.org"           
-#define MY_TZ TZ_Europe_Amsterdam 
-
-/**
- * Input time in epoch format and return tm time format
- * by Renzo Mischianti <www.mischianti.org> 
- */
-static tm getDateTimeByParams(long time){
-    struct tm *newtime;
-    const time_t tim = time;
-    newtime = localtime(&tim);
-    return *newtime;
-}
-/**
- * Input tm time format and return String with format pattern
- * by Renzo Mischianti <www.mischianti.org>
- */
-static String getDateTimeStringByParams(tm *newtime, char* pattern = (char *)"%d/%m/%Y %H:%M:%S"){
-    char buffer[30];
-    strftime(buffer, 30, pattern, newtime);
-    return buffer;
-}
- 
-/**
- * Input time in epoch format format and return String with format pattern
- * by Renzo Mischianti <www.mischianti.org> 
- */
-static String getEpochStringByParams(long time, char* pattern = (char *)"%Y%m%d%H%M%S"){
-//    struct tm *newtime;
-    tm newtime;
-    newtime = getDateTimeByParams(time);
-    return getDateTimeStringByParams(&newtime, pattern);
-}
-
-#endif
-
-#ifdef USE_BLYNK 
-  //#define BLYNK_PRINT Serial // Defines the object that is used for printing
-  //#define BLYNK_DEBUG        // Optional, this enables more detailed prints
-  #define BLYNK_TEMPLATE_ID  "" //"TMPLAYJ29gfV"
-  #include <BlynkSimpleEsp8266.h>
-  #define _BLYNK_FILE   "/BlynkSetup"
-#endif
-
 static      FSInfo fs_info;
 
 //  https://github.com/mrWheel/dsmr2Lib.git             
@@ -262,7 +212,7 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
 
   char      cMsg[150];
   char      lastReset[30];
-  bool      FSNotPopulated      = false;
+//  bool      FSNotPopulated      = false;
   bool      mqttIsConnected     = false;
   bool      Verbose1 = false, Verbose2 = false;
   int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;

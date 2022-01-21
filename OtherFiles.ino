@@ -79,7 +79,6 @@ void writeSettings()
   doc["waterfactor"] = WtrFactor;
 #endif
   
-  
   writeToJsonFile(doc, SettingsFile);
   
 } // writeSettings()

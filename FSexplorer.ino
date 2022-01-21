@@ -164,15 +164,7 @@ void handleFileUpload()
       fsUploadFile.close();
     Debugln("FileUpload Size: " + (String)upload.totalSize);
     httpServer.sendContent(Header);
-//    if (upload.filename == "DSMRstatus.json") readLastStatus();
     if (upload.filename == "DSMRsettings.json") readSettings(false);
-#ifdef USE_BLYNK
-    if (upload.filename == "BlynkSetup") {
-      SetupBlynk();
-      DebugTln(F("Blynk setup changed..."));
-      P1Reboot();
-      }
-#endif
     
   }
   
@@ -226,12 +218,8 @@ const String &contentType(String& filename)
 //=====================================================================================
 void updateFirmware()
 {
-#ifdef USE_UPDATE_SERVER
   DebugTln(F("Redirect to updateIndex .."));
   doRedirect("Update", 1, "/updateIndex", false,false);
-#else
-  doRedirect("NoUpdateServer", 10, "/", false,false);
-#endif
       
 } // updateFirmware()
 

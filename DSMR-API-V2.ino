@@ -28,7 +28,6 @@ TODO
 √- update pagina ... vreemde tekens onderaan (2.3.2)
 √- Dash meerdere naast elkaar uitlijning return (2.3.2)
 
-
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
@@ -48,15 +47,12 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
     - Port: <select correct port>
 */
 /******************** compiler options  ********************************************/
-#define USE_UPDATE_SERVER           // default ON : define if there is enough memory and updateServer to be used
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
 
 //----- EXTENSIONS
-//#define USE_WATER_SENSOR 1
-//#define USE_NTP_TIME     2           // define to generate Timestamp from NTP (Only Winter Time for now)
-//#define USE_BLYNK      4           // define if the blynk app could be used
+#define USE_WATER_SENSOR 1
 //#define USE_APP        4           // define if the Arduino IOT app could be used
 #define HA_DISCOVER
 
@@ -84,8 +80,8 @@ void setup()
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
   randomSeed(RANDOM_REG32); 
   
-  Debug("\n\n ----> BOOTING....[" _VERSION "] <-----\n\n");
-  DebugTln("The board name is: " ARDUINO_BOARD);
+  Debugln(F("\n\n ----> BOOTING....[" _VERSION "] <-----\n"));
+  DebugTln(F("The board name is: " ARDUINO_BOARD));
 
   strcpy(lastReset , ESP.getResetReason().c_str());
   DebugT(F("Last reset reason: ")); Debugln(lastReset);
@@ -94,7 +90,6 @@ void setup()
 
 //================ Read Persistance Settings ====================
   P1StatusBegin();
-  delay(500);
   if (P1StatusAvailable()) P1StatusRead(); //load persistant data
 
 //================ FS ===========================================
@@ -104,7 +99,6 @@ void setup()
     FSmounted = true;   
   } else DebugTln(F("/!\\File System Mount failed/!\\"));   // Serious problem with FS 
 
-  
   // set the time to actTimestamp!
   actT = epoch(actTimestamp, strlen(actTimestamp), true);
   P1Status.reboots++;
@@ -113,79 +107,35 @@ void setup()
   P1StatusPrint(); //print latest values
   readSettings(true);
   LogFile(""); // write reboot status to file
-
-//================  NTP config=========================================
-
-#ifdef USE_NTP_TIME
-  configTime(MY_TZ, MY_NTP_SERVER);   
-#endif  //USE_NTP_TIME 
   
 //=============start Networkstuff==================================
   
   startWiFi(settingHostname, 240);  // timeout 4 minuten
-  Debugln();
-  Debug (F("Connected to " )); Debugln (WiFi.SSID());
-  Debug (F("IP address: " ));  Debugln (WiFi.localIP());
-  Debug (F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
-  Debugln();
-
-//-----------------------------------------------------------------
-
   startMDNS(settingHostname);
- 
-//=============end Networkstuff======================================
-
-  DebugTf("Last reset reason: [%s]\r", ESP.getResetReason().c_str());
-
-//============= now test if LittleFS is correct populated!============
-  if (!DSMRfileExist(settingIndexPage, false) )  FSNotPopulated = true;   
-    
-//=============end FS =========================================
-  
-#if defined(USE_NTP_TIME)  
-  time(&newT);
-  prevNtpHour = hour(newT); //USE_NTP
-//  time_t t = now(); // store the current time in time variable t                    //USE_NTP
-//  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
-//                                               , (year(newT) - 2000), month(newT), day(newT) //USE_NTP
-//                                               , hour(newT), minute(newT), second(newT));    //USE_NTP
-snprintf(cMsg, sizeof(cMsg), "%sW\0\0",getEpochStringByParams(newT).c_str());
-//  pTimestamp = cMsg;                                                              //USE_NTP
-  DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
-#endif  // use_dsmr_30
-
 
 //================ Start MQTT  ======================================
 
   if ( (strlen(settingMQTTbroker) > 3) && settingMQTTinterval) connectMQTT();
 
-//================ End of Start MQTT  ===============================
 //================ Start HTTP Server ================================
 
-  if (!FSNotPopulated) {
+  if (DSMRfileExist(settingIndexPage, false) ) {
     DebugTln(F("File System correct populated -> normal operation!\r"));
     httpServer.serveStatic("/",                 LittleFS, settingIndexPage);
     httpServer.serveStatic("/DSMRindex.html",   LittleFS, settingIndexPage);
     httpServer.serveStatic(_DEFAULT_HOMEPAGE,   LittleFS, settingIndexPage);
-    httpServer.serveStatic("/index",            LittleFS, settingIndexPage);
-    httpServer.serveStatic("/index.html",       LittleFS, settingIndexPage);
-  } else {
-    DebugTln(F("Oeps! not all files found on LittleFS -> present FSexplorer!\r"));
-    FSNotPopulated = true;
-  }
+//    httpServer.serveStatic("/index",            LittleFS, settingIndexPage);
+//    httpServer.serveStatic("/index.html",       LittleFS, settingIndexPage);
+  } else DebugTln(F("Oeps! not all files found on File System -> present FSexplorer!\r"));
     
   setupFSexplorer();
-  delay(1000);  
+  delay(500);  
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
 
 //================ Start Slimme Meter ===============================
 
 #ifdef USE_APP
   APPsetup();
-#endif
-
-#ifdef USE_BLYNK
-  SetupBlynk();
 #endif
 
 #ifdef USE_WATER_SENSOR  
@@ -196,7 +146,7 @@ snprintf(cMsg, sizeof(cMsg), "%sW\0\0",getEpochStringByParams(newT).c_str());
   CheckRingExists();
 
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
-  DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
+  DebugTln(F("Swapping serial port to Smart Meter, debug output will continue on telnet"));
   Debug(F("\nGebruik 'telnet "));
   Debug (WiFi.localIP());
   Debugln(F("' voor verdere debugging"));
@@ -207,11 +157,10 @@ snprintf(cMsg, sizeof(cMsg), "%sW\0\0",getEpochStringByParams(newT).c_str());
   DebugTln(F("Enable slimmeMeter...\n"));
   slimmeMeter.enable(true);
 #else
-  Debug(F("\n!!! DEBUG MODE AAN !!!\n\n")); 
-#endif // is_esp12
+  Debug(F("\n!!! DEBUG MODE AAN !!!\n\n"));
+#endif
 
 } // setup()
-
 
 //===[ no-blocking delay with running background tasks in ms ]============================
 DECLARE_TIMER_MS(timer_delay_ms, 1);
@@ -222,11 +171,8 @@ void delayms(unsigned long delay_ms)
   while (!DUE(timer_delay_ms))
   {
     doSystemTasks();
-  }
-    
+  }   
 } // delayms()
-
-//========================================================================================
 
 //==[ Do Telegram Processing ]===============================================================
 void doTaskTelegram()
@@ -259,9 +205,7 @@ void loop ()
 {  
   
   //--- verwerk volgend telegram
-  if DUE(nextTelegram) {
-    doTaskTelegram();
-  }
+  if DUE(nextTelegram) doTaskTelegram();
 
   //--- update upTime counter
   if DUE(updateSeconds) upTimeSeconds++;
@@ -282,21 +226,11 @@ void loop ()
   }
 
   if (UpdateRequested) RemoteUpdate(UpdateVersion, true);
-  
-#ifdef USE_BLYNK
-  if (LittleFS.exists(_BLYNK_FILE)){
-    slimmeMeter.loop(); //ivm evt verliezen data
-    yield();
-    Blynk.run();
-    if (DUE(RefreshBlynk) && Blynk.connected()) handleBlynk(); //eens per 5sec
-  }
-#endif
 
 #ifdef USE_APP
   if DUE(APPtimer) APPUpdate();
 #endif
 
-  
   //--- if connection lost, try to reconnect to WiFi
   if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
   {
@@ -308,23 +242,6 @@ void loop ()
     } else snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str(), WiFi.gatewayIP().toString().c_str());
   }
 
-//--- if NTP set, see if it needs synchronizing
-#ifdef USE_NTP_TIME
-    if (timeStatus() == timeNeedsSync || prevNtpHour != hour()) 
-    {
-      
-      setSyncProvider(getNtpTime);
-      setSyncInterval(60);
-//        unsigned long epoch = now();
-    newT = time(nullptr);
-    setTime(newT);
-    localtime_r(&newT, &timeinfo);
-    prevNtpHour = hour();
-    Debugf("NTP epoch: %d\r\n", newT);
-    DebugTln("NTP epoch2string: " + getEpochStringByParams(newT));
-    DebugTln(timeinfo.tm_isdst?"NTP Zomertijd":"NTP Wintertijd" );
-      }
-#endif 
   yield();
 
 } // loop()

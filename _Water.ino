@@ -9,7 +9,7 @@ void sendMQTTWater(){
 }
 
 void IRAM_ATTR iWater() {
-    if (DUE(WaterTimer)) { //negeer te korte foutieve meting (1500 ltr/uur / 3600 = 0,4l/sec kan daarom niet zo zijn dat binnen de 1/0,4 = 2,4§s er nog een puls komt) = debounce timer
+    if (DUE(WaterTimer)) { //negeer te korte foutieve meting (1500 ltr/uur / 3600 = 0,4l/sec kan daarom niet zo zijn dat binnen de 1/0,4 = 2,4s er nog een puls komt) = debounce timer
       P1Status.wtr_l += WtrFactor;
       if (WtrPrevReading) DebugTf("Watermeter time between readings: %d\n",now() - WtrPrevReading);
       WtrPrevReading = now();
@@ -27,7 +27,7 @@ void IRAM_ATTR iWater() {
 
 void setupWater() {
   pinMode(PIN_WATER_SENSOR, INPUT);
-  attachInterrupt(digitalPinToInterrupt(PIN_WATER_SENSOR), iWater, RISING);
+  attachInterrupt(digitalPinToInterrupt(PIN_WATER_SENSOR), iWater, FALLING);
   DebugTln(F("WaterSensor setup completed"));
 }
 

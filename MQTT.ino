@@ -68,7 +68,8 @@ void AutoDiscoverHA(){
   SendAutoDiscoverHA("gas_delivered", "gas", "Gas Delivered", "m³", "{{ value_json.gas_delivered[0].value | round(2) }}","total_increasing","");
   
   SendAutoDiscoverHA("water", "", "Waterverbruik", "m³", "{{ value_json.water[0].value | round(0) }}","total_increasing",",\"icon\": \"mdi:water\"");
-
+  
+  MQTTclient.setBufferSize(256); //reset to default
 }
 #endif
 
@@ -102,7 +103,7 @@ void connectMQTT()
 void MQTTcallback(char* topic, byte* payload, unsigned int length) {
   if (length > 24) return;
   for (int i=0;i<length;i++) UpdateVersion[i] = (char)payload[i];
-  DebugT("Message arrived [");Debug(topic);Debug("] ");Debugln(UpdateVersion);
+  DebugT(F("Message arrived ["));Debug(topic);Debug("] ");Debugln(UpdateVersion);
   UpdateRequested = true;
 }
 
@@ -163,7 +164,6 @@ int n = MDNS.queryService("espserver", "tcp");
           {
             DebugT(F("without a Username/Password "));
             MQTTclient.connect(MQTTclientId.c_str(),"","",cMsg,1,true,"Offline");
-//            MQTTclient.connect(MQTTclientId.c_str());
           } 
           else 
           {
