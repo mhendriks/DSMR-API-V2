@@ -1,4 +1,7 @@
 # Home Assistant integratie
+
+> LET OP! voor deze integratie dient een MQTT broker aanwezig te zijn in uw netwerk of in Home Assistant
+
 HA maakt gebruik van de MQTT koppeling om de data vanuit de P1 dongel te ontvangen.
 Om een koppeling te maken met HA dienen de volgende stappen doorlopen te worden.
 
