@@ -49,7 +49,7 @@
   device_class: "power"
   state_class: "measurement"
   state_topic: "DSMR-API/power_delivered" 
-  unit_of_measurement: "kW"
+  unit_of_measurement: "Watt"
   value_template: "{{ value_json.power_delivered[0].value | float * 1000 }}"
 
 - platform: mqtt
@@ -58,7 +58,7 @@
   device_class: "power"
   state_class: "measurement"
   state_topic: "DSMR-API/power_returned"
-  unit_of_measurement: "W"
+  unit_of_measurement: "Watt"
   value_template: "{{ value_json.power_returned[0].value | float * 1000 }}"
 
 - platform: mqtt
