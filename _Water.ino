@@ -2,10 +2,8 @@
 
 void sendMQTTWater(){
   if (!WtrMtr) return;
-  char MQTTmsg[50];
-  sprintf(MQTTmsg,"{\"water\":[{\"value\":%d.%d,\"unit\":\"m3\"}]}",P1Status.wtr_m3,P1Status.wtr_l);
-  sprintf(cMsg,"%swater",settingMQTTtopTopic);
-  if ( !MQTTclient.publish(cMsg, MQTTmsg,true) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, MQTTmsg, (strlen(cMsg) + strlen(MQTTmsg)));
+  sprintf(cMsg,"%d.%d",P1Status.wtr_m3,P1Status.wtr_l);
+  MQTTSend("water",cMsg);
 }
 
 void IRAM_ATTR iWater() {
@@ -13,7 +11,7 @@ void IRAM_ATTR iWater() {
       P1Status.wtr_l += WtrFactor;
       if (WtrPrevReading) DebugTf("Watermeter time between readings: %d\n",now() - WtrPrevReading);
       WtrPrevReading = now();
-      if (P1Status.wtr_l >= 1000) {
+      if (P1Status.wtr_l > 999) {
         P1Status.wtr_m3++;
         P1Status.wtr_l = 0;
         CHANGE_INTERVAL_MS(StatusTimer, 100); //schrijf status weg bij elke m3

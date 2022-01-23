@@ -11,11 +11,11 @@
 #include <ESP8266httpUpdate.h>
 
 void update_finished() {
-  LogFile("Update geslaagd");
+  LogFile("Update geslaagd",true);
 }
 
 void update_started() {
-  LogFile("Firmware update gestart");
+  LogFile("Firmware update gestart",true);
   httpServer.send(200, "text/html", "Firmware update gestart...");
 }
 
@@ -25,7 +25,7 @@ void update_progress(int cur, int total) {
 
 void update_error(int err) {
   Debugf("HTTP update fatal error code %d | %s\n", err, ESPhttpUpdate.getLastErrorString().c_str());
-  LogFile("Firmware update ERROR");
+  LogFile("Firmware update ERROR",true);
   httpServer.send(200, "text/html", "Firmware update ERROR: " + err);
 }
 
@@ -75,7 +75,7 @@ void RemoteUpdate(const char* versie, bool sketch){
     } else {
       //onjuist argument in url aanroep
       httpServer.send(200, "text/html", "ERROR: Update Failed - No version argument");
-      LogFile("Remote update ERROR: Update Failed - No version argument" );
+      LogFile("Remote update ERROR: Update Failed - No version argument",false );
     }
   UpdateRequested = false;
 } //RemoteUpdate

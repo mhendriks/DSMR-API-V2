@@ -8,6 +8,8 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
+#include "DSMRloggerAPI.h"
+
 #include <ESP8266WiFi.h>        //ESP8266 Core WiFi Library         
 #include <ESP8266WebServer.h>   // Version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
 #include <ESP8266HTTPClient.h>
@@ -20,34 +22,40 @@
 ESP8266WebServer        httpServer (80);
 ESP8266HTTPUpdateServer httpUpdater(true);
 
-bool        FSmounted = false; 
+#define   MaxWifiReconnect  10
+
 bool        isConnected = false;
+bool        WifiBoot = true;
+byte        WiFiReconnectCount  = 0;
+
 void P1StatusWrite();
 void P1Reboot();
-void LogFile(const char*);
-bool wifiFirstConnected = false;
+void LogFile(const char*, bool);
+void startWiFi(const char* , int );
 
-// naar idee van https://github.com/gmag11/ESPNtpClient/blob/main/examples/advancedExample/advancedExample.ino
+// naar setup van https://github.com/gmag11/ESPNtpClient/blob/main/examples/advancedExample/advancedExample.ino
 void onWifiEvent (WiFiEvent_t event) {
-    DebugTf ("[WiFi-event] event: %d\n", event);
     switch (event) {
     case WIFI_EVENT_STAMODE_CONNECTED:
         DebugTf ("Connected to %s. Asking for IP address.\r\n", WiFi.BSSIDstr().c_str());
         break;
     case WIFI_EVENT_STAMODE_GOT_IP:
-        DebugTf ("Got IP: %s\r\n", WiFi.localIP().toString().c_str ());
-        DebugTf ("Connected: %s\r\n", WiFi.status () == WL_CONNECTED ? "yes" : "no");
-//        digitalWrite (ONBOARDLED, LOW); // Turn on LED
-        wifiFirstConnected = true;
+        LogFile("Wifi Connected",true);
+        digitalWrite(LED, LOW); //ON
+        Debug (F("\nConnected to " )); Debugln (WiFi.SSID());
+        Debug (F("IP address: " ));  Debug (WiFi.localIP());
+        Debug (F(" ( gateway: " ));  Debug (WiFi.gatewayIP());Debug(" )\n\n");
+        WiFiReconnectCount = 0;
+        WifiBoot = false;
         break;
     case WIFI_EVENT_STAMODE_DISCONNECTED:
-        DebugTf ("Disconnected from SSID: %s\n", WiFi.BSSIDstr ().c_str ());
-        //Serial.printf ("Reason: %d\n", info.disconnected.reason);
-//        digitalWrite (ONBOARDLED, HIGH); // Turn off LED
-        //NTP.stop(); // NTP sync can be disabled to avoid sync errors
-        WiFi.reconnect ();
+        LogFile("Wifi connection lost",true);          
+        delay(1000); //wait longer before retrying
+        WiFi.reconnect();
+        if ( (WiFiReconnectCount++ > MaxWifiReconnect)  && !WifiBoot ) P1Reboot();
         break;
     default:
+        DebugTf ("[WiFi-event] event: %d\n", event);
         break;
     }
 }
@@ -70,11 +78,11 @@ void startWiFi(const char* hostname, int timeOut)
   uint32_t lTime = millis();
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
   
-  DebugTln("start ...");
-  LogFile("Wifi Starting");
+  LogFile("Wifi Starting", true);
   digitalWrite(LED, HIGH); //OFF
+  WifiBoot = true;
   WiFi.onEvent(onWifiEvent);
-
+  
   manageWiFi.setDebugOutput(false);
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
@@ -90,28 +98,16 @@ void startWiFi(const char* hostname, int timeOut)
   //--- and goes into a blocking loop awaiting configuration
   if (!manageWiFi.autoConnect("P1-Dongle")) 
   {
-    DebugTln(F("failed to connect and hit timeout"));
-   
+    LogFile("Wifi failed to connect and hit timeout",true);   
     //reset and try again, or maybe put it to deep sleep
-    LogFile("Wifi Timeout");
+    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
     P1Reboot();
     return;
-  }
-  
-//  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
-    WiFi.hostname("p1-dongle");
-    DebugTf("Device name [%s]\n", "p1-dongle");
-    LogFile("Wifi Connected");
-    digitalWrite(LED, LOW); //ON
+  } 
+  DebugTf("took [%d] seconds => OK!\n", (millis() - lTime) / 1000);
 
   httpUpdater.setup(&httpServer);
   httpUpdater.setIndexPage(UpdateHTML);
-  DebugTf("took [%d] seconds => OK!\n", (millis() - lTime) / 1000);
-  Debugln();
-  Debug (F("Connected to " )); Debugln (WiFi.SSID());
-  Debug (F("IP address: " ));  Debugln (WiFi.localIP());
-  Debug (F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
-  Debugln();
   
 } // startWiFi()
 

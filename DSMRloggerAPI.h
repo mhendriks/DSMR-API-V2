@@ -42,7 +42,6 @@ static      FSInfo fs_info;
 
 P1Reader    slimmeMeter(&Serial, DTR_ENABLE);
 
-//enum { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 enum E_ringfiletype {RINGHOURS, RINGDAYS, RINGMONTHS};
 
 typedef struct {
@@ -53,11 +52,6 @@ typedef struct {
   } S_ringfile;
 
 
-//pre-3.2.00
-//const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR}, {"/RINGdays.json",14+1,SECS_PER_DAY},{"/RINGmonths.json",24+1,0}}; 
-//#define DATA_FORMAT       "{\"date\":\"%-8.8s\",\"values\":[%10.3f,%10.3f,%10.3f,%10.3f,%10.3f]}" 
-//#define DATA_RECLEN       87  //total length incl comma and new line
-
 //vanaf 3.2.0 met watermeter
 //+1 voor de vergelijking, laatste record wordt niet getoond 
 //onderstaande struct kan niet in PROGMEM opgenomen worden. gaat stuk bij SPIFF.open functie
@@ -67,7 +61,7 @@ const S_ringfile RingFiles[3] = {{"/RNGhours.json", 48+1,SECS_PER_HOUR, 4826}, {
 #define JSON_HEADER_LEN   23  //total length incl new line
 #define DATA_CLOSE        2   //length last row of datafile
 
-
+//TODO
 //in mem houden van de ringfile gegevens voor een snelle oplevering naar de client. Vooral de Day gegevens die worden door het dashboard gebruikt.
 //struct P1DataRec {
 //  uint32_t  date;
@@ -208,11 +202,11 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   bool        LEDenabled    = true;
   bool        DSMR_NL       = true;
   bool        EnableHistory = true;
-  char        BaseOTAurl[75] = "http://smart-stuff.nl/ota/";
+  bool        FSmounted     = false; 
+  char        BaseOTAurl[75] = "http://ota.smart-stuff.nl/";
 
   char      cMsg[150];
   char      lastReset[30];
-//  bool      FSNotPopulated      = false;
   bool      mqttIsConnected     = false;
   bool      Verbose1 = false, Verbose2 = false;
   int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
@@ -220,8 +214,8 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   IPAddress ipDNS, ipGateWay, ipSubnet;
   uint8_t   settingTelegramInterval = 2; //seconden 10 pre v3.1 ... 1 second v3.1
   uint8_t   settingSmHasFaseInfo    = 1;
-  char      settingHostname[30]     = _DEFAULT_HOSTNAME;
   char      settingIndexPage[50]    = _DEFAULT_HOMEPAGE;
+  char      settingHostname[30]     = _DEFAULT_HOSTNAME;
 
   bool      StaticInfoSend = false;
   char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
@@ -229,6 +223,7 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   float     gasDelivered;
   byte      mbusGas = 0;
   byte      RingCylce = 0;
+  
 //specifiek voor dongle functies
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
   float     settingENBK = 15.15, settingGNBK = 11.11;
@@ -244,14 +239,12 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
 //===========================================================================================
 // setup timers 
 DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
-DECLARE_TIMER_SEC(reconnectWiFi,      10);
 DECLARE_TIMER_SEC(nextTelegram,        2);
 DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(antiWearRing,       25); 
 DECLARE_TIMER_MIN(StatusTimer,        10);
 DECLARE_TIMER_MS(WaterTimer,         DEBOUNCETIMER);
-//DECLARE_TIMER_SEC(synchrNTP,          30);
 
 #endif
 /***************************************************************************

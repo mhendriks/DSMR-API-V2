@@ -113,8 +113,8 @@ bool connectMQTT_FSM()
   switch(stateMQTT) 
   {
     case MQTT_STATE_INIT:  
-          DebugTln(F("MQTT State: MQTT Initializing"));
-          LogFile("MQTT Starting");
+//          DebugTln(F("MQTT State: MQTT Initializing"));
+          LogFile("MQTT State: MQTT Initializing",true);
           WiFi.hostByName(settingMQTTbroker, MQTTbrokerIP);  // lookup the MQTTbroker convert to IP
 /*
 int n = MDNS.queryService("espserver", "tcp");
@@ -151,8 +151,7 @@ int n = MDNS.queryService("espserver", "tcp");
           reconnectAttempts = 0;
 
     case MQTT_STATE_TRY_TO_CONNECT:
-          DebugTln(F("MQTT State: MQTT try to connect"));
-          LogFile("MQTT State: MQTT try to connect");
+          LogFile("MQTT State: MQTT try to connect",true);
           DebugTf("MQTT server is [%s], IP[%s]\r\n", settingMQTTbroker, MQTTbrokerIPchar);
       
           DebugTf("Attempting MQTT connection as [%s] .. \r\n", MQTTclientId.c_str());
@@ -185,7 +184,7 @@ int n = MDNS.queryService("espserver", "tcp");
               if (P1Status.wtr_m3) sendMQTTWater();
             #endif
 
-            LogFile("MQTT connected");
+            LogFile("MQTT connected",false);
             MQTTclient.loop();
             stateMQTT = MQTT_STATE_IS_CONNECTED;
             return true;
@@ -202,13 +201,12 @@ int n = MDNS.queryService("espserver", "tcp");
           break;
           
     case MQTT_STATE_IS_CONNECTED:
-          LogFile("MQTT Connected");
+          LogFile("MQTT Connected",false);
           MQTTclient.loop();
           return true;
 
     case MQTT_STATE_ERROR:
-          DebugTln(F("MQTT State: MQTT ERROR, wait for 5 seconds, before trying again"));
-          LogFile("MQTT Error: retry in 5 seconds");
+          LogFile("MQTT Error: retry in 5 seconds",true);
 
           //--- next retry in 5 sec.
           CHANGE_INTERVAL_SEC(reconnectMQTTtimer, 5);

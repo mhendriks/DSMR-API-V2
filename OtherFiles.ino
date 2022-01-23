@@ -104,8 +104,8 @@ void readSettings(bool show)
 
   DeserializationError error = deserializeJson(doc, SettingsFile);
   if (error) {
-    DebugTln(F("read():Failed to read DSMRsettings.json file"));
-    LogFile("read():Failed to read DSMRsettings.json file");
+//    DebugTln(F("read():Failed to read DSMRsettings.json file"));
+    LogFile("read():Failed to read DSMRsettings.json file",true);
     SettingsFile.close();
     writeSettings();
     return;
@@ -285,16 +285,16 @@ void updateSetting(const char *field, const char *newValue)
 } // updateSetting()
 
 //=======================================================================
-void LogFile(const char* payload) {
+void LogFile(const char* payload, bool toDebug = false) {
   if (!FSmounted) return;
   File LogFile = LittleFS.open("/P1.log", "a"); // open for appending  
   if (!LogFile) {
     DebugTln(F("open P1.log FAILED!!!--> Bailout\r\n"));
     return;
   }
-  
+  if (toDebug) DebugTln(payload);
   //log rotate
-  if (LogFile.size() > 7000){ 
+  if (LogFile.size() > 8000){ 
 //    DebugT(F("LogFile filesize: "));Debugln(RebootFile.size());
     LittleFS.remove("/P1_log.old");     //remove .old if existing 
     //rename file
@@ -303,12 +303,12 @@ void LogFile(const char* payload) {
     LittleFS.rename("/P1.log", "/P1_log.old");
     LogFile = LittleFS.open("/P1.log", "a"); // open for appending  
     }
-    //write record in log
+    
     if (strlen(payload)==0) {
       //reboot
       //make one record : {"time":"2020-09-23 17:03:25","reason":"Software/System restart","reboots":42}
       LogFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"reboot\":\"" + lastReset + "\",\"reboots\":" +  (int)P1Status.reboots + "}");
-    } else {
+    } else { 
       //make one record : {"time":"2020-09-23 17:03:25","log":"Software/System restart"}
       LogFile.println("{\"time\":\"" + buildDateTimeString(actTimestamp, sizeof(actTimestamp)) + "\",\"log\":\"" + payload + "\"}");
     }

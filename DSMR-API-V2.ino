@@ -10,23 +10,15 @@
 TODO
 - frontend instellingen mutabel in webpagina
 - Piekvermogen bijhouden Belgie
-- Blynk 2.0 implentatie
 - eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek en voor maar 15 minuten)
 - issue met de datafiles ... dan zelf herstellend verder gaan
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
 - Aanpassen front-end ivm no-history feaure
-- water grafisch
-- water in tabellen
-- NTP tijd
+- core version
+- waterstand ook verzenden zonder slimme meter koppeling
 
 !!! FIXES
-√ Core verion met alleen MQTT en essentiele api functies, Niet meer beschikbaar in de no-history versie:
-√- RING Files
-√- api/v2/hist
-- waterstand ook verzenden zonder slimme meter
 - telnet update via windows ... invoeren lukt niet
-√- update pagina ... vreemde tekens onderaan (2.3.2)
-√- Dash meerdere naast elkaar uitlijning return (2.3.2)
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
@@ -106,7 +98,7 @@ void setup()
   P1StatusWrite();
   P1StatusPrint(); //print latest values
   readSettings(true);
-  LogFile(""); // write reboot status to file
+  LogFile("",false); // write reboot status to file
   
 //=============start Networkstuff==================================
   
@@ -124,13 +116,11 @@ void setup()
     httpServer.serveStatic("/",                 LittleFS, settingIndexPage);
     httpServer.serveStatic("/DSMRindex.html",   LittleFS, settingIndexPage);
     httpServer.serveStatic(_DEFAULT_HOMEPAGE,   LittleFS, settingIndexPage);
-//    httpServer.serveStatic("/index",            LittleFS, settingIndexPage);
-//    httpServer.serveStatic("/index.html",       LittleFS, settingIndexPage);
   } else DebugTln(F("Oeps! not all files found on File System -> present FSexplorer!\r"));
     
   setupFSexplorer();
-  delay(500);  
-  DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
+//  delay(500);  
+//  DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
 
 //================ Start Slimme Meter ===============================
 
@@ -147,9 +137,7 @@ void setup()
 
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
   DebugTln(F("Swapping serial port to Smart Meter, debug output will continue on telnet"));
-  Debug(F("\nGebruik 'telnet "));
-  Debug (WiFi.localIP());
-  Debugln(F("' voor verdere debugging"));
+  Debug(F("\nGebruik 'telnet "));  Debug (WiFi.localIP());  Debugln(F("' voor verdere debugging"));
   DebugFlush();
   delay(200);
   Serial.swap();
@@ -203,7 +191,6 @@ void doSystemTasks()
 
 void loop () 
 {  
-  
   //--- verwerk volgend telegram
   if DUE(nextTelegram) doTaskTelegram();
 
@@ -230,17 +217,6 @@ void loop ()
 #ifdef USE_APP
   if DUE(APPtimer) APPUpdate();
 #endif
-
-  //--- if connection lost, try to reconnect to WiFi
-  if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
-  {
-    sprintf(cMsg,"Wifi connection lost | rssi: %d",WiFi.RSSI());
-    LogFile(cMsg);  
-    startWiFi(settingHostname, 10);
-    if (WiFi.status() != WL_CONNECTED){
-          LogFile("Wifi connection still lost");  
-    } else snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str(), WiFi.gatewayIP().toString().c_str());
-  }
 
   yield();
 
