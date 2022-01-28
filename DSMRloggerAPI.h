@@ -177,7 +177,7 @@ static PubSubClient MQTTclient(wifiClient);
   byte        debounces     = 0;
   time_t      WtrPrevReading= 0;
 #endif //USE_WATER_SENSOR
-#define       DEBOUNCETIMER 2000
+#define       DEBOUNCETIMER 1500
   bool        WtrMtr        = false;
   
 struct Status {

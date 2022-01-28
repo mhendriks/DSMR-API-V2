@@ -25,7 +25,7 @@ void IRAM_ATTR iWater() {
 
 void setupWater() {
   pinMode(PIN_WATER_SENSOR, INPUT);
-  attachInterrupt(digitalPinToInterrupt(PIN_WATER_SENSOR), iWater, FALLING);
+  attachInterrupt(digitalPinToInterrupt(PIN_WATER_SENSOR), iWater, RISING);
   DebugTln(F("WaterSensor setup completed"));
 }
 
