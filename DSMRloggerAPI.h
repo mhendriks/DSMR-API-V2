@@ -14,7 +14,7 @@
 #define _DEFAULT_HOSTNAME   "DSMR-API/" 
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
-#define DTR_ENABLE          12
+#define DTR_ENABLE          14 //versie 3.1
 #define LED                 2
 
 static tm timeinfo;
@@ -171,7 +171,7 @@ WiFiClient  wifiClient;
 static PubSubClient MQTTclient(wifiClient);
   
 #ifdef USE_WATER_SENSOR  
-  #define PIN_WATER_SENSOR 5
+  #define     PIN_WATER_SENSOR 5 //let op 5 voor de v3.4/3.3 en 2 voor 3.1
   byte        WtrFactor     = 1;
   time_t      debounce_t;
   byte        debounces     = 0;
