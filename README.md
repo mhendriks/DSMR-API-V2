@@ -4,9 +4,9 @@ Nu ook native ESPHOME - Home Assistant integratie.
 Inclusief hardware serial ondersteuning.
 
 Er zijn hiermee meerdere keuzes mogelijk met deze hardware, namelijk:
-1. DSMR-API software: met eigen opslag en web interface. ook via mqtt te koppelen met Home Assistant of andere smart home oplossingen Zie [setup/dsmr-api](setup/dsmr-api/README.md)
-2. ESPHome: voor naadloze integratie met Home Assistant. Zie [setup/epshome](setup/esphome/README.md)
-3. Tasmota: in ontwikkeling Zie [setup/tasmota](setup/tasmota/README.md)
+1. DSMR-API software: met eigen opslag en web interface. ook via mqtt te koppelen met Home Assistant of andere smart home oplossingen Zie [manual/dsmr-api](manual/dsmr-api/README.md)
+2. ESPHome: voor naadloze integratie met Home Assistant. Zie [manual/epshome](manual/esphome/README.md)
+3. Tasmota: in ontwikkeling Zie [manual/tasmota](manual/tasmota/README.md)
 
 # Slimmemeter P1 Dongel - DSMR-API - Hardware versie 3.4
 Eigenschappen
@@ -55,7 +55,7 @@ Aanpassing (tot nu toe) ten opzichte van DSMR-API van Willem zijn:
 - Front-end settings worden van de dongel gelezen (een eerste aanzet)
 - LittleFS in plaats van SPIFFS als bestandssysteem
 
-Instructie is te vinden in de [setup/dsmr-api](setup/dsmr-api/README.md) folder.
+Instructie is te vinden in de [manual/dsmr-api](manual/dsmr-api/README.md) folder.
 
 # Hardware maken of aanschaffen
 Je kan je eigen hardware maken of deze aanschaffen. Wil je deze aanschaffen neem dan een kijkje op <a href="https://smart-stuff.nl" target="_blank">smart-stuff.nl</a>
