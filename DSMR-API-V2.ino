@@ -14,7 +14,6 @@ TODO
 - issue met de datafiles ... dan zelf herstellend verder gaan
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
 - Aanpassen front-end ivm no-history feaure
-- core version
 - waterstand ook verzenden zonder slimme meter koppeling
 
 !!! FIXES
@@ -44,7 +43,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 //#define DEBUG_MODE
 
 //----- EXTENSIONS
-#define USE_WATER_SENSOR 1
+//#define USE_WATER_SENSOR 1
 //#define USE_APP        4           // define if the Arduino IOT app could be used
 #define HA_DISCOVER
 
