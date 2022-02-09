@@ -58,4 +58,4 @@ Aanpassing (tot nu toe) ten opzichte van DSMR-API van Willem zijn:
 Instructie is te vinden in de [setup/dsmr-api](setup/dsmr-api/README.md) folder.
 
 # Hardware maken of aanschaffen
-Je kan je eigen hardware maken of deze aanschaffen. Wil je deze aanschaffen neem dan een kijkje op [smart-stuff.nl](https://smart-stuff.nl){:target="\_blank"}
+Je kan je eigen hardware maken of deze aanschaffen. Wil je deze aanschaffen neem dan een kijkje op </a>&nbsp;<a href="https://smart-stuff.nl" target="_blank">smart-stuff.nl</a>
