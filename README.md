@@ -33,14 +33,14 @@ Op het printje zitten de volgende modules:
 - ESP-12S CPU SoC
 
 Alle modules samen zie je in het onderstaande schema.
-![Kicad schema](hardware/v3.3-kicad-schema.png) 
+![Kicad schema](.github/images/v3.3-kicad-schema.png) 
 
 
 Omgezet naar een pcb ziet dit er zo uit:
 
 Bovenkant             |  Onderkant 
 :-------------------------:|:-------------------------:
-<img src="hardware/v3.3-print-boven.png" width="50%"> |  <img src="hardware/v3.3-print-onder.png" width="50%"> 
+<img src=".github/images/v3.3-print-boven.png" width="50%"> |  <img src=".github/images/v3.3-print-onder.png" width="50%"> 
 
 Afmeting van de print is 33 mm * 18.25 mm
 
