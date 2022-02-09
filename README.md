@@ -1,3 +1,5 @@
+</a>&nbsp;<a href="https://smart-stuff.nl/" target="_blank">![Buy P1 Dongle](.github/images/button_buy-p-dongle.png)</a>
+
 # NEW
 
 Nu ook native ESPHome - Home Assistant integratie.
