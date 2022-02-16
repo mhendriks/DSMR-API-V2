@@ -64,7 +64,7 @@
 		<col class="col5"/>
 		</colgroup>
           <tr>
-            <th>Date/Time</th>
+            <th>Datum/Tijd</th>
             <th>Energie<br>Verbruik<br>(Watt)</th>
             <th>Energie<br>Teruglevering<br>(Watt)</th>
             <th>Gas-<br>verbruik<br>(m3)</th>
@@ -98,7 +98,7 @@
 		</colgroup>
       <thead>
         <tr>
-            <th>Date/Time</th>
+            <th>Datum/Tijd</th>
             <th>Energie<br>Verbruik<br>(Watt)</th>
             <th>Energie<br>Teruglevering<br>(Watt)</th>
             <th>Gas-<br>verbruik<br>(m3)</th>
@@ -151,8 +151,8 @@
       <thead>
         <tr>
             <th></th>
-            <th colspan=4>Verbruik</th>
-            <th style="text-align:center" colspan=4>Opgewekt</th>
+            <th colspan=4>Afgenomen</th>
+            <th style="text-align:center" colspan=4>Teruggeleverd</th>
             <th colspan=4>Gasverbruik</th>
 			<th style="text-align:center" colspan=4>Waterverbruik</th>
         </tr>
@@ -173,11 +173,10 @@
             <th>Jaar</th>
             <th>(m3)</th>
             
-			<th>Jaar</th>
-            <th>(m3)</th>
             <th>Jaar</th>
             <th>(m3)</th>
-        </tr>
+            <th>Jaar</th>
+            <th>(m3)</th>        </tr>
       </thead>
       <tbody>
 	  </tbody>
@@ -213,9 +212,9 @@
       <table id="devInfoTable">
       <thead>
         <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th>Unit</th>
+            <th>Naam</th>
+            <th>Waarde</th>
+            <th>Eenheid</th>
         </tr>
       </thead>
       <tbody id="tb_info">
@@ -246,10 +245,10 @@
       <table id="fieldsTable">
       <thead>
         <tr>
-            <th>DSMR Name</th>
-            <th>Human Name</th>
-            <th>Value</th>
-            <th>Unit</th>
+            <th>DSMR ID</th>
+            <th>Leesbare Naam</th>
+            <th>Waarde</th>
+            <th>Eenheid</th>
         </tr>
       </thead>
       <tbody>
@@ -272,7 +271,7 @@
       <thead>
         <tr>
             <th>Onderdeel</th>
-			<th>Human Name</th>
+			<th>Leesbare Naam</th>
             <th>Instelling</th>
         </tr>
       </thead>
@@ -454,9 +453,9 @@
       <table id="actualTable">
       <thead>
         <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th style="text-align: center;">Unit</th>
+            <th>Naam</th>
+            <th>Waarde</th>
+            <th style="text-align: center;">Eenheid</th>
         </tr>
       </thead>
       <tbody>
@@ -543,7 +542,7 @@
             <div style="text-align:center">Vandaag [㎥]</div>
             <h2 id="G">0.0</h2>
         </div>
-        <div class=card id=l7 style="display:none">
+                <div class=card id=l7 style="display:none">
             <h1 id=Gh class="mdi mdi-water">Water</h1>
             <canvas class="chart-container" id="container-7"></canvas>
 			<div id=legenda>

@@ -8,13 +8,10 @@
 ***************************************************************************      
 *      
 TODO
-- frontend instellingen mutabel in webpagina
 - Piekvermogen bijhouden Belgie
 - eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek en voor maar 15 minuten)
-- issue met de datafiles ... dan zelf herstellend verder gaan
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
 - Aanpassen front-end ivm no-history feaure
-- waterstand ook verzenden zonder slimme meter koppeling
 
 !!! FIXES
 - telnet update via windows ... invoeren lukt niet

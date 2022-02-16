@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRgraphics.js, part of DSMRloggerAPI
-**  Version  : v2.3.5
+**  Version  : v3.0.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -211,7 +211,7 @@ var myWaterChart;
     //--- show canvas
     document.getElementById("dataChart").style.display  = "block";
     document.getElementById("gasChart").style.display   = "block";
-    document.getElementById("waterChart").style.display   = "block";
+    if (HeeftWater) document.getElementById("waterChart").style.display   = "block";
   } // showHistGraph()
   
   
@@ -301,10 +301,11 @@ var myWaterChart;
   //      console.log("data.data.length "+data.data.length);
   
     var p = 0;                
-    for (let y=data.data.length + data.actSlot; y > data.actSlot+1; y--)
+//     for (let y=data.data.length + data.actSlot; y > data.actSlot+1; y--)
+    for (let y=data.actSlot+2; y <= (data.data.length + data.actSlot); y++)
     {	
       var i = y % data.data.length;
-  var slotbefore = math.mod(i-1, data.data.length);
+	  var slotbefore = math.mod(i-1, data.data.length);
 
     //console.log("i: "+i);            
     //console.log("y: "+y);
@@ -325,8 +326,8 @@ var myWaterChart;
         if (data.data[i].p_er >= 0) electrData.datasets[1].data[p]  = (data.data[i].p_er * -1.0).toFixed(3);
       }
       if (data.data[i].p_gd  >= 0) gasData.datasets[0].data[p]     = (data.data[i].p_gd * 1000.0).toFixed(0);
-      if (data.data[i].water  >= 0) waterData.datasets[0].data[p]     = (data.data[i].water * 1000.0).toFixed(0);
-	p++;
+      if (data.data[i].water  >= 0) waterData.datasets[0].data[p]  = (data.data[i].water * 1000.0).toFixed(0);
+      p++;
     } // for i ..
 
   } // copyDataToChart()
@@ -353,7 +354,7 @@ var myWaterChart;
     electrData.datasets[0].borderColor     = "red";
     electrData.datasets[0].backgroundColor = "red";
     electrData.datasets[0].data            = []; //contains the 'Y; axis data
-    electrData.datasets[0].label           = "Gebruikt deze periode"; //"S"+s; //contains the 'Y; axis label
+    electrData.datasets[0].label           = "Afgenomen deze periode"; //"S"+s; //contains the 'Y; axis label
     electrData.datasets[0].stack           = "DP"
     // idx 1 => ER
     electrData.datasets.push({}); //create a new dataset
@@ -361,7 +362,7 @@ var myWaterChart;
     electrData.datasets[1].borderColor     = "green";
     electrData.datasets[1].backgroundColor = "green";
     electrData.datasets[1].data            = []; //contains the 'Y; axis data
-    electrData.datasets[1].label           = "Opgewekt deze Periode"; //"S"+s; //contains the 'Y; axis label
+    electrData.datasets[1].label           = "Teruggeleverd deze Periode"; //"S"+s; //contains the 'Y; axis label
     electrData.datasets[1].stack           = "DP"
     // idx 2 => ED -1
     electrData.datasets.push({}); //create a new dataset
@@ -369,7 +370,7 @@ var myWaterChart;
     electrData.datasets[2].borderColor     = "orange";
     electrData.datasets[2].backgroundColor = "orange";
     electrData.datasets[2].data            = []; //contains the 'Y; axis data
-    electrData.datasets[2].label           = "Gebruikt vorige periode"; //"S"+s; //contains the 'Y; axis label
+    electrData.datasets[2].label           = "Afgenomen vorige periode"; //"S"+s; //contains the 'Y; axis label
     electrData.datasets[2].stack           = "RP"
     // idx 3 => ER -1
     electrData.datasets.push({}); //create a new dataset
@@ -377,7 +378,7 @@ var myWaterChart;
     electrData.datasets[3].borderColor     = "lightgreen";
     electrData.datasets[3].backgroundColor = "lightgreen";
     electrData.datasets[3].data            = []; //contains the 'Y; axis data
-    electrData.datasets[3].label           = "Opgewekt vorige Periode"; //"S"+s; //contains the 'Y; axis label
+    electrData.datasets[3].label           = "Teruggeleverd vorige Periode"; //"S"+s; //contains the 'Y; axis label
     electrData.datasets[3].stack           = "RP"
     // idx 0 => GD
     gasData.datasets.push({}); //create a new dataset
@@ -399,7 +400,7 @@ var myWaterChart;
     waterData.datasets[0].borderColor     = "blue";
     waterData.datasets[0].backgroundColor = "blue";
     waterData.datasets[0].data            = []; //contains the 'Y; axis data
-    waterData.datasets[0].label           = "water deze Periode"; //"S"+s; //contains the 'Y; axis label
+    waterData.datasets[0].label           = "Water deze Periode"; //"S"+s; //contains the 'Y; axis label
     //console.log("there are ["+data.data.length+"] rows");
   
 	var start = data.data.length + data.actSlot ; //  maar 1 jaar ivm berekening jaar verschil
@@ -428,7 +429,7 @@ var myWaterChart;
     //--- show canvas
     document.getElementById("dataChart").style.display  = "block";
     document.getElementById("gasChart").style.display   = "block";
-	document.getElementById("waterChart").style.display   = "block";
+	if (HeeftWater) document.getElementById("waterChart").style.display   = "block";
 
 
   } // copyMonthsToChart()
