@@ -1,0 +1,1 @@
+recipe.hooks.sketch.prebuild.01.pattern=/bin/bash /Users/martijn/Documents/Arduino/Arduino_IDE_Hooks/autoinc-semver/semver-incr-build.sh {build.source.path}/version.h
