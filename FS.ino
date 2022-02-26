@@ -8,20 +8,19 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-
 //===========================================================================================
 int32_t freeSpace() 
 {
    int32_t space;
   
-  LittleFS.info(fs_info);
+  FS.info(fs_info);
   space = (int32_t)(fs_info.totalBytes - fs_info.usedBytes);
   return space;
   
 } // freeSpace()
 
 //===========================================================================================
-void listFS() 
+void listFS(bool api) 
 {
    typedef struct _fileMeta {
     char    Name[20];     
@@ -31,12 +30,16 @@ void listFS()
   _fileMeta dirMap[30];
   int fileNr = 0;
   
-  Dir dir = LittleFS.openDir("/");         // List files on LittleFS
+  Dir dir = FS.openDir("/");         // List files on FS
   while (dir.next())  
   {
     dirMap[fileNr].Name[0] = '\0';
-    //strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 19); // remove leading '/' aangepast voor LittleFS
-     strcpy( dirMap[fileNr].Name, dir.fileName().c_str() ); //littlefs
+    
+#ifdef V2_COMPATIBLE
+    strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 19); // remove leading '/' for SPIFFS
+#else
+    strcpy( dirMap[fileNr].Name, dir.fileName().c_str() ); //littlefs
+#endif
 
     dirMap[fileNr].Size = dir.fileSize();
     fileNr++;
@@ -60,21 +63,39 @@ void listFS()
   DebugTln(F("\r\n"));
   for(int f=0; f<fileNr; f++)
   {
-    Debugf("%-25s %6d bytes \r\n", dirMap[f].Name, dirMap[f].Size);
+    if (api) DebugTln(dirMap[f].Name);
+    else Debugf("%-25s %6d bytes \r\n", dirMap[f].Name, dirMap[f].Size);
+
     yield();
   }
 
-  LittleFS.info(fs_info);
-
-  Debugln(F("\r"));
-  if (freeSpace() < (10 * fs_info.blockSize))
-        Debugf("Available FS space [%6d]kB (LOW ON SPACE!!!)\r\n", (freeSpace() / 1024));
-  else  Debugf("Available FS space [%6d]kB\r\n", (freeSpace() / 1024));
-  Debugf("           FS Size [%6d]kB\r\n", (fs_info.totalBytes / 1024));
-  Debugf("     FS block Size [%6d]bytes\r\n", fs_info.blockSize);
-  Debugf("      FS page Size [%6d]bytes\r\n", fs_info.pageSize);
-  Debugf(" FS max.Open Files [%6d]\r\n\r\n", fs_info.maxOpenFiles);
-
+  if (api) {
+    String temp = "[";
+    for (int f=0; f < fileNr; f++)  
+    {
+      if (temp != "[") temp += ",";
+      temp += R"({"name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
+    }
+    FS.info(fs_info);
+    temp += R"(,{"usedBytes":")" + formatBytes(fs_info.usedBytes * 1.05) + R"(",)" +       // Berechnet den verwendeten Speicherplatz + 5% Sicherheitsaufschlag
+            R"("totalBytes":")" + formatBytes(fs_info.totalBytes) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
+            (fs_info.totalBytes - (fs_info.usedBytes * 1.05)) + R"("}])";               // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
+    
+    httpServer.setContentLength(temp.length());
+    httpServer.send(200, "application/json", temp);
+  } else {
+    
+    FS.info(fs_info);
+  
+    Debugln(F("\r"));
+    if (freeSpace() < (10 * fs_info.blockSize))
+          Debugf("Available FS space [%6d]kB (LOW ON SPACE!!!)\r\n", (freeSpace() / 1024));
+    else  Debugf("Available FS space [%6d]kB\r\n", (freeSpace() / 1024));
+    Debugf("           FS Size [%6d]kB\r\n", (fs_info.totalBytes / 1024));
+    Debugf("     FS block Size [%6d]bytes\r\n", fs_info.blockSize);
+    Debugf("      FS page Size [%6d]bytes\r\n", fs_info.pageSize);
+    Debugf(" FS max.Open Files [%6d]\r\n\r\n", fs_info.maxOpenFiles);
+  }
 
 } // listFS()
 
@@ -106,10 +127,10 @@ bool eraseFile()
   //--- add leading slash on position 0
   eName[0] = '/';
 
-  if (LittleFS.exists(eName))
+  if (FS.exists(eName))
   {
-    Debugf("\r\nErasing [%s] from LittleFS\r\n\n", eName);
-    LittleFS.remove(eName);
+    Debugf("\r\nErasing [%s] from FS\r\n\n", eName);
+    FS.remove(eName);
   }
   else
   {
@@ -138,7 +159,7 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
   DebugTf("check if [%s] exists .. ", fName);
  
 
-  if (!LittleFS.exists(fName) )
+  if (!FS.exists(fName) )
   {
     if (doDisplay)
     {

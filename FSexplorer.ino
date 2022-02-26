@@ -26,7 +26,7 @@ const PROGMEM char Header[] = "HTTP/1.1 303 OK\r\nLocation:/#FileExplorer\r\nCac
 //=====================================================================================
 void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebunden werden
 {    
-  httpServer.on("/api/listfiles", APIlistFiles);
+  httpServer.on("/api/listfiles", [](){listFS(true);});
   httpServer.on("/FSformat", formatFS);
   httpServer.on("/upload", HTTP_POST, []() {}, handleFileUpload);
   httpServer.on("/ReBoot", reBootESP);
@@ -45,7 +45,7 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
     else
     {
       DebugTf("next: handleFile(%s)\r\n", String(httpServer.urlDecode(httpServer.uri())).c_str());
-//      if((httpServer.uri().indexOf("/RING") == 0) && (!LittleFS.exists(httpServer.uri().c_str()))) createRingFile(httpServer.uri().c_str());
+//      if((httpServer.uri().indexOf("/RING") == 0) && (!FS.exists(httpServer.uri().c_str()))) createRingFile(httpServer.uri().c_str());
         //oude index.js vraagt om RING
         String filename = httpServer.uri();
         if( httpServer.uri().indexOf("/RING") == 0 ) filename.replace("RING","RNG");
@@ -64,62 +64,62 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
 } // setupFSexplorer()
 
 //=====================================================================================
-void APIlistFiles()             // Senden aller Daten an den Client
-{   
-  typedef struct _fileMeta {
-    char    Name[30];     
-    int32_t Size;
-  } fileMeta;
-
-  _fileMeta dirMap[30];
-  int fileNr = 0;
-  
-  Dir dir = LittleFS.openDir("/");         // List files on LittleFS
-  while (dir.next())  
-  {
-    dirMap[fileNr].Name[0] = '\0';
-//    strncat(dirMap[fileNr].Name, dir.fileName().substring(0).c_str(), 29); // remove leading '/'
-    strcpy( dirMap[fileNr].Name, dir.fileName().c_str() ); //littlefs
-    dirMap[fileNr].Size = dir.fileSize();
-    fileNr++;
-  }
-
-  // -- bubble sort dirMap op .Name--
-  for (int8_t y = 0; y < fileNr; y++) {
-    yield();
-    for (int8_t x = y + 1; x < fileNr; x++)  {
-      //DebugTf("y[%d], x[%d] => seq[y][%s] / seq[x][%s] ", y, x, dirMap[y].Name, dirMap[x].Name);
-      if (compare(String(dirMap[x].Name), String(dirMap[y].Name)))  
-      {
-        //Debug(" !switch!");
-        fileMeta temp = dirMap[y];
-        dirMap[y] = dirMap[x];
-        dirMap[x] = temp;
-      } /* end if */
-      //Debugln();
-    } /* end for */
-  } /* end for */
-
-  for (int8_t x = 0; x < fileNr; x++)  
-  {
-    DebugTln(dirMap[x].Name);
-  }
-
-  String temp = "[";
-  for (int f=0; f < fileNr; f++)  
-  {
-    if (temp != "[") temp += ",";
-    temp += R"({"name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
-  }
-  LittleFS.info(fs_info);
-  temp += R"(,{"usedBytes":")" + formatBytes(fs_info.usedBytes * 1.05) + R"(",)" +       // Berechnet den verwendeten Speicherplatz + 5% Sicherheitsaufschlag
-          R"("totalBytes":")" + formatBytes(fs_info.totalBytes) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
-          (fs_info.totalBytes - (fs_info.usedBytes * 1.05)) + R"("}])";               // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
-  
-  httpServer.setContentLength(temp.length());
-  httpServer.send(200, "application/json", temp);
-  
-} // APIlistFiles()
+//void APIlistFiles()             // Senden aller Daten an den Client
+//{   
+//  typedef struct _fileMeta {
+//    char    Name[30];     
+//    int32_t Size;
+//  } fileMeta;
+//
+//  _fileMeta dirMap[30];
+//  int fileNr = 0;
+//  
+//  Dir dir = FS.openDir("/");         // List files on FS
+//  while (dir.next())  
+//  {
+//    dirMap[fileNr].Name[0] = '\0';
+////    strncat(dirMap[fileNr].Name, dir.fileName().substring(0).c_str(), 29); // remove leading '/'
+//    strcpy( dirMap[fileNr].Name, dir.fileName().c_str() ); //littlefs
+//    dirMap[fileNr].Size = dir.fileSize();
+//    fileNr++;
+//  }
+//
+//  // -- bubble sort dirMap op .Name--
+//  for (int8_t y = 0; y < fileNr; y++) {
+//    yield();
+//    for (int8_t x = y + 1; x < fileNr; x++)  {
+//      //DebugTf("y[%d], x[%d] => seq[y][%s] / seq[x][%s] ", y, x, dirMap[y].Name, dirMap[x].Name);
+//      if (compare(String(dirMap[x].Name), String(dirMap[y].Name)))  
+//      {
+//        //Debug(" !switch!");
+//        fileMeta temp = dirMap[y];
+//        dirMap[y] = dirMap[x];
+//        dirMap[x] = temp;
+//      } /* end if */
+//      //Debugln();
+//    } /* end for */
+//  } /* end for */
+//
+//  for (int8_t x = 0; x < fileNr; x++)  
+//  {
+//    DebugTln(dirMap[x].Name);
+//  }
+//
+//  String temp = "[";
+//  for (int f=0; f < fileNr; f++)  
+//  {
+//    if (temp != "[") temp += ",";
+//    temp += R"({"name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
+//  }
+//  FS.info(fs_info);
+//  temp += R"(,{"usedBytes":")" + formatBytes(fs_info.usedBytes * 1.05) + R"(",)" +       // Berechnet den verwendeten Speicherplatz + 5% Sicherheitsaufschlag
+//          R"("totalBytes":")" + formatBytes(fs_info.totalBytes) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
+//          (fs_info.totalBytes - (fs_info.usedBytes * 1.05)) + R"("}])";               // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
+//  
+//  httpServer.setContentLength(temp.length());
+//  httpServer.send(200, "application/json", temp);
+//  
+//} // APIlistFiles()
 
 
 //=====================================================================================
@@ -128,13 +128,12 @@ bool handleFile(String&& path)
   if (httpServer.hasArg("delete")) 
   {
     DebugTf("Delete -> [%s]\n\r",  httpServer.arg("delete").c_str());
-    LittleFS.remove(httpServer.arg("delete"));    // Datei löschen
+    FS.remove(httpServer.arg("delete"));    // Datei löschen
     httpServer.sendContent(Header);
     return true;
   }
-  //if (!LittleFS.exists("/FSexplorer.html")) httpServer.send(200, "text/html", Helper); //Upload the FSexplorer.html
   if (path.endsWith("/")) path += "index.html";
-  return LittleFS.exists(path) ? ({File f = LittleFS.open(path, "r"); httpServer.streamFile(f, contentType(path)); f.close(); true;}) : false;
+  return FS.exists(path) ? ({File f = FS.open(path, "r"); httpServer.streamFile(f, contentType(path)); f.close(); true;}) : false;
 
 } // handleFile()
 
@@ -150,7 +149,7 @@ void handleFileUpload()
       upload.filename = upload.filename.substring(upload.filename.length() - 30, upload.filename.length());  // Dateinamen auf 30 Zeichen kürzen
     }
     Debugln("FileUpload Name: " + upload.filename);
-    fsUploadFile = LittleFS.open("/" + httpServer.urlDecode(upload.filename), "w");
+    fsUploadFile = FS.open("/" + httpServer.urlDecode(upload.filename), "w");
   } 
   else if (upload.status == UPLOAD_FILE_WRITE) 
   {
@@ -173,9 +172,9 @@ void handleFileUpload()
 //=====================================================================================
 void formatFS() 
 {       //Formatiert den Speicher
-  if (!LittleFS.exists("/!format")) return;
+  if (!FS.exists("/!format")) return;
   DebugTln(F("Format FS"));
-  LittleFS.format();
+  FS.format();
   httpServer.sendContent(Header);
   
 } // formatFS()
@@ -205,15 +204,6 @@ const String &contentType(String& filename)
   return filename;
   
 } // &contentType()
-
-//=====================================================================================
-//bool freeSpace(uint16_t const& printsize) 
-//{    
-//  LittleFS.info(fs_info);
-//  Debugln(formatBytes(fs_info.totalBytes - (fs_info.usedBytes * 1.05)) + " in SPIFF free");
-//  return (fs_info.totalBytes - (fs_info.usedBytes * 1.05) > printsize) ? true : false;
-//  
-//} // freeSpace()
 
 //=====================================================================================
 void updateFirmware()

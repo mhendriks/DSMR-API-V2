@@ -11,20 +11,20 @@
 
 void CheckRingExists(){
   for (byte i = 0; i< 3; i++){
-    if ( !LittleFS.exists(RingFiles[i].filename) ) createRingFile( (E_ringfiletype)i );
+    if ( !FS.exists(RingFiles[i].filename) ) createRingFile( (E_ringfiletype)i );
   }
 }
 
 //===========================================================================================
 
 void ConvRing3_2_0(){
-  if (!LittleFS.exists("/RNGhours.json")) ConvRing("/RNGhours.json","/RINGhours.json");
+  if (!FS.exists("/RNGhours.json")) ConvRing("/RNGhours.json","/RINGhours.json");
   else DebugTln(F("RNGhours.json bestaat al"));
   
-  if (!LittleFS.exists("/RNGdays.json")) ConvRing("/RNGdays.json","/RINGdays.json");
+  if (!FS.exists("/RNGdays.json")) ConvRing("/RNGdays.json","/RINGdays.json");
   else DebugTln(F("RNGdays.json bestaat al"));
   
-  if (!LittleFS.exists("/RNGmonths.json")) ConvRing("/RNGmonths.json","/RINGmonths.json");
+  if (!FS.exists("/RNGmonths.json")) ConvRing("/RNGmonths.json","/RINGmonths.json");
   else DebugTln(F("RNGmonths.json bestaat al"));
 }
 //===========================================================================================
@@ -32,13 +32,13 @@ void ConvRing3_2_0(){
 void ConvRing(const char *newfile, const char *oldfile){
   String rbuf; char wbuf[100];  
 
-  File FileOld = LittleFS.open(oldfile, "r+"); // open for reading  
+  File FileOld = FS.open(oldfile, "r+"); // open for reading  
   if (!FileOld) {
     DebugT(F("open ring file FAILED!!! --> Bailout: "));Debugln(oldfile);
     return;
   }
   
-  File FileNew = LittleFS.open(newfile, "w");
+  File FileNew = FS.open(newfile, "w");
   if (!FileNew) {
     DebugT(F("open ring file FAILED!!! --> Bailout: "));Debugln(newfile);DebugTln(FileNew);
     return;
@@ -74,7 +74,7 @@ void ConvRing(const char *newfile, const char *oldfile){
 void createRingFile(E_ringfiletype ringfiletype) 
 {
   if (!FSmounted || !EnableHistory) return;
-  File RingFile = LittleFS.open(RingFiles[ringfiletype].filename, "w"); // open for writing  
+  File RingFile = FS.open(RingFiles[ringfiletype].filename, "w"); // open for writing  
   if (!RingFile) {
     DebugT(F("open ring file FAILED!!! --> Bailout\r\n"));Debugln(RingFiles[ringfiletype].filename);
     return;
@@ -135,14 +135,14 @@ void RingFileTo(E_ringfiletype ringfiletype, bool toFile)
 {  
   if (bailout() || !FSmounted) return; //exit when heapsize is too small
 
-  if (!LittleFS.exists(RingFiles[ringfiletype].filename))
+  if (!FS.exists(RingFiles[ringfiletype].filename))
   {
     DebugT(F("read(): Ringfile doesn't exist: "));Debugln(RingFiles[ringfiletype].filename);
     createRingFile(ringfiletype);
     return;
     }
 
-  File RingFile = LittleFS.open(RingFiles[ringfiletype].filename, "r"); // open for reading
+  File RingFile = FS.open(RingFiles[ringfiletype].filename, "r"); // open for reading
 
   if (RingFile.size() != RingFiles[ringfiletype].f_len) {
     DebugT(F("ringfile size incorrect: "));Debugln(RingFile.size());
@@ -193,7 +193,7 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
   //json openen
   DebugT(F("write Ring file: ")); Debugln(RingFiles[ringfiletype].filename);
   
-  File RingFile = LittleFS.open(RingFiles[ringfiletype].filename, "r+"); // open for reading  
+  File RingFile = FS.open(RingFiles[ringfiletype].filename, "r+"); // open for reading  
   if ( !RingFile || (RingFile.size() != RingFiles[ringfiletype].f_len) ) {
     DebugTf("open ring file %s FAILED!!! | file size: %d",RingFiles[ringfiletype].filename, RingFile.size());
     return;

@@ -39,7 +39,7 @@ void writeSettings()
   
   DebugT(F("Writing to [")); Debug(SETTINGS_FILE); Debugln(F("] ..."));
   
-  File SettingsFile = LittleFS.open(SETTINGS_FILE, "w"); // open for reading and writing
+  File SettingsFile = FS.open(SETTINGS_FILE, "w"); // open for reading and writing
   
   if (!SettingsFile) 
   {
@@ -92,13 +92,13 @@ void readSettings(bool show)
   
   DebugTf(" %s ..\r\n", SETTINGS_FILE);
  
-   if (!LittleFS.exists(SETTINGS_FILE)) 
+   if (!FS.exists(SETTINGS_FILE)) 
   {
     DebugTln(F(" .. DSMRsettings.json file not found! --> created file!"));
     writeSettings();
     return;
   }
-    SettingsFile = LittleFS.open(SETTINGS_FILE, "r");
+    SettingsFile = FS.open(SETTINGS_FILE, "r");
     if (!SettingsFile) DebugTf(" .. something went wrong opening [%s]\r\n", SETTINGS_FILE);
     else DebugTln(F("Reading settings:\r"));
 
@@ -111,7 +111,6 @@ void readSettings(bool show)
     return;
   }
   
-  //strcpy(LittleFSTimestamp, doc["Timestamp"]);
   strcpy(settingHostname, doc["Hostname"] | _DEFAULT_HOSTNAME );
   strcpy(settingIndexPage, doc["IndexPage"] | _DEFAULT_HOMEPAGE);
   settingEDT1 = doc["EnergyDeliveredT1"];
@@ -287,7 +286,7 @@ void updateSetting(const char *field, const char *newValue)
 //=======================================================================
 void LogFile(const char* payload, bool toDebug = false) {
   if (!FSmounted) return;
-  File LogFile = LittleFS.open("/P1.log", "a"); // open for appending  
+  File LogFile = FS.open("/P1.log", "a"); // open for appending  
   if (!LogFile) {
     DebugTln(F("open P1.log FAILED!!!--> Bailout\r\n"));
     return;
@@ -296,12 +295,12 @@ void LogFile(const char* payload, bool toDebug = false) {
   //log rotate
   if (LogFile.size() > 8000){ 
 //    DebugT(F("LogFile filesize: "));Debugln(RebootFile.size());
-    LittleFS.remove("/P1_log.old");     //remove .old if existing 
+    FS.remove("/P1_log.old");     //remove .old if existing 
     //rename file
     DebugTln(F("RebootLog: rename file"));
     LogFile.close(); 
-    LittleFS.rename("/P1.log", "/P1_log.old");
-    LogFile = LittleFS.open("/P1.log", "a"); // open for appending  
+    FS.rename("/P1.log", "/P1_log.old");
+    LogFile = FS.open("/P1.log", "a"); // open for appending  
     }
     
     if (strlen(payload)==0) {

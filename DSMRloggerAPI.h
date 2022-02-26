@@ -25,7 +25,6 @@ static tm timeinfo;
 #include "safeTimers.h"
 #include <ArduinoJson.h>
 #include "Debug.h"
-#include "LittleFS.h"
 #include <EEPROM.h>
 #include "Network.h"
 
@@ -33,6 +32,13 @@ static tm timeinfo;
   #include <ArduinoIoTCloud.h>
 //  #include <Arduino_ConnectionHandler.h>
   DECLARE_TIMER_SEC(APPtimer, 5);
+#endif
+
+#ifdef V2_COMPATIBLE
+  #define FS SPIFFS
+#else
+  #include "LittleFS.h"
+  #define FS LittleFS
 #endif
 
 static      FSInfo fs_info;
@@ -51,13 +57,19 @@ typedef struct {
     int f_len;
   } S_ringfile;
 
+#ifdef V2_COMPATIBLE
+  // pre 3.2.0 versions
+  const S_ringfile RingFiles[3] = {{"/RINGhours.json", 48+1,SECS_PER_HOUR, 4287}, {"/RINGdays.json",14+1,SECS_PER_DAY, 1329},{"/RINGmonths.json",24+1,0,2199}}; 
+  #define DATA_FORMAT       "{\"date\":\"%-8.8s\",\"values\":[%10.3f,%10.3f,%10.3f,%10.3f,%10.3f]}"
+  #define DATA_RECLEN       87  //total length incl comma and new line
+#else 
+  //vanaf 3.2.0 met watermeter
+  //+1 voor de vergelijking, laatste record wordt niet getoond 
+  const S_ringfile RingFiles[3] = {{"/RNGhours.json", 48+1,SECS_PER_HOUR, 4826}, {"/RNGdays.json",14+1,SECS_PER_DAY, 1494},{"/RNGmonths.json",24+1,0,2474}}; 
+  #define DATA_FORMAT      "{\"date\":\"%-8.8s\",\"values\":[%10.3f,%10.3f,%10.3f,%10.3f,%10.3f,%10.3f]}"
+  #define DATA_RECLEN       98  //total length incl comma and new line
+#endif
 
-//vanaf 3.2.0 met watermeter
-//+1 voor de vergelijking, laatste record wordt niet getoond 
-//onderstaande struct kan niet in PROGMEM opgenomen worden. gaat stuk bij SPIFF.open functie
-const S_ringfile RingFiles[3] = {{"/RNGhours.json", 48+1,SECS_PER_HOUR, 4826}, {"/RNGdays.json",14+1,SECS_PER_DAY, 1494},{"/RNGmonths.json",24+1,0,2474}}; 
-#define DATA_FORMAT      "{\"date\":\"%-8.8s\",\"values\":[%10.3f,%10.3f,%10.3f,%10.3f,%10.3f,%10.3f]}"
-#define DATA_RECLEN       98  //total length incl comma and new line
 #define JSON_HEADER_LEN   23  //total length incl new line
 #define DATA_CLOSE        2   //length last row of datafile
 

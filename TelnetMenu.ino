@@ -11,12 +11,12 @@
 
 void DisplayLogFile(char *fname) {   
   if (bailout() || !FSmounted) return; //exit when heapsize is too small
-  if (!LittleFS.exists(fname))
+  if (!FS.exists(fname))
   {
     DebugT(F("LogFile doesn't exist: "));
     return;
     }
-  File RingFile = LittleFS.open(fname, "r"); // open for reading
+  File RingFile = FS.open(fname, "r"); // open for reading
   DebugTln(F("Ringfile output: "));
   //read the content and output to serial interface
   while (RingFile.available()) TelnetStream.println(RingFile.readStringUntil('\n'));
@@ -27,14 +27,14 @@ void DisplayLogFile(char *fname) {
 //--------------------------------
 
 void ResetDataFiles() {
-  LittleFS.remove("/RNGdays.json");
-  LittleFS.remove("/RNGhours.json");
-  LittleFS.remove("/RNGmonths.json");
-  LittleFS.remove("/P1_log.old");
-  LittleFS.remove("/P1.log");
-  LittleFS.remove("/Reboot.log");      //pre 3.1.1 
-  LittleFS.remove("/Reboot.old");      //pre 3.1.1  
-  LittleFS.remove("/DSMRstatus.json"); //pre 3.1.1 
+  FS.remove(RingFiles[0].filename);
+  FS.remove(RingFiles[1].filename);
+  FS.remove(RingFiles[2].filename);
+  FS.remove("/P1_log.old");
+  FS.remove("/P1.log");
+  FS.remove("/Reboot.log");      //pre 3.1.1 
+  FS.remove("/Reboot.old");      //pre 3.1.1  
+  FS.remove("/DSMRstatus.json"); //pre 3.1.1 
   DebugTln(F("Datafiles are reset"));
 }
 
@@ -61,7 +61,7 @@ void P1Update(bool sketch){
 //--------------------------------
 void displayBoardInfo() 
 {
-  LittleFS.info(fs_info);
+  FS.info(fs_info);
 
   Debugln(F("\r\n==================================================================\r"));
   Debug(F("]\r\n      Firmware Version ["));  Debug( _VERSION );
@@ -179,7 +179,7 @@ void handleKeyInput()
                     break;
 #endif
       case 'f':
-      case 'F':     listFS();
+      case 'F':     listFS(false);
                     break;      
       case 'h':
       case 'H':     RingFileTo(RINGHOURS, false);

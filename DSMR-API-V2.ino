@@ -30,7 +30,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
     - Flash Frequency: "40MHz"`
     - CPU Frequency: "160MHz"
     - Buildin Led: 2
-    - Upload Speed: "115200"                                                                                                                                                                                                                                                 
+    - Upload Speed: "460800"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
 */
@@ -38,6 +38,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
+//#define V2_COMPATIBLE              // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
 
 //----- EXTENSIONS
 //#define USE_WATER_SENSOR 1
@@ -81,7 +82,7 @@ void setup()
   if (P1StatusAvailable()) P1StatusRead(); //load persistant data
 
 //================ FS ===========================================
-  if (LittleFS.begin()) 
+  if (FS.begin()) 
   {
     DebugTln(F("File System Mount succesful"));
     FSmounted = true;   
@@ -109,9 +110,9 @@ void setup()
 
   if (DSMRfileExist(settingIndexPage, false) ) {
     DebugTln(F("File System correct populated -> normal operation!\r"));
-    httpServer.serveStatic("/",                 LittleFS, settingIndexPage);
-    httpServer.serveStatic("/DSMRindex.html",   LittleFS, settingIndexPage);
-    httpServer.serveStatic(_DEFAULT_HOMEPAGE,   LittleFS, settingIndexPage);
+    httpServer.serveStatic("/",                 FS, settingIndexPage);
+    httpServer.serveStatic("/DSMRindex.html",   FS, settingIndexPage);
+    httpServer.serveStatic(_DEFAULT_HOMEPAGE,   FS, settingIndexPage);
   } else DebugTln(F("Oeps! not all files found on File System -> present FSexplorer!\r"));
     
   setupFSexplorer();
@@ -128,7 +129,14 @@ void setup()
   setupWater();
 #endif //USE_WATER_SENSOR
 
-  ConvRing3_2_0();
+#ifndef V2_COMPATIBLE  
+  ConvRing3_2_0(); //only new modules
+#else
+  FS.remove("/Reboot.log");      //pre 3.1.1 
+  FS.remove("/Reboot.old");      //pre 3.1.1  
+  FS.remove("/DSMRstatus.json"); //pre 3.1.1 
+#endif
+
   CheckRingExists();
 
 #if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )

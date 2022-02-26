@@ -194,7 +194,7 @@ int n = MDNS.queryService("espserver", "tcp");
           //--- After 3 attempts... go wait for a while.
           if (reconnectAttempts >= 3)
           {
-            DebugTln(F("3 attempts have failed. Retry wait for next reconnect in 10 minutes\r"));
+            DebugTln(F("3 attempts have failed. Retry wait for next reconnect in 5 secs\r"));
             stateMQTT = MQTT_STATE_ERROR;  // if the re-connect did not work, then return to wait for reconnect
             DebugTln(F("Next State: MQTT_STATE_ERROR"));
           }   

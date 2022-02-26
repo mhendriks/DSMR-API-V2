@@ -217,7 +217,7 @@ void sendDeviceInfo()
   doc["flashchiprealsize"] ["value"] = formatFloat((ESP.getFlashChipRealSize() / 1024.0 / 1024.0), 3);
   doc["flashchiprealsize"]["unit"] = "MB";
 
-  LittleFS.info(fs_info);
+  FS.info(fs_info);
   doc["spiffssize"] ["value"] = formatFloat( (fs_info.totalBytes / (1024.0 * 1024.0)), 0);
   doc["spiffssize"]["unit"] = "MB";
   doc["flashchipspeed"] ["value"] = formatFloat((ESP.getFlashChipSpeed() / 1000.0 / 1000.0), 0);
