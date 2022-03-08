@@ -1,54 +1,65 @@
-# **Watermeter dongel**
+# **Waterlezer dongel**
 
-Dit document beschrijft de installatie en configuratie van de Watermeter Dongel op hardware versie 3.x. De hardware komt met werkende software. Wil je deze aanpassen ga dan naar het onderdeel software.
+Dit document beschrijft de installatie en configuratie van de Watermeter Dongel op hardware versie 3.x en 4.x (ESP32). De hardware komt met werkende software. Wil je deze aanpassen ga dan naar het onderdeel software.
 
 **Korte beschrijving**<br>
-De Dongel kan aangesloten worden op de watermeter met of zonder aansluiting op de P1 interface van de slimme meter. In de 3.2.1 firmware kan alleen aangesloten worden op de slimme meter om ook de water standen door te krijgen. 
-In latere versies is het ook mogelijk om de waatermeter los te gebruiken.
+De Dongel kan aangesloten worden op de watermeter met of zonder aansluiting op de P1 interface van de slimme meter. 
 
 **LED functie**<br>
 De dongels zijn uitgerust met een blauwe LED. Deze heeft meerdere functies, namelijk:
-- na inpluggen zal de LED 1.5 seconde oplichten. Is dit niet het geval dan is er een probleem met stroom of met de dongel
+- na inpluggen zal de LED ca 1.5 seconde oplichten. Is dit niet het geval dan is er een probleem met stroom of met de dongel
 - Zodra de dongel WiFi connectie heeft zal de LED blijven branden.
-- Tijdens het lezen van een Telegram zal de LED kortstondig uit of aan gaan. Indien er Wifi verbinding is gaat de LED kort uit. Indien er geen Wifi is zal de LED kort aan gaan.
-
+- Tijdens het lezen van een datapakket zal de LED kortstondig uit of aan gaan. Indien er Wifi verbinding is gaat de LED kort uit. Indien er geen Wifi is zal de LED kort aan gaan.
 
 **USB voeding**<br>
-Heeft de dongel een usb voeding en de slimme meter is van een ouder type dan SMR 5.0 of de slimme meter is te kritisch om de dongel te voeden dan dient de usb aansluiting van de dongel via een usb kabel met een usb adapter verbonden te worden.
-De USB adapter mag een oude smartphone of tablet adapter zijn of een usb aansluiting die voorhanden is in de meterkast (bv van een NAS/Router). Bijna alle voedingen voldoen (5V/5Watt is prima).
 
-Indien de water dongel los gebruikt wordt is altijd een usb voeding nodig. In combinatie met de slimme meter zal het soms mogelijk zijn om de slimme meter de dongel te laten voeden. 
+USB adapter bij een waterlezer dongle is noodzakelijk. In combinatie met de slimme meter zal het soms mogelijk zijn om de slimme meter de dongel te laten voeden (5.0 slimme meters). <br>
+>**TIP**<br>
+>De USB adapter mag een oude smartphone of tablet adapter zijn of een usb aansluiting die voorhanden is in de meterkast (bv van een NAS/Router). Bijna alle voedingen voldoen (5V/5Watt is prima).<br>
 
-**Configuratie Wifi**<br>
-Na het aansluiten van de dongel op je P1 ingang van je slimme meter of usb voeding bouwt de dongel als eerste een eigen Wifi hotspot op ten behoeve van configuratie. Deze hotspot is te herkennen door de **Wifinaam P1-Dongle**.
+**Monteer de sensor op de watermeter**<br> 
+Watermeters met een metalen plaatje op de kleine wijzer zijn geschikt voor deze set. Het is zaak om de sensor recht boven deze wijzer te plaatsen zonder dat er lucht/plakband tussen de sensor en de wijzer zit. Gat er tussen zo klein mogelijk.
+Ook dient de sensor zo te zitten dat deze 1 keer per omwenteling een signaal opneemt. Dit kan je aan de sensor zien doordat het rode lampje gaat branden. Sensor zit normaal gesproken recht boven deze wijzer maar dan iets verschoven van het midden van deze wijzer.
+Maak de sensor vast met meegeleverde klittenband of met de sensor houder, zie onderstaande montage wijze.
 
-Zorg dat je met je computer of mobieldevice contact maakt met dit netwerk. Automatisch wordt een updatescherm getoond waarin de Wifi settings te zien zijn. Zie onderstaande voorbeeld op MacOS.
+>**TIP**<br>
+>- Zet de kraan een beetje open om te checken of de sensor goed zit (rode ledje gaat dan per omwenteling 1x aan).<br>
+>- Monteer de sensor met het kruis / rode ledje naar de wijzerplaat toe.
+
+**Configuratie dongle**<br>
+Onderstaande stappen dienen gevolgd te worden.<br>
+- sluit usb adapter aan via een usb micro kabel
+- de LED van de dongle licht op en de dongle start op
+- wacht 20 seconden en zoek op PC/laptop/smartphone/tablet naar wifi hotspot (dsmr-api of p1-dongle) en klik deze aan
 
 <img src="../afb/afbeelding1.png" width="20%">
 
-Zorg dat je met je computer of mobiel toestel contact maakt met dit netwerk, door hier op te klikken. Automatisch wordt een scherm getoond waarin de WifiManager te zien is. Zie onderstaande plaatje.
-
+- verbind met de hotspot<br>
 <img src="../afb/afbeelding2.png" width="40%">
 
-
-1. Klik op &quot;Configuratie Wifi&quot;
+- Klik op &quot;Configuratie Wifi&quot;
 
 <img src="../afb/afbeelding3.png" width="40%">
 
-1. Klik op het uw netwerknaam en vul daarna het bijbehorende en **wachtwoord** in bij Password.
-2. Druk op &quot;Save&quot;
-3. Adapter zal op nieuwe opstarten en u kunt het scherm sluiten.
+- Klik op het uw netwerknaam en vul daarna het bijbehorende en **wachtwoord** in bij Password.
+- Druk op &quot;Save&quot;
+- Adapter zal op nieuwe opstarten en u kunt het scherm sluiten.
 
-Vanaf dit moment zal de adapter te vinden zijn via: [http://dsmr-api.local/](http://dsmr-api.local/)
+Vanaf dit moment zal de adapter te vinden zijn via: [http://dsmr-api.local/](http://dsmr-api.local/) 
+of 
+[http://p1-dongle.local/](http://p1-dongle.local/) 
+bij de ESP32
 
-Deze naam is aanpasbaar (via configuratie).
+Deze naam is aanpasbaar via settings in de dongle.
+
+**Aansluiten Sensor**<br>
 
 **Uitlezen Slimmemeter**<br>
 Er zijn drie manieren om via de dongel de slimmemeter uit te lezen, namelijk:
 
 1. Via de webinterface van de Slimme meter ([http://dsmr-api.local/](http://dsmr-api.local/))
 2. Via de rest api ([http://dsmr-api.local/api/v2/hist/hours](http://dsmr-api.local/api/v2/hist/hours)); zelf ophalen van de gegevens op gewenste moment; zie API info in de webinterface voor meer informatie
-3. Via MQTT; dongel pusht elke 5 seconde de gegevens naar de mqtt broker; zie hieronder de configuratie van mqtt
+3. Via MQTT; dongel pusht elke x seconde de gegevens naar de mqtt broker; zie hieronder de configuratie van mqtt
 
 **Webinterface**<br>
 Het hoofdscherm opent met onderstaande pagina. Kan zijn dat de tabel nog leeg is in de eerste 30 seconden na opstarten.
@@ -131,11 +142,6 @@ De software is te vinden op [https://github.com/mhendriks/DSMR-API-V2](https://g
 De basic dongel wordt gevoed door de slimme meter. Afhankelijk van het merk / type is de stroomlevering kritischer. 
 De dongel zal bij de eerste aanmelding de omgeving scannen en zijn netwerk instellen. Dit kost kortstondig veel stroom en enkele meters zullen dit niet accepteren en de voeding stoppen. Gevolg is dat de dongel steeds op nieuw gaat starten (LEDje knippert).
 Neem in z'n geval contact met mij op om de dongel te ruilen voor een exemplaar met extra usb aansluiting. Vaak is het alleen nodig om de usb voeding tijdens de eerste start aan te sluiten. Daarna kan deze verwijderd worden. Let op! valt de stroom uit dan kan het nodig zijn om de usb voeding weer te gebruiken. 
-
-
-**Aansluiten extra signaal**<br>
-Zie [setup/aux_(bel)](aux_(bel)/README.md) voor meer details
-Deze optie is niet meer aanwezig op de v3 hardware
 
 **Instellen Domotica oplossing**<br>
 Home Assistant

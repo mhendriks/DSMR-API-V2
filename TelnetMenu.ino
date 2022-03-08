@@ -181,6 +181,10 @@ void handleKeyInput()
       case 'f':
       case 'F':     listFS(false);
                     break;      
+      case 'g':
+      case 'G':     CHANGE_INTERVAL_MS(StatusTimer, 100); //force mqtt static + water publishing + P1Status write
+                    break;      
+      
       case 'h':
       case 'H':     RingFileTo(RINGHOURS, false);
                     break;

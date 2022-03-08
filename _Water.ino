@@ -2,7 +2,7 @@
 
 void sendMQTTWater(){
   if (!WtrMtr) return;
-  sprintf(cMsg,"%d.%d",P1Status.wtr_m3,P1Status.wtr_l);
+  sprintf(cMsg,"%d.%3.3d",P1Status.wtr_m3,P1Status.wtr_l);
   MQTTSend("water",cMsg);
 }
 

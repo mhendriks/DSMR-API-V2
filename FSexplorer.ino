@@ -48,7 +48,9 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
 //      if((httpServer.uri().indexOf("/RING") == 0) && (!FS.exists(httpServer.uri().c_str()))) createRingFile(httpServer.uri().c_str());
         //oude index.js vraagt om RING
         String filename = httpServer.uri();
+#ifndef V2_COMPATIBLE  
         if( httpServer.uri().indexOf("/RING") == 0 ) filename.replace("RING","RNG");
+#endif
       //if (!handleFile(httpServer.urlDecode(httpServer.uri())))
       DebugT("Filename: ");Debugln(filename);
       if ( !handleFile(filename.c_str()) )
@@ -62,65 +64,6 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   DebugTln( F("HTTP server gestart\r") );
   
 } // setupFSexplorer()
-
-//=====================================================================================
-//void APIlistFiles()             // Senden aller Daten an den Client
-//{   
-//  typedef struct _fileMeta {
-//    char    Name[30];     
-//    int32_t Size;
-//  } fileMeta;
-//
-//  _fileMeta dirMap[30];
-//  int fileNr = 0;
-//  
-//  Dir dir = FS.openDir("/");         // List files on FS
-//  while (dir.next())  
-//  {
-//    dirMap[fileNr].Name[0] = '\0';
-////    strncat(dirMap[fileNr].Name, dir.fileName().substring(0).c_str(), 29); // remove leading '/'
-//    strcpy( dirMap[fileNr].Name, dir.fileName().c_str() ); //littlefs
-//    dirMap[fileNr].Size = dir.fileSize();
-//    fileNr++;
-//  }
-//
-//  // -- bubble sort dirMap op .Name--
-//  for (int8_t y = 0; y < fileNr; y++) {
-//    yield();
-//    for (int8_t x = y + 1; x < fileNr; x++)  {
-//      //DebugTf("y[%d], x[%d] => seq[y][%s] / seq[x][%s] ", y, x, dirMap[y].Name, dirMap[x].Name);
-//      if (compare(String(dirMap[x].Name), String(dirMap[y].Name)))  
-//      {
-//        //Debug(" !switch!");
-//        fileMeta temp = dirMap[y];
-//        dirMap[y] = dirMap[x];
-//        dirMap[x] = temp;
-//      } /* end if */
-//      //Debugln();
-//    } /* end for */
-//  } /* end for */
-//
-//  for (int8_t x = 0; x < fileNr; x++)  
-//  {
-//    DebugTln(dirMap[x].Name);
-//  }
-//
-//  String temp = "[";
-//  for (int f=0; f < fileNr; f++)  
-//  {
-//    if (temp != "[") temp += ",";
-//    temp += R"({"name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
-//  }
-//  FS.info(fs_info);
-//  temp += R"(,{"usedBytes":")" + formatBytes(fs_info.usedBytes * 1.05) + R"(",)" +       // Berechnet den verwendeten Speicherplatz + 5% Sicherheitsaufschlag
-//          R"("totalBytes":")" + formatBytes(fs_info.totalBytes) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
-//          (fs_info.totalBytes - (fs_info.usedBytes * 1.05)) + R"("}])";               // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
-//  
-//  httpServer.setContentLength(temp.length());
-//  httpServer.send(200, "application/json", temp);
-//  
-//} // APIlistFiles()
-
 
 //=====================================================================================
 bool handleFile(String&& path) 

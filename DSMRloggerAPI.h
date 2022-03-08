@@ -255,7 +255,7 @@ DECLARE_TIMER_SEC(nextTelegram,        2);
 DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(antiWearRing,       25); 
-DECLARE_TIMER_MIN(StatusTimer,        10);
+DECLARE_TIMER_SEC(StatusTimer,        10); //initial value 10 sec ... later on 10Min or at m3 change
 DECLARE_TIMER_MS(WaterTimer,         DEBOUNCETIMER);
 
 #endif
