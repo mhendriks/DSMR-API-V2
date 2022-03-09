@@ -15,7 +15,6 @@ TODO
 
 !!! FIXES
 - telnet update via windows ... invoeren lukt niet
-- mqtt water fix last digits (3.3.1)
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
@@ -42,7 +41,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 //#define V2_COMPATIBLE              // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
 
 //----- EXTENSIONS
-#define USE_WATER_SENSOR 1
+//#define USE_WATER_SENSOR 1
 //#define USE_APP        4           // define if the Arduino IOT app could be used
 #define HA_DISCOVER
 
@@ -218,6 +217,13 @@ void loop ()
   }
 
   if (UpdateRequested) RemoteUpdate(UpdateVersion, true);
+
+#ifdef USE_WATER_SENSOR    
+  if ( WtrTimeBetween )  {
+    DebugTf("Wtr delta readings: %d | debounces: %d | waterstand: %i.%i\n",WtrTimeBetween,debounces, P1Status.wtr_m3, P1Status.wtr_l);
+    WtrTimeBetween = 0;
+  }
+#endif
 
 #ifdef USE_APP
   if DUE(APPtimer) APPUpdate();

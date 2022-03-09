@@ -160,11 +160,6 @@ void handleKeyInput()
       case 'b':     
       case 'B':     displayBoardInfo();
                     break;
-#ifdef USE_WATER_SENSOR
-      case 'c':     //print debounce info
-                    DebugTf("Debounce array [%2d] [%d]\n", debounces,debounce_t);                    
-                    break;
-#endif                    
       case 'l':
       case 'L':     readSettings(true);
                     break;

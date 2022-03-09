@@ -184,12 +184,12 @@ static PubSubClient MQTTclient(wifiClient);
   
 #ifdef USE_WATER_SENSOR  
   #define     PIN_WATER_SENSOR 5 //let op 5 voor de v3.4/3.3 en 2 voor 3.1
-  byte        WtrFactor     = 1;
-  time_t      debounce_t;
-  byte        debounces     = 0;
-  time_t      WtrPrevReading= 0;
+  volatile byte        WtrFactor      = 1;
+  volatile time_t      WtrTimeBetween = 0;
+  volatile byte        debounces      = 0;
+  volatile time_t      WtrPrevReading = 0;
 #endif //USE_WATER_SENSOR
-#define       DEBOUNCETIMER 1500
+#define       DEBOUNCETIMER 1700
   bool        WtrMtr        = false;
   
 struct Status {
