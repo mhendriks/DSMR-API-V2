@@ -1,18 +1,14 @@
 # **Waterlezer dongel**
 
-Dit document beschrijft de installatie en configuratie van de Watermeter Dongel op hardware versie 3.x en 4.x (ESP32). De hardware komt met werkende software. Wil je deze aanpassen ga dan naar het onderdeel software.
-
-**Korte beschrijving**<br>
-De Dongel kan aangesloten worden op de watermeter met of zonder aansluiting op de P1 interface van de slimme meter. 
+Dit document beschrijft de installatie en configuratie van de Watermeter Dongel op ESP32 hardware. De hardware komt met werkende software. De Dongel dient te worden aangesloten op de slimme meter en watermeter. Wil je deze aanpassen ga dan naar het onderdeel Flashen.<br>
 
 **LED functie**<br>
-De dongels zijn uitgerust met een blauwe LED. Deze heeft meerdere functies, namelijk:
+De dongel is uitgerust met een blauwe LED. Deze heeft meerdere functies, namelijk:
 - na inpluggen zal de LED ca 1.5 seconde oplichten. Is dit niet het geval dan is er een probleem met stroom of met de dongel
 - Zodra de dongel WiFi connectie heeft zal de LED blijven branden.
 - Tijdens het lezen van een datapakket zal de LED kortstondig uit of aan gaan. Indien er Wifi verbinding is gaat de LED kort uit. Indien er geen Wifi is zal de LED kort aan gaan.
 
 **USB voeding**<br>
-
 USB adapter bij een waterlezer dongle is noodzakelijk. In combinatie met de slimme meter zal het soms mogelijk zijn om de slimme meter de dongel te laten voeden (5.0 slimme meters). <br>
 >**TIP**<br>
 >De USB adapter mag een oude smartphone of tablet adapter zijn of een usb aansluiting die voorhanden is in de meterkast (bv van een NAS/Router). Bijna alle voedingen voldoen (5V/5Watt is prima).<br>
@@ -22,6 +18,8 @@ Watermeters met een metalen plaatje op de kleine wijzer zijn geschikt voor deze 
 Ook dient de sensor zo te zitten dat deze 1 keer per omwenteling een signaal opneemt. Dit kan je aan de sensor zien doordat het rode lampje gaat branden. Sensor zit normaal gesproken recht boven deze wijzer maar dan iets verschoven van het midden van deze wijzer.
 Maak de sensor vast met meegeleverde klittenband of met de sensor houder, zie onderstaande montage wijze.
 
+<img src="afb/montage_sensor.png" width="40%">
+
 >**TIP**<br>
 >- Zet de kraan een beetje open om te checken of de sensor goed zit (rode ledje gaat dan per omwenteling 1x aan).<br>
 >- Monteer de sensor met het kruis / rode ledje naar de wijzerplaat toe.
@@ -30,7 +28,7 @@ Maak de sensor vast met meegeleverde klittenband of met de sensor houder, zie on
 Onderstaande stappen dienen gevolgd te worden.<br>
 - sluit usb adapter aan via een usb micro kabel
 - de LED van de dongle licht op en de dongle start op
-- wacht 20 seconden en zoek op PC/laptop/smartphone/tablet naar wifi hotspot (dsmr-api of p1-dongle) en klik deze aan
+- wacht 20 seconden en zoek op PC/laptop/smartphone/tablet naar wifi hotspot (p1-dongle) en klik deze aan
 
 <img src="../afb/afbeelding1.png" width="20%">
 
@@ -45,10 +43,7 @@ Onderstaande stappen dienen gevolgd te worden.<br>
 - Druk op &quot;Save&quot;
 - Adapter zal op nieuwe opstarten en u kunt het scherm sluiten.
 
-Vanaf dit moment zal de adapter te vinden zijn via: [http://dsmr-api.local/](http://dsmr-api.local/) 
-of 
-[http://p1-dongle.local/](http://p1-dongle.local/) 
-bij de ESP32
+Vanaf dit moment zal de adapter te vinden zijn via: [http://p1-dongle.local/](http://p1-dongle.local/) 
 
 Deze naam is aanpasbaar via settings in de dongle.
 
@@ -57,8 +52,8 @@ Deze naam is aanpasbaar via settings in de dongle.
 **Uitlezen Slimmemeter**<br>
 Er zijn drie manieren om via de dongel de slimmemeter uit te lezen, namelijk:
 
-1. Via de webinterface van de Slimme meter ([http://dsmr-api.local/](http://dsmr-api.local/))
-2. Via de rest api ([http://dsmr-api.local/api/v2/hist/hours](http://dsmr-api.local/api/v2/hist/hours)); zelf ophalen van de gegevens op gewenste moment; zie API info in de webinterface voor meer informatie
+1. Via de webinterface van de Slimme meter ([http://p1-dongle.local/](http://p1-dongle.local/))
+2. Via de rest api ([http://p1-dongle.local/api/v2/hist/hours](http://p1-dongle.local/api/v2/hist/hours)); zelf ophalen van de gegevens op gewenste moment; zie API info in de webinterface voor meer informatie
 3. Via MQTT; dongel pusht elke x seconde de gegevens naar de mqtt broker; zie hieronder de configuratie van mqtt
 
 **Webinterface**<br>
@@ -69,21 +64,25 @@ Het hoofdscherm opent met onderstaande pagina. Kan zijn dat de tabel nog leeg is
 
 In de menu zijn de volgende opties opgenomen
 
-1. Actueel -\&gt; samenvatting van de verschillende grootheden
-2. Per Uur / Per Dag / Per Maand -\&gt; de verbruikscijfers weergegeven per dag/maand/jaar
-3. Telegram -\&gt; ruwe data uit de slimme meter
-4. All Fields -\&gt; alle slimme meter data netjes geformateerd
-5. Systeem info -\&gt; informatie over de adapter zoals versie, capaciteit
-6. APIDocs -\&gt; informatie over de mogelijkheid om de gegevens op afstand te kunnen uitlezen
-7. File symbool -\&gt; kunnen de bestanden op de adapter geraadpleegd/verwijderd of geupload worden
-8. Wieltje -\&gt; systeeminstellingen.
+1. Actueel: samenvatting van de verschillende grootheden
+2. Per Uur / Per Dag / Per Maand: de verbruikscijfers weergegeven per dag/maand/jaar
+3. Telegram: ruwe data uit de slimme meter
+4. All Fields: alle slimme meter data netjes geformateerd
+5. Systeem info: informatie over de adapter zoals versie, capaciteit
+6. APIDocs: informatie over de mogelijkheid om de gegevens op afstand te kunnen uitlezen
+7. File symbool: kunnen de bestanden op de adapter geraadpleegd/verwijderd of geupload worden
+8. Wieltje: systeeminstellingen.
 
 **Configuratie**<br>
 Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/)
-
 Druk op het wieltje rechts in het menu. Het onderstaande settingsscherm is zichtbaar.
+Vul onderaan de beginstand van de watermeter in en druk op Opslaan. 
+
+>**LET OP**<br>
+> Meters met 2 rode cijfers dienen ingevoerd te worden met een 0 achter de laatste cijfer. Dus 34.23 wordt ingevoerd als 34 m3 + 230 liter
 
 <img src="../afb/afbeelding5-water.png" width="40%">
+
 
 1 - MQTT
 
@@ -113,12 +112,12 @@ De frequentie van uitlezen kan ingesteld worden.
 Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 
 **Remote update**<br>
-Vanaf de 3.0.4 firmware is een remote Firmware update ook mogelijk. Dit kan op twee manieren, namelijk
-1) via Telnet door U gevolgd door versie nummer in te geven. bv: U 3.0.4. (vanaf 3.1.4 versie U <return> daarna verse <return>)
-2) via de webinterface door de functie aanroep + versie op te geven. Bijvoorbeeld: /remote-update?version=3.0.2
+Dit kan op twee manieren, namelijk
+1) via Telnet door U + <return> in te typen en daar na versie nummer (bv 4.0.1-WATER) + <return>. De -WATER is belangrijk achter het versienummer om de waterlezer optie ook in de update beschikbaar te hebben.
+2) via de webinterface door de functie aanroep + versie op te geven. Bijvoorbeeld: /remote-update?version=4.0.1-WATER
 
-Vanaf 3.1.4 versie is ook Filesysteem update mogelijk via telnet. Dit door S <return> versie <return> in te voeren. 
-Standaard zal er geupdate worden van de smart-stuff.nl/ota directory. Deze verwijzing kan worden aangepast in de settingsfile op de dongel. 
+Ook Filesysteem update is mogelijk via telnet. Dit door S <return> versie <return> in te voeren. 
+Standaard zal er geupdate worden van de ota.smart-stuff.nl directory. Deze verwijzing kan worden aangepast in de settingsfile op de dongel. 
 
 >Let op: er kan alleen verwezen worden naar http servers.
 
