@@ -1,4 +1,4 @@
-# **Waterlezer dongel**
+# **P1 + Waterlezer dongel (ESP32)**
 
 Dit document beschrijft de installatie en configuratie van de Watermeter Dongel op ESP32 hardware. De hardware komt met werkende software. De Dongel dient te worden aangesloten op de slimme meter en watermeter. Wil je deze aanpassen ga dan naar het onderdeel Flashen.<br>
 
@@ -9,12 +9,13 @@ De dongel is uitgerust met een blauwe LED. Deze heeft meerdere functies, namelij
 - Tijdens het lezen van een datapakket zal de LED kortstondig uit of aan gaan. Indien er Wifi verbinding is gaat de LED kort uit. Indien er geen Wifi is zal de LED kort aan gaan.
 
 **USB voeding**<br>
-USB adapter bij een waterlezer dongle is noodzakelijk. In combinatie met de slimme meter zal het soms mogelijk zijn om de slimme meter de dongel te laten voeden (5.0 slimme meters). <br>
+USB adapter bij een P1 + Waterlezer dongle is noodzakelijk. In combinatie met de slimme meter zal het soms mogelijk zijn om de 5.0  slimme meter de dongel te laten voeden. <br>
 >**TIP**<br>
 >De USB adapter mag een oude smartphone of tablet adapter zijn of een usb aansluiting die voorhanden is in de meterkast (bv van een NAS/Router). Bijna alle voedingen voldoen (5V/5Watt is prima).<br>
 
 **Monteer de sensor op de watermeter**<br> 
-Watermeters met een metalen plaatje op de kleine wijzer zijn geschikt voor deze set. Het is zaak om de sensor recht boven deze wijzer te plaatsen zonder dat er lucht/plakband tussen de sensor en de wijzer zit. Gat er tussen zo klein mogelijk.
+Watermeters met een metalen plaatje op de kleine wijzer zijn geschikt voor deze set. Het is zaak om de sensor recht boven deze wijzer te plaatsen zonder dat er lucht/plakband tussen de sensor en de wijzer zit. Afstand tussen wieltje en sensor dient zo klein mogelijk te zijn voor de meest accurate opname.<br>
+<br>
 Ook dient de sensor zo te zitten dat deze 1 keer per omwenteling een signaal opneemt. Dit kan je aan de sensor zien doordat het rode lampje gaat branden. Sensor zit normaal gesproken recht boven deze wijzer maar dan iets verschoven van het midden van deze wijzer.
 Maak de sensor vast met meegeleverde klittenband of met de sensor houder, zie onderstaande montage wijze.
 
@@ -29,10 +30,10 @@ Onderstaande stappen dienen gevolgd te worden.<br>
 - sluit usb adapter aan via een usb micro kabel
 - de LED van de dongle licht op en de dongle start op
 - wacht 20 seconden en zoek op PC/laptop/smartphone/tablet naar wifi hotspot (p1-dongle) en klik deze aan
+<img src="../afb/ap.png" width="20%">
 
-<img src="../afb/afbeelding1.png" width="20%">
+- Verbind met de hotspot
 
-- verbind met de hotspot<br>
 <img src="../afb/afbeelding2.png" width="40%">
 
 - Klik op &quot;Configuratie Wifi&quot;
@@ -60,7 +61,6 @@ Er zijn drie manieren om via de dongel de slimmemeter uit te lezen, namelijk:
 Het hoofdscherm opent met onderstaande pagina. Kan zijn dat de tabel nog leeg is in de eerste 30 seconden na opstarten.
 
 <img src="../afb/afbeelding4.png" width="50%">
-
 
 In de menu zijn de volgende opties opgenomen
 
@@ -122,27 +122,24 @@ Standaard zal er geupdate worden van de ota.smart-stuff.nl directory. Deze verwi
 >Let op: er kan alleen verwezen worden naar http servers.
 
 **Flashen**<br>
-Flashen dient via een FTDI interface te gebeuren (115200 baud). Op J2 (onderkant) zitten de aansluitingen voor deze interface. 
-De pinout (v3.3 hardware) is :
+Flashen dient via een USB - TTL adapter te gebeuren. Op J2 (onderkant) zitten de aansluitingen voor deze interface. 
 
-<img src="afb/V3.3_onderkant.png" width="15%">
+<img src="afb/v4.2-onder.png" width="15%">
 
 1. RX
 2. TX
-3. Flash (vierkante pad / Rode pijl); Flash naar GND en opnieuw opstarten om in de program mode te komen
-4. 3.3Volt
-5. GND
-6. Reset = GND
+3. Flash
+4. GND
+5. 3.3Volt
+6. Reset
 
-De software is te vinden op [https://github.com/mhendriks/DSMR-API-V2](https://github.com/mhendriks/DSMR-API-V2)
+De software is te vinden op [https://github.com/mhendriks/P1-Dongel-ESP32/releases](https://github.com/mhendriks/P1-Dongel-ESP32/releases)
+
+>**LET OP!<br>
+>Dongle altijd loskoppelen van voeding / slimme meter wanneer deze wordt geflasht**
 
 **Meest voorkomende problemen**<br>
 *Hotspot (P1-Dongel) niet of kort zichtbaar</br>*
 De basic dongel wordt gevoed door de slimme meter. Afhankelijk van het merk / type is de stroomlevering kritischer. 
 De dongel zal bij de eerste aanmelding de omgeving scannen en zijn netwerk instellen. Dit kost kortstondig veel stroom en enkele meters zullen dit niet accepteren en de voeding stoppen. Gevolg is dat de dongel steeds op nieuw gaat starten (LEDje knippert).
 Neem in z'n geval contact met mij op om de dongel te ruilen voor een exemplaar met extra usb aansluiting. Vaak is het alleen nodig om de usb voeding tijdens de eerste start aan te sluiten. Daarna kan deze verwijderd worden. Let op! valt de stroom uit dan kan het nodig zijn om de usb voeding weer te gebruiken. 
-
-**Instellen Domotica oplossing**<br>
-Home Assistant
-
-Zie voorbeeld op [https://mrwheel-docs.gitbook.io/dsmrloggerapi/integratie-met-home-assistant](https://mrwheel-docs.gitbook.io/dsmrloggerapi/integratie-met-home-assistant)

@@ -5,7 +5,7 @@ Dit document beschrijft de installatie en configuratie van de P1 Dongel op hardw
 >Dit project is een doorontwikkeling op basis van het pionierswerk van Willem Aandewiel. Inmiddels is deze initiële software op diverse punten gewijzigd en zijn nieuwe mogelijkheden toegevoegd.
 >Meer informatie over de DSMR API van Willem: [https://mrwheel-docs.gitbook.io/dsmrloggerapi/](https://mrwheel-docs.gitbook.io/dsmrloggerapi/)
 
-**LED functie (vanaf hardware V3.1 en firmware v3.0.3)**<br>
+**LED functie (indien uw dongle met led uitgerust is)**<br>
 De laatste dongels zijn uitgerust met een blauwe LED. Deze heeft meerdere functies, namelijk:
 - na inpluggen zal de LED 1.5 seconde oplichten. Is dit niet het geval dan is er een probleem met stroom of met de dongel
 - Zodra de dongel WiFi connectie heeft zal de LED blijven branden.
@@ -17,11 +17,11 @@ Heeft de dongel een usb voeding en de slimme meter is van een ouder type dan SMR
 De USB adapter mag een oude smartphone of tablet adapter zijn of een usb aansluiting die voorhanden is in de meterkast (bv van een NAS/Router). Bijna alle voedingen voldoen (5V/5Watt is prima).
 
 **Configuratie Wifi**<br>
-Na het aansluiten van de dongel op je P1 ingang van je slimme meter bouwt de dongel als eerste een eigen Wifi hotspot op ten behoeve van configuratie. Deze hotspot is te herkennen door de **Wifinaam P1-Dongle**.
+Na het aansluiten van de dongel op je P1 ingang van je slimme meter bouwt de dongel als eerste een eigen Wifi hotspot op ten behoeve van configuratie. Deze hotspot is te herkennen door de Wifi-naam **P1-Dongle**.
 
 Zorg dat je met je computer of mobieldevice contact maakt met dit netwerk. Automatisch wordt een updatescherm getoond waarin de Wifi settings te zien zijn. Zie onderstaande voorbeeld op MacOS.
 
-<img src="afb/afbeelding1.png" width="20%">
+<img src="afb/ap.png" width="20%">
 
 Zorg dat je met je computer of mobiel toestel contact maakt met dit netwerk, door hier op te klikken. Automatisch wordt een scherm getoond waarin de WifiManager te zien is. Zie onderstaande plaatje.
 
@@ -55,14 +55,14 @@ Het hoofdscherm opent met onderstaande pagina. Kan zijn dat de tabel nog leeg is
 
 In de menu zijn de volgende opties opgenomen
 
-1. Actueel -\&gt; samenvatting van de verschillende grootheden
-2. Per Uur / Per Dag / Per Maand -\&gt; de verbruikscijfers weergegeven per dag/maand/jaar
-3. Telegram -\&gt; ruwe data uit de slimme meter
-4. All Fields -\&gt; alle slimme meter data netjes geformateerd
-5. Systeem info -\&gt; informatie over de adapter zoals versie, capaciteit
-6. APIDocs -\&gt; informatie over de mogelijkheid om de gegevens op afstand te kunnen uitlezen
-7. File symbool -\&gt; kunnen de bestanden op de adapter geraadpleegd/verwijderd of geupload worden
-8. Wieltje -\&gt; systeeminstellingen.
+1. Actueel : samenvatting van de verschillende grootheden
+2. Per Uur / Per Dag / Per Maand : de verbruikscijfers weergegeven per dag/maand/jaar
+3. Telegram : ruwe data uit de slimme meter
+4. All Fields : alle slimme meter data netjes geformateerd
+5. Systeem info : informatie over de adapter zoals versie, capaciteit
+6. APIDocs : informatie over de mogelijkheid om de gegevens op afstand te kunnen uitlezen
+7. File symbool : kunnen de bestanden op de adapter geraadpleegd/verwijderd of geupload worden
+8. Wieltje : systeeminstellingen.
 
 **Configuratie**<br>
 Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/)
@@ -97,19 +97,21 @@ Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 
 **Remote update**<br>
 Vanaf de 3.0.4 firmware is een remote Firmware update ook mogelijk. Dit kan op twee manieren, namelijk
-1) via Telnet door U gevolgd door versie nummer in te geven. bv: U 3.0.4. (vanaf 3.1.4 versie U <return> daarna verse <return>)
-2) via de webinterface door de functie aanroep + versie op te geven. Bijvoorbeeld: /remote-update?version=3.0.2
+1) via Telnet door U <return> gevolgd door versienummer. bv: U <return> 3.3.1
+2) via de webinterface door de functie aanroep + versie op te geven. Bijvoorbeeld: /remote-update?version=3.3.1
 
 Vanaf 3.1.4 versie is ook Filesysteem update mogelijk via telnet. Dit door S <return> versie <return> in te voeren. 
 Standaard zal er geupdate worden van de smart-stuff.nl/ota directory. Deze verwijzing kan worden aangepast in de settingsfile op de dongel. 
 
->Let op: er kan alleen verwezen worden naar http servers.
+>Let op: <br>
+>- er kan alleen verwezen worden naar http servers.
+>- als u een watermeter dongle heeft dient dit achter het versienummer opgenomen te worden. dus 3.1.1-WATER
 
 **Flashen**<br>
 Flashen dient via een FTDI interface te gebeuren (115200 baud). Op J2 (onderkant) zitten de aansluitingen voor deze interface. 
-De pinout (v3.3 hardware) is :
+De pinout (v3.5 hardware) is :
 
-<img src="afb/V3.3_onderkant.png" width="15%">
+<img src="afb/3.4onder.png" width="15%">
 
 1. RX
 2. TX
@@ -125,13 +127,3 @@ De software is te vinden op [https://github.com/mhendriks/DSMR-API-V2](https://g
 De basic dongel wordt gevoed door de slimme meter. Afhankelijk van het merk / type is de stroomlevering kritischer. 
 De dongel zal bij de eerste aanmelding de omgeving scannen en zijn netwerk instellen. Dit kost kortstondig veel stroom en enkele meters zullen dit niet accepteren en de voeding stoppen. Gevolg is dat de dongel steeds op nieuw gaat starten (LEDje knippert).
 Neem in z'n geval contact met mij op om de dongel te ruilen voor een exemplaar met extra usb aansluiting. Vaak is het alleen nodig om de usb voeding tijdens de eerste start aan te sluiten. Daarna kan deze verwijderd worden. Let op! valt de stroom uit dan kan het nodig zijn om de usb voeding weer te gebruiken. 
-
-
-**Aansluiten extra signaal**<br>
-Zie [setup/aux_(bel)](aux_(bel)/README.md) voor meer details
-Deze optie is niet meer aanwezig op de v3 hardware
-
-**Instellen Domotica oplossing**<br>
-Home Assistant
-
-Zie voorbeeld op [https://mrwheel-docs.gitbook.io/dsmrloggerapi/integratie-met-home-assistant](https://mrwheel-docs.gitbook.io/dsmrloggerapi/integratie-met-home-assistant)
