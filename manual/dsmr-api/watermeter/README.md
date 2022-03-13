@@ -83,6 +83,12 @@ Vul onderaan de beginstand van de watermeter in en druk op Opslaan.
 
 <img src="../afb/afbeelding5-water.png" width="40%">
 
+**Watermeters met 10 liter wieltje!**<br>
+Heeft u een watermeter met een wieltje wat 10liter per omwenteling registreert dan dient de settingsfile van de dongle aangepast te worden. Volg de onderstaande stappen.
+1. open http://p1-dongle.local/#FileExplorer in uw browser
+2. download de DSMRsettings.json file
+3. pas ```"waterfactor":1``` aan naar ```"waterfactor":10```
+4. upload de aangepaste settingsfile en start de dongle opnieuw op
 
 1 - MQTT
 
