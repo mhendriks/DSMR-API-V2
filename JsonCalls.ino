@@ -347,6 +347,7 @@ void sendDeviceSettings()
   doc["water_l"]["min"] = 0;
   doc["water_l"]["max"] = 999;  
 #endif
+
   sendJson(doc);
 
 } // sendDeviceSettings()

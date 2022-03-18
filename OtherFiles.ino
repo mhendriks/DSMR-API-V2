@@ -278,6 +278,11 @@ void updateSetting(const char *field, const char *newValue)
     CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
   }
   if (!stricmp(field, "mqtt_toptopic"))     strCopy(settingMQTTtopTopic, 20, newValue);  
+  if (!stricmp(field, "ota")){
+    //curl -i -H "Content-Type: application/json" -d "name":"ota","value":"ota.smart-stuff.nl/" -v http://dsmr-api.local/api/v2/dev/settings
+    strcpy(BaseOTAurl, "http://");  
+    strncat(BaseOTAurl,newValue,sizeof(BaseOTAurl) -1);
+  }
 
   writeSettings();
   

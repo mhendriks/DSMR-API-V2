@@ -15,6 +15,9 @@ TODO
 
 !!! FIXES
 - telnet update via windows ... invoeren lukt niet
+√ curl update ota url
+√ check oude ota url en vervang voor nieuwe (setup?)
+
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
@@ -151,6 +154,13 @@ void setup()
 #else
   Debug(F("\n!!! DEBUG MODE AAN !!!\n\n"));
 #endif
+
+//check old ota url and update with new --- only once at startup
+  if( strcmp(BaseOTAurl,"http://smart-stuff.nl/ota/") == 0 ) {
+    Debugln(F("Old OTA url available"));
+    strcpy(BaseOTAurl, "http://ota.smart-stuff.nl/");
+    writeSettings();
+  }
 
 } // setup()
 
