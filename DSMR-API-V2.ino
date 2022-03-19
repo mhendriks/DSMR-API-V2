@@ -17,6 +17,7 @@ TODO
 - telnet update via windows ... invoeren lukt niet
 √ curl update ota url
 √ check oude ota url en vervang voor nieuwe (setup?)
+√ issues HA auto discovery
 
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
@@ -45,7 +46,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
 //----- EXTENSIONS
 //#define USE_WATER_SENSOR 1
-//#define USE_APP        4           // define if the Arduino IOT app could be used
+#define USE_APP        4           // define if the Arduino IOT app could be used
 #define HA_DISCOVER
 
 #ifdef USE_WATER_SENSOR
