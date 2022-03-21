@@ -15,9 +15,6 @@ TODO
 
 !!! FIXES
 - telnet update via windows ... invoeren lukt niet
-√ curl update ota url
-√ check oude ota url en vervang voor nieuwe (setup?)
-√ issues HA auto discovery
 
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
@@ -41,7 +38,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 /******************** compiler options  ********************************************/
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
-//#define DEBUG_MODE
+#define DEBUG_MODE
 //#define V2_COMPATIBLE              // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
 
 //----- EXTENSIONS
