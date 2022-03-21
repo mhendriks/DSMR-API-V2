@@ -79,6 +79,20 @@ Daarna kan in Energie en in de Home pagina de rest van de configuratie gemaakt w
 
 <img src="afb/home.png" width="70%">
 
+# **DSMR 2.2 slimme meters**<br>
+Voor een 2.2 versie van de slimme meter is een andere yaml configuratie. Deze is te vinden op [p1-dongle-dsmr2.2.yaml](p1-dongle-dsmr2.2.yaml).
+Indien u ook een gasmeter heeft dit met de slimme meter communiceert dan dient ook de Home Assistant configuratie aangepast te worden om de gasgegevens te kunnen inzien.<br>
+<br>
+Voeg het onderstaande toe aan uw HA config.yaml<br>
+
+```sensor:
+  - platform: template
+    sensors: 
+      dsmr_gas:
+        friendly_name: "Gas Consumed"
+        unit_of_measurement: "m3"
+        value_template: '{{ states("sensor.gas_consumed_text") | regex_findall_index("\d{3,5}\.\d*") | float }}'
+```
 
 # **Zelf aanpassingen maken in de configuratie**<br>
 In de ESPHome dashboard waarin u zelf de diverse modules kunt beheren kunt u de p1-dongle zien, toevoegen en bewerken.
