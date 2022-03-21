@@ -36,14 +36,14 @@ Zorg dat je met je computer of mobiel toestel contact maakt met dit netwerk, doo
 2. Druk op &quot;Save&quot;
 3. Adapter zal op nieuwe opstarten en u kunt het scherm sluiten.
 
-Vanaf dit moment zal de adapter te vinden zijn via: [http://dsmr-api.local/](http://dsmr-api.local/)
+Vanaf dit moment zal de adapter te vinden zijn via: [http://dsmr-api.local/](http://dsmr-api.local/) of via [http://p1-dongle.local/](http://p1-dongle.local/) bij de ESP32 dongle
 
 Deze naam is aanpasbaar (via configuratie).
 
 **Uitlezen Slimmemeter**<br>
 Er zijn drie manieren om via de dongel de slimmemeter uit te lezen, namelijk:
 
-1. Via de webinterface van de Slimme meter ([http://dsmr-api.local/](http://dsmr-api.local/))
+1. Via de webinterface van de Slimme meter [http://dsmr-api.local/](http://dsmr-api.local/) of via [http://p1-dongle.local/](http://p1-dongle.local/) bij de ESP32 dongle
 2. Via de rest api ([http://dsmr-api.local/api/v2/hist/hours](http://dsmr-api.local/api/v2/hist/hours)); zelf ophalen van de gegevens op gewenste moment; zie API info in de webinterface voor meer informatie
 3. Via MQTT; dongel pusht elke 5 seconde de gegevens naar de mqtt broker; zie hieronder de configuratie van mqtt
 
@@ -65,7 +65,7 @@ In de menu zijn de volgende opties opgenomen
 8. Wieltje : systeeminstellingen.
 
 **Configuratie**<br>
-Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/)
+Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/) of via [http://p1-dongle.local/](http://p1-dongle.local/) bij de ESP32 dongle
 
 Druk op het wieltje rechts in het menu. Het onderstaande settingsscherm is zichtbaar.
 
