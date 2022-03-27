@@ -22,16 +22,19 @@
 ESP8266WebServer        httpServer (80);
 ESP8266HTTPUpdateServer httpUpdater(true);
 
-#define   MaxWifiReconnect  10
+#define   MaxWifiReconnect      10
+DECLARE_TIMER_SEC(WifiReconnect, 5); //try after x sec
 
-bool        isConnected = false;
-bool        WifiBoot = true;
+//bool        isConnected         = false;
+bool        WifiBoot            = true;
 byte        WiFiReconnectCount  = 0;
+bool        WifiConnected       = false;
 
 void P1StatusWrite();
 void P1Reboot();
 void LogFile(const char*, bool);
 void startWiFi(const char* , int );
+
 
 // naar setup van https://github.com/gmag11/ESPNtpClient/blob/main/examples/advancedExample/advancedExample.ino
 void onWifiEvent (WiFiEvent_t event) {
@@ -47,12 +50,15 @@ void onWifiEvent (WiFiEvent_t event) {
         Debug (F(" ( gateway: " ));  Debug (WiFi.gatewayIP());Debug(" )\n\n");
         WiFiReconnectCount = 0;
         WifiBoot = false;
+        WifiConnected = true;
         break;
     case WIFI_EVENT_STAMODE_DISCONNECTED:
-        LogFile("Wifi connection lost",true);          
-        delay(1000); //wait longer before retrying
-        WiFi.reconnect();
-        if ( (WiFiReconnectCount++ > MaxWifiReconnect)  && !WifiBoot ) P1Reboot();
+        if (DUE(WifiReconnect)) {
+          if ( WifiConnected ) LogFile("Wifi connection lost",true); //log only once 
+          WifiConnected = false;                 
+          WiFi.reconnect();
+          if ( (WiFiReconnectCount++ > MaxWifiReconnect)  && !WifiBoot ) P1Reboot();
+        }
         break;
     default:
         DebugTf ("[WiFi-event] event: %d\n", event);
@@ -78,7 +84,7 @@ void startWiFi(const char* hostname, int timeOut)
   uint32_t lTime = millis();
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
   
-  LogFile("Wifi Starting", true);
+  Debugln(F("Wifi Starting"));
   digitalWrite(LED, HIGH); //OFF
   WifiBoot = true;
   WiFi.onEvent(onWifiEvent);

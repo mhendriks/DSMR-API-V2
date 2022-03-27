@@ -12,9 +12,9 @@ TODO
 - eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek en voor maar 15 minuten)
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
 - Aanpassen front-end ivm no-history feaure
+- telnet update via windows ... invoeren lukt niet
 
 !!! FIXES
-- telnet update via windows ... invoeren lukt niet
 
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
@@ -38,12 +38,12 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 /******************** compiler options  ********************************************/
 //#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
-#define DEBUG_MODE
-//#define V2_COMPATIBLE              // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
+//#define DEBUG_MODE
+//#define V2_COMPATIBLE             // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
 
 //----- EXTENSIONS
-//#define USE_WATER_SENSOR 1
-#define USE_APP        4           // define if the Arduino IOT app could be used
+#define USE_WATER_SENSOR
+//#define USE_APP           // define if the Arduino IOT app could be used
 #define HA_DISCOVER
 
 #ifdef USE_WATER_SENSOR

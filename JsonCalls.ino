@@ -25,7 +25,7 @@ DynamicJsonDocument jsonDoc(4100);  // generic doc to return, clear() before use
 void JsonGas(){
   if (!gasDelivered) return;
   
-  jsonDoc["gas_delivered"]["value"] =  gasDelivered;
+  jsonDoc["gas_delivered"]["value"] =  (int)(gasDelivered*1000)/1000.0;
   jsonDoc["gas_delivered"]["unit"]  = "m3";
 }
 
@@ -81,12 +81,12 @@ struct buildJson {
     return i;
   }
 
-  String value_to_json(TimestampedFixedValue i) {
-    return String(i);
+  double value_to_json(TimestampedFixedValue i) {
+    return i.int_val()/1000.0;
   }
   
-  float value_to_json(FixedValue i) {
-    return i;
+  double value_to_json(FixedValue i) {
+    return i.int_val()/1000.0;
   }
 
 }; // buildjson{} 
