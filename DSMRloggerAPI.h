@@ -26,6 +26,7 @@ static tm timeinfo;
 #include <ArduinoJson.h>
 #include "Debug.h"
 #include <EEPROM.h>
+WiFiClient  wifiClient;
 #include "Network.h"
 
 #ifdef USE_APP
@@ -72,22 +73,6 @@ typedef struct {
 
 #define JSON_HEADER_LEN   23  //total length incl new line
 #define DATA_CLOSE        2   //length last row of datafile
-
-//TODO
-//in mem houden van de ringfile gegevens voor een snelle oplevering naar de client. Vooral de Day gegevens die worden door het dashboard gebruikt.
-//struct P1DataRec {
-//  uint32_t  date;
-//  uint32_t  T1;
-//  uint32_t  T2;
-//  uint32_t  T1r;
-//  uint32_t  T2r;
-//  uint32_t  G;
-//  uint16_t  Water;
-//};
-//
-//P1DataRec P1_Day[15]; //420 bytes 
-//P1DataRec P1_Hour[25]; //700 bytes 
-//P1DataRec P1_Month[49]; //1372 bytes 
 
 
 /**
@@ -178,7 +163,6 @@ int strcicmp(const char *a, const char *b);
 void delayms(unsigned long);
 
 //===========================GLOBAL VAR'S======================================
-WiFiClient  wifiClient;
 #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
 static PubSubClient MQTTclient(wifiClient);
   
