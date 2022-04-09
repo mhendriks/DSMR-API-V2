@@ -25,10 +25,10 @@ ESP8266HTTPUpdateServer httpUpdater(true);
 #define   MaxWifiReconnect      10
 DECLARE_TIMER_SEC(WifiReconnect, 5); //try after x sec
 
-//bool        isConnected         = false;
 bool        WifiBoot            = true;
 byte        WiFiReconnectCount  = 0;
 bool        WifiConnected       = false;
+char APIurl[42]                 = "http://api.smart-stuff.nl/v1/register.php";
 
 void P1StatusWrite();
 void P1Reboot();
@@ -78,6 +78,17 @@ void configModeCallback (WiFiManager *myWiFiManager)
 } // configModeCallback()
 
 //===========================================================================================
+void PostMacIP() {
+  HTTPClient http;
+  http.begin(wifiClient, APIurl);
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  String httpRequestData = "mac=" + WiFi.macAddress() + "&ip=" + WiFi.localIP().toString();           
+  int httpResponseCode = http.POST(httpRequestData);
+  Debug(F("HTTP Response code: "));Debugln(httpResponseCode);
+  http.end();  
+}
+
+//===========================================================================================
 void startWiFi(const char* hostname, int timeOut) 
 {
   WiFiManager manageWiFi;
@@ -111,7 +122,7 @@ void startWiFi(const char* hostname, int timeOut)
     return;
   } 
   DebugTf("took [%d] seconds => OK!\n", (millis() - lTime) / 1000);
-
+  PostMacIP();
   httpUpdater.setup(&httpServer);
   httpUpdater.setIndexPage(UpdateHTML);
   
@@ -123,7 +134,6 @@ void startTelnet()
   TelnetStream.begin();
   DebugTln(F("Telnet server started"));
   TelnetStream.flush();
-
 } // startTelnet()
 
 
