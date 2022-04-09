@@ -247,7 +247,8 @@ void handleKeyInput()
                     telegramErrors      = 0;
                     P1StatusWrite();
                     break;
-      default:      Debugln(F("\r\nCommands are:\r\n"));
+      default:      Debugf("Dongle version %s | mac address %s\n\r",_VERSION, WiFi.macAddress().c_str());
+                    Debugln(F("\r\nCommands are:"));
                     Debugln(F("   A - P1 Status info a=available|r=read|w=write|p=print|z=erase\r"));
                     Debugln(F("   B - Board Info\r"));
                     #ifdef USE_WATER_SENSOR
