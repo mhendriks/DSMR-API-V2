@@ -13,9 +13,9 @@ TODO
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
 - Aanpassen front-end ivm no-history feaure
 - telnet update via windows ... invoeren lukt niet
+- Jos: zou je de dag totalen zoals op het dashboard ook via MQTT kunnen exporteren? Gas_dag, Water_dag, Afname_dag, Teruglevering_dag, Afname-Terug_dag
 
 !!! FIXES
-
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
@@ -42,7 +42,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 //#define V2_COMPATIBLE             // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
 
 //----- EXTENSIONS
-#define USE_WATER_SENSOR
+//#define USE_WATER_SENSOR
 //#define USE_APP           // define if the Arduino IOT app could be used
 #define HA_DISCOVER
 
