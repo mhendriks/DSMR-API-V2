@@ -38,7 +38,15 @@ Zorg dat je met je computer of mobiel toestel contact maakt met dit netwerk, doo
 
 Vanaf dit moment zal de adapter te vinden zijn via: [http://dsmr-api.local/](http://dsmr-api.local/) of via [http://p1-dongle.local/](http://p1-dongle.local/) bij de ESP32 dongle
 
-Deze naam is aanpasbaar (via configuratie).
+Deze hostnaam is aanpasbaar (via configuratie).
+<br>
+
+**Dongle niet te bereiken via url**
+>Mocht de dongle niet gevonden kunnen worden via de url dan kan het zijn dat de hostname niet door de router heen komt. Dan kunt u binnen 1 uur na opstarten van de dongle het ip-adres opvragen.
+>Ga hiervoor naar [http://api.smart-stuff.nl/checkip](http://api.smart-stuff.nl/checkip) en vul het MAC adres van de dongle in<br>
+>Het MAC adres staat rechtsonder op het verzendlabel en is opvraagbaar bij Smartstuff. 
+><img src="afb/check-ip.png" width="50%">
+
 
 **Uitlezen Slimmemeter**<br>
 Er zijn drie manieren om via de dongel de slimmemeter uit te lezen, namelijk:
