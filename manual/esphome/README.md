@@ -36,7 +36,10 @@ Ook het tonen van deze popup kost tijd. Is deze er na 30 seconden nog niet dan k
 2. Druk op &quot;Save&quot;
 3. De dongle zal op nieuwe opstarten en u kunt het scherm sluiten en de computer verbinden met uw thuis netwerk.
 
-Vanaf dit moment zal de dongle te vinden zijn via: [http://p1-dongle.local/](http://p1-dongle.local/)
+Vanaf dit moment zal de dongle te vinden zijn via: [http://p1-dongle.local/](http://p1-dongle.local/) of via het ip-adres van de dongle.
+
+>**TIP**<br>
+>mocht de dongle niet te bereiken zijn haal dan de dongel even 5 seconden uit de slimme meter/ ontkoppel de usb adapter. Bij het opnieuw starten zal de dongle zich weer kenbaar maken.
 
 **3. Configureer de dongle in Home Assistant**<br>
 Zodra de dongle verbonden is met uw netwerk zal deze in de auto discover modus zichtbaar zijn in Home Assistant.

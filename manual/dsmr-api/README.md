@@ -130,8 +130,11 @@ De pinout (v3.5 hardware) is :
 
 De software is te vinden op [https://github.com/mhendriks/DSMR-API-V2](https://github.com/mhendriks/DSMR-API-V2)
 
-**Meest voorkomende problemen**<br>
+**Vragen en antwoorden**<br>
 *Hotspot (P1-Dongel) niet of kort zichtbaar</br>*
 De basic dongel wordt gevoed door de slimme meter. Afhankelijk van het merk / type is de stroomlevering kritischer. 
 De dongel zal bij de eerste aanmelding de omgeving scannen en zijn netwerk instellen. Dit kost kortstondig veel stroom en enkele meters zullen dit niet accepteren en de voeding stoppen. Gevolg is dat de dongel steeds op nieuw gaat starten (LEDje knippert).
 Neem in z'n geval contact met mij op om de dongel te ruilen voor een exemplaar met extra usb aansluiting. Vaak is het alleen nodig om de usb voeding tijdens de eerste start aan te sluiten. Daarna kan deze verwijderd worden. Let op! valt de stroom uit dan kan het nodig zijn om de usb voeding weer te gebruiken. 
+
+*op de eerste dag enorme getallen</br>*
+Als je de dongle voor het eerst gebruikt zal op de eerste dag de beginstand van de dongle worden opgeslagen. Dit geeft op die dag en de dagen er na een vreemd beeld. In het dashboard zal deze stand 3 dagen zichtbaar zijn, bij de uren statistieken 2 dagen en dagen statistieken 14 dagen. Voor de maanden kan dit opgelost worden door via settings de meterstanden van de maanden er voor in te voeren. Vaak te vinden bij uw energiemaatschappij.
