@@ -27,13 +27,13 @@ void P1StatusBegin(){
     EEPROM.put(Eaddr, P1Status);
 //    DebugT("P1StatusWrite duration: "); Debugln(millis() - msec);
 
-    if (EEPROM.commit()) DebugTln(F("P1Status successfully writen to EEPROM"));
+    if (EEPROM.commit()) DebugTln(F("P1Status successfully written to EEPROM"));
     else DebugTln(F("ERROR! EEPROM commit failed"));      
   }
 
   void P1StatusReset(){
     for (int i = 0; i < Esize; i++) EEPROM.write(i, 255);
-    if (EEPROM.commit()) DebugTln(F("P1Status successfully writen to EEPROM"));
+    if (EEPROM.commit()) DebugTln(F("P1Status successfully written to EEPROM"));
     else DebugTln(F("ERROR! EEPROM commit failed"));
   }
 
