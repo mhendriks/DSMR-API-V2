@@ -1,4 +1,4 @@
-</a>&nbsp;<a href="https://smart-stuff.nl/" target="_blank">![Buy P1 Dongle](.github/images/button_buy-p-dongle.png)</a>
+</a>&nbsp;<a href="https://smart-stuff.nl/shop/" target="_blank">![Buy P1 Dongle](.github/images/button_buy-p-dongle.png)</a>
 
 # NEW
 
@@ -72,4 +72,4 @@ Belangrijkste voordeel is dan direct na het koppelen aan uw Wifi-netwerk begonne
 Hoe dit werkt en waar de yaml te vinden is kunt u hier lezen: [manual/esphome](manual/esphome/README.md)
 
 # Hardware maken of aanschaffen
-Je kan je eigen hardware maken of deze aanschaffen. Wil je deze aanschaffen neem dan een kijkje op <a href="https://smart-stuff.nl" target="_blank">smart-stuff.nl</a>
+Je kan je eigen hardware maken of deze aanschaffen. Wil je deze aanschaffen neem dan een kijkje op <a href="https://smart-stuff.nl/shop/" target="_blank">smart-stuff.nl</a>

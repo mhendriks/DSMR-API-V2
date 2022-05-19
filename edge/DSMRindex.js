@@ -547,7 +547,7 @@ function UpdateDash()
 		
 								
 		Spinner(false);
-		}); //end fetch fields
+		} ); //end fetch fields
 }
 	
   //============================================================================  
