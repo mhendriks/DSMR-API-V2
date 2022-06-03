@@ -36,7 +36,12 @@ Zorg dat je met je computer of mobiel toestel contact maakt met dit netwerk, doo
 2. Druk op &quot;Save&quot;
 3. Adapter zal op nieuwe opstarten en u kunt het scherm sluiten.
 
-Vanaf dit moment zal de adapter te vinden zijn via: [http://dsmr-api.local/](http://dsmr-api.local/) of via [http://p1-dongle.local/](http://p1-dongle.local/) bij de ESP32 dongle
+Vanaf dit moment zal de adapter te vinden zijn via:<br>
+[http://dsmr-api.local/](http://dsmr-api.local/) 
+
+De P1 dongle Pro (ESP32) gebruikt andere url's, namelijk:<br>
+[http://p1-dongle-pro.local/](http://p1-dongle-pro.local/) voor de laatste versies en<br>
+[http://p1-dongle.local/](http://p1-dongle.local/)  voor de oudere versies<br>
 
 Deze hostnaam is aanpasbaar (via configuratie).
 <br>
@@ -115,7 +120,11 @@ Standaard zal er geupdate worden van de smart-stuff.nl/ota directory. Deze verwi
 >- er kan alleen verwezen worden naar http servers.
 >- als u een watermeter dongle heeft dient dit achter het versienummer opgenomen te worden. dus 3.1.1-WATER
 
-**Flashen**<br>
+## Diverse instellingen
+Er zijn diverse mogelijkheden om de configuratie gemakkelijk aan te passen na gelijk behoefte.
+- Frontend / webinterface zie [Frontend aanpassingen](Frontend.md)
+
+## Flashen<br>
 Flashen dient via een FTDI interface te gebeuren (115200 baud). Op J2 (onderkant) zitten de aansluitingen voor deze interface. 
 De pinout (v3.5 hardware) is :
 
@@ -130,7 +139,7 @@ De pinout (v3.5 hardware) is :
 
 De software is te vinden op [https://github.com/mhendriks/DSMR-API-V2](https://github.com/mhendriks/DSMR-API-V2)
 
-**Vragen en antwoorden**<br>
+## Vragen en antwoorden<br>
 *Hotspot (P1-Dongel) niet of kort zichtbaar</br>*
 De basic dongel wordt gevoed door de slimme meter. Afhankelijk van het merk / type is de stroomlevering kritischer. 
 De dongel zal bij de eerste aanmelding de omgeving scannen en zijn netwerk instellen. Dit kost kortstondig veel stroom en enkele meters zullen dit niet accepteren en de voeding stoppen. Gevolg is dat de dongel steeds op nieuw gaat starten (LEDje knippert).
