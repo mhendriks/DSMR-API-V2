@@ -2,18 +2,18 @@
 
 Dit document beschrijft de installatie en configuratie van de Watermeter Dongel op ESP32 hardware. De hardware komt met werkende software. De Dongel dient te worden aangesloten op de slimme meter en watermeter. Wil je deze aanpassen ga dan naar het onderdeel Flashen.<br>
 
-**LED functie**<br>
+## **LED functie**<br>
 De dongel is uitgerust met een blauwe LED. Deze heeft meerdere functies, namelijk:
 - na inpluggen zal de LED ca 1.5 seconde oplichten. Is dit niet het geval dan is er een probleem met stroom of met de dongel
 - Zodra de dongel WiFi connectie heeft zal de LED blijven branden.
 - Tijdens het lezen van een datapakket zal de LED kortstondig uit of aan gaan. Indien er Wifi verbinding is gaat de LED kort uit. Indien er geen Wifi is zal de LED kort aan gaan.
 
-**USB voeding**<br>
+## **USB voeding**<br>
 USB adapter bij een P1 + Waterlezer dongle is noodzakelijk. In combinatie met de slimme meter zal het soms mogelijk zijn om de 5.0  slimme meter de dongel te laten voeden. <br>
 >**TIP**<br>
 >De USB adapter mag een oude smartphone of tablet adapter zijn of een usb aansluiting die voorhanden is in de meterkast (bv van een NAS/Router). Bijna alle voedingen voldoen (5V/5Watt is prima).<br>
 
-**Monteer de sensor op de watermeter**<br> 
+## **Monteer de sensor op de watermeter**<br> 
 Watermeters met een metalen plaatje op de kleine wijzer zijn geschikt voor deze set. Het is zaak om de sensor recht boven deze wijzer te plaatsen zonder dat er lucht/plakband tussen de sensor en de wijzer zit. Afstand tussen wieltje en sensor dient zo klein mogelijk te zijn voor de meest accurate opname.<br>
 <br>
 Ook dient de sensor zo te zitten dat deze 1 keer per omwenteling een signaal opneemt. Dit kan je aan de sensor zien doordat het rode lampje gaat branden. Sensor zit normaal gesproken recht boven deze wijzer maar dan iets verschoven van het midden van deze wijzer.
@@ -48,16 +48,16 @@ Vanaf dit moment zal de adapter te vinden zijn via: [http://p1-dongle.local/](ht
 
 Deze naam is aanpasbaar via settings in de dongle.
 
-**Aansluiten Sensor**<br>
+##**Aansluiten Sensor**<br>
 
-**Uitlezen Slimmemeter**<br>
+## **Uitlezen Slimmemeter**<br>
 Er zijn drie manieren om via de dongel de slimmemeter uit te lezen, namelijk:
 
 1. Via de webinterface van de Slimme meter ([http://p1-dongle.local/](http://p1-dongle.local/))
 2. Via de rest api ([http://p1-dongle.local/api/v2/hist/hours](http://p1-dongle.local/api/v2/hist/hours)); zelf ophalen van de gegevens op gewenste moment; zie API info in de webinterface voor meer informatie
 3. Via MQTT; dongel pusht elke x seconde de gegevens naar de mqtt broker; zie hieronder de configuratie van mqtt
 
-**Webinterface**<br>
+## **Webinterface**<br>
 Het hoofdscherm opent met onderstaande pagina. Kan zijn dat de tabel nog leeg is in de eerste 30 seconden na opstarten.
 
 <img src="../afb/afbeelding4.png" width="50%">
@@ -73,7 +73,7 @@ In de menu zijn de volgende opties opgenomen
 7. File symbool: kunnen de bestanden op de adapter geraadpleegd/verwijderd of geupload worden
 8. Wieltje: systeeminstellingen.
 
-**Configuratie**<br>
+## **Configuratie**<br>
 Open in de browser [http://dsmr-api.local/](http://dsmr-api.local/)
 Druk op het wieltje rechts in het menu. Het onderstaande settingsscherm is zichtbaar.
 Vul onderaan de beginstand van de watermeter in en druk op Opslaan. 
@@ -83,7 +83,7 @@ Vul onderaan de beginstand van de watermeter in en druk op Opslaan.
 
 <img src="../afb/afbeelding5-water.png" width="40%">
 
-**Watermeters met 10 liter wieltje!**<br>
+## **Watermeters met 10 liter wieltje!**<br>
 Heeft u een watermeter met een wieltje wat 10liter per omwenteling registreert dan dient de settingsfile van de dongle aangepast te worden. Volg de onderstaande stappen.
 1. open http://p1-dongle.local/#FileExplorer in uw browser
 2. download de DSMRsettings.json file
@@ -117,17 +117,17 @@ De frequentie van uitlezen kan ingesteld worden.
 
 Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 
-**Remote update**<br>
+## **Remote update**<br>
 Dit kan op twee manieren, namelijk
-1) via Telnet door U + <return> in te typen en daar na versie nummer (bv 4.0.1-WATER) + <return>. De -WATER is belangrijk achter het versienummer om de waterlezer optie ook in de update beschikbaar te hebben.
-2) via de webinterface door de functie aanroep + versie op te geven. Bijvoorbeeld: /remote-update?version=4.0.1-WATER
+1) via Telnet door U + <return> in te typen en daar na versie nummer (bv 4.2.3) + <return>. Vanaf 4.2.0 versie is de watermeterfunctie standaard aanwezig in de firmware.
+2) via de webinterface door de functie aanroep + versie op te geven. Bijvoorbeeld: /remote-update?version=4.2.3
 
 Ook Filesysteem update is mogelijk via telnet. Dit door S <return> versie <return> in te voeren. 
 Standaard zal er geupdate worden van de ota.smart-stuff.nl directory. Deze verwijzing kan worden aangepast in de settingsfile op de dongel. 
 
 >Let op: er kan alleen verwezen worden naar http servers.
 
-**Flashen**<br>
+## **Flashen**<br>
 Flashen dient via een USB - TTL adapter te gebeuren. Op J2 (onderkant) zitten de aansluitingen voor deze interface. 
 
 <img src="afb/v4.2-onder.png" width="15%">
