@@ -108,6 +108,40 @@ De frequentie van uitlezen kan ingesteld worden.
 
 Daarnaast ook de frequentie van toesturen van de MQTT gegevens.
 
+**Dongle extern benaderen / buiten uw Wifi-netwerk**<br>
+Zodra de dongle gekoppeld is aan uw Wifi-netwerk kunt u via uw Wifi-netwerk de dongle altijd bereiken. Mocht u het ook prettig vinden om op afstand (buiten uw wifi-netwerk) bij de dongle te kunnen dan is dat mogelijk.
+Hiervoor dient u uw router aan te passen zodat er vanaf buiten uw netwerk door de router naar de dongle gegaan kan worden. Dit doet u door port-forwarding te configureren in uw router. Om er voor te zorgen dan onbevoegden geen toegang kunnen krijgen tot uw netwerk dient de dongle wel afgeschermd te worden. 
+
+>Let op: <br>
+>alleen vanaf firmware versie 4.3.0 of 3.5.0 gebruik maken van deze functie i.v.m instellen van de autorisatie
+>als u niet weet wat u aan het doen bent is het wellicht handiger om eerst in te lezen via het internet wat port forwaring betekent
+
+Hieronder een klein stappenplannentje.
+1) instellen autorisatie
+Download het bestand DSMRsettings.json en pas onderstaande sectie aan; Indien u een oudere firmware versie had zijn de velden niet aanwezig. Voeg ze dan toe.
+
+```
+"basic-auth":{"user":"","pass":""
+```
+Indien er geen sectie basic-auth aanwezig is dan staan hieronder alle settings
+
+```
+{"Hostname":"P1-DONGLE-PRO/","EnergyDeliveredT1":0.100000001,"EnergyDeliveredT2":0.200000003,"EnergyReturnedT1":0.300000012,"EnergyReturnedT2":0.400000006,"GASDeliveredT":0.5,"EnergyVasteKosten":15.14999962,"GasVasteKosten":11.10999966,"SmHasFaseInfo":1,"TelegramInterval":2,"IndexPage":"/DSMRindexEDGE.html","MQTTbroker":"","MQTTbrokerPort":1883,"MQTTUser":"","MQTTpasswd":"","MQTTinterval":2,"MQTTtopTopic":"P1-DONGLE-PRO/","LED":true,"ota":"http://ota.smart-stuff.nl/v5/","enableHistory":true,"watermeter":false,"waterfactor":1,"HAdiscovery":true,"basic-auth":{"user":"","pass":""}}`
+```
+
+Om de authenticatie uit te zetten dient bij user de inhoud gewist ("") te worden.
+
+2) Port-forwarding in uw router
+Hoe u dit dient in te stellen ia afhankelijk van de fabricant van uw modem/router. 
+Ingredienten om dit in te stellen zijn:
+- ip-adres van de dongle = stel dat dit 192.168.2.3 is
+- poortnummer van de dongle = 80
+- ip-adres van uw thuisnetwerk. stel dat dit 1.2.3.4 is
+- poortnummer om de dongle te bereiken. dit is een keuze bijvoorbeeld poort 8888
+
+In uw router geeft u dan aan dat poort 80 van de dongle (192.168.2.3) gekoppeld dient te worden aan poort 8888 van uw thuisnetwerk.
+Als u dan via uw browser op de smartphone (4G aan / Wifi uit) http//:1.2.3.4:8888 intypt zou u na goede configuratie bij de dongle dienen uit te komen.
+
 **Remote update**<br>
 Vanaf de 3.0.4 firmware is een remote Firmware update ook mogelijk. Dit kan op twee manieren, namelijk
 1) via Telnet door U <return> gevolgd door versienummer. bv: U <return> 3.3.1
