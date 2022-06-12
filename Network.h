@@ -91,9 +91,9 @@ void PostMacIP() {
 //===========================================================================================
 void startWiFi(const char* hostname, int timeOut) 
 {
+  WiFi.setHostname(hostname);
   WiFiManager manageWiFi;
   uint32_t lTime = millis();
-  String thisAP = String(hostname) + "-" + WiFi.macAddress();
   
   Debugln(F("Wifi Starting"));
   digitalWrite(LED, HIGH); //OFF

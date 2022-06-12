@@ -16,6 +16,8 @@ TODO
 - Jos: zou je de dag totalen zoals op het dashboard ook via MQTT kunnen exporteren? Gas_dag, Water_dag, Afname_dag, Teruglevering_dag, Afname-Terug_dag
 
 !!! FIXES
+- FRONTEND typo Teruggeleverd
+√ mqtt : "electricity_tariff" toegevoegd aan de actuals
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 

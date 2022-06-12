@@ -89,13 +89,16 @@ Indien u ook een gasmeter heeft dit met de slimme meter communiceert dan dient o
 <br>
 Voeg het onderstaande toe aan uw HA config.yaml<br>
 
-```sensor:
-  - platform: template
-    sensors: 
-      dsmr_gas:
-        friendly_name: "Gas Consumed"
-        unit_of_measurement: "m3"
-        value_template: '{{ states("sensor.gas_consumed_text") | regex_findall_index("\d{3,5}\.\d*") | float }}'
+```
+template:
+  - sensor:
+      - name: "Gas Meter"
+        unique_id: gas_meter
+        state_class: total_increasing
+        device_class: gas
+        unit_of_measurement: 'm³'
+        state: '{{ states("sensor.gas_delivered_raw") | regex_findall_index("\d{3,5}\.\d*") | float }}'
+
 ```
 
 # **Zelf aanpassingen maken in de configuratie**<br>
