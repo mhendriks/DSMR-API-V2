@@ -23,19 +23,39 @@
 
 const PROGMEM char Header[] = "HTTP/1.1 303 OK\r\nLocation:/#FileExplorer\r\nCache-Control: no-cache\r\n";
 
+void checkauth(){
+  if( strlen(bAuthUser) && !httpServer.authenticate(bAuthUser, bAuthPW) ) {
+    httpServer.sendHeader("Location", String("/login"), true);
+    httpServer.send ( 302, "text/plain", "");
+  }
+}
+
+void auth(){
+//    httpServer.send(200, "text/html", UpdateHTML)
+    if( strlen(bAuthUser) && !httpServer.authenticate(bAuthUser, bAuthPW) ) {
+      return httpServer.requestAuthentication();
+      httpServer.sendHeader("Location", String("/"), true);
+      httpServer.send ( 302, "text/plain", "");
+    }
+}
+
 //=====================================================================================
 void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebunden werden
 {    
-  httpServer.on("/api/listfiles", [](){listFS(true);});
-  httpServer.on("/FSformat", formatFS);
-  httpServer.on("/upload", HTTP_POST, []() {}, handleFileUpload);
-  httpServer.on("/ReBoot", reBootESP);
-  httpServer.on("/update", updateFirmware);
-  httpServer.on("/remote-update", [](){RemoteUpdate();});
-  httpServer.on("/ResetWifi", resetWifi);
-  httpServer.on("/api", HTTP_GET, processAPI); // all other api calls are catched in FSexplorer onNotFounD!
+  httpServer.on("/logout", HTTP_GET,  [](){ httpServer.send(401);           });
+  httpServer.on("/login", HTTP_GET,   [](){ auth();                         });
+  httpServer.on("/api/listfiles",     [](){ checkauth(); listFS(true);      });
+  httpServer.on("/FSformat",          [](){ checkauth(); formatFS;          });
+  httpServer.on("/upload", HTTP_POST, [](){ checkauth();                    }, handleFileUpload);
+  httpServer.on("/ReBoot",            [](){ checkauth(); reBootESP();       });
+  httpServer.on("/update",            [](){ checkauth(); updateFirmware();  }); //  < v3.5.0
+  httpServer.on("/updates",           [](){ checkauth(); updateFirmware();  }); // >= v3.5.0
+  httpServer.on("/remote-update",     [](){ checkauth(); RemoteUpdate();    });
+  httpServer.on("/ResetWifi",         [](){ checkauth(); resetWifi;         });
+  httpServer.on("/api", HTTP_GET,     [](){ checkauth(); processAPI;        }); // all other api calls are catched in FSexplorer onNotFounD!
   httpServer.onNotFound([]() 
   {
+    checkauth();
     if (Verbose2) DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(httpServer.uri()).c_str());
     if (httpServer.uri().indexOf("/api/") == 0) 
     {

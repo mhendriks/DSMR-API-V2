@@ -255,7 +255,7 @@ void sendDeviceInfo()
 void sendDeviceSettings() 
 {
   DebugTln(F("sending device settings ...\r"));
-  DynamicJsonDocument doc(1500);
+  DynamicJsonDocument doc(1600);
   
   doc["hostname"]["value"] = settingHostname;
   doc["hostname"]["type"] = "s";
@@ -347,6 +347,7 @@ void sendDeviceSettings()
   doc["water_l"]["min"] = 0;
   doc["water_l"]["max"] = 999;  
 #endif
+  doc["hist"] = EnableHistory;
 
   sendJson(doc);
 
@@ -489,7 +490,7 @@ void handleHistApi(const char *URI, const char *word4, const char *word5, const 
 {
   if (!EnableHistory) 
   { 
-    httpServer.send(200, "application/json", F("{\"error\":\"Historie Data staat uit\"}"));
+    httpServer.send(200, "application/json", F("{\"error\":\"History Data is disabled\"}"));
     return; //do nothing
   }
    //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);

@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex_body.html, part of DSMRloggerAPI
-**  Version  : v2.3.0
+**  Version  : v4.3.0
 **
 **  Copyright (c) 2021 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
@@ -33,7 +33,7 @@
       <li><a id='bSettings'      class='nav-img nav-item' href="#Settings" ><span class="mdi mdi-cog"></span></a>
 		<ul>
 			<li><a id='bEditSettings' class='tabButton nav-item' href="#Settings" >Settings</a></li>
-			<li><a id='bEditMonths'   class='tabButton nav-item' href="#Settings" >Meterstanden</a></li>
+			<li><a id='bEditMonths'   class='tabButton nav-item' href="#EditMonths" >Meterstanden</a></li>
 			<li><a id='bReset'   	  class='tabButton nav-item' href="#Reset" >Reset & Update</a></li>
 		</ul></li>
 	  <li><a href="javascript:void(0);" class="icon" onclick="menu()"><i id="menuid" class="mdi mdi-menu"></i></a></li>
@@ -183,6 +183,19 @@
       </table>
       
       <table id="lastMonthsTableCosts" style="display:none">
+      <colgroup>
+		<col class="col1"/>
+		<col class="col2"/>
+		<col class="col3"/>
+		<col class="col4"/>
+		<col class="col5"/>
+		<col class="col6"/>
+		<col class="col7"/>
+		<col class="col8"/>
+		<col class="col9"/>
+		<col class="col10"/>
+		<col class="col11"/>
+		</colgroup>
       <thead>
         <tr>
             <th style="text-align: right;" width='80px'>Maand</th>
@@ -361,6 +374,18 @@
   <section id="Settings" class="tabName">
       <!-- START Tabbladen -->
   <h2>Instellingen</h2>
+  <div id="tabEditSettings" class="outer-div"">
+    <!-- START settingsTab Settings -->
+      <div id="settings_table" class="inner-div"></div>          
+  </div>  <!-- END tabSettings -->
+  <div id="settings_btns">
+      <a id='bUndo'   class='btn' onclick="undoReload()">Undo</a>
+      <a id='bSave'   class='btn' onclick="saveData()">Opslaan</a>
+      </div>
+  </section> <!-- end Settings Page -->
+ 
+  <section id="EditMonths" class="tabName"> 
+   <h2>Meterstanden invoeren</h2>
   <div id="tabEditMonths" class="tabName">
     <label for="Period"><b>Meterstand: </b></label>
       Energy Delivered
@@ -374,15 +399,11 @@
 		  <div id="editMonths" class="inner-div"></div> 
 	  </div>  <!-- END tabMonthss -->
   </div> <!-- tabMonths -->
-  <div id="tabEditSettings" class="outer-div"">
-    <!-- START settingsTab Settings -->
-      <div id="settings_table" class="inner-div"></div>          
-  </div>  <!-- END tabSettings -->
   <div id="settings_btns">
       <a id='bUndo'   class='btn' onclick="undoReload()">Undo</a>
       <a id='bSave'   class='btn' onclick="saveData()">Opslaan</a>
       </div>
-  </section> <!-- end Settings Page -->
+  </section> <!-- end tabEditMonths Page -->
   
   <!-- START FileExplorer Tab -->
   <section id="FileExplorer" class="tabName"><h2>Bestandsbeheer</h2>
@@ -474,17 +495,24 @@
   <section id="DashTab" class="tabName default">
         <h2>Dashboard</h2>
     <h3 id=w8api style="margin-top:50%">Wacht op gegevens van Slimme Meter</h3>
-    <div class=outer>
-        <div class=card id=l1 style="display:none">
-            <h1 id=power_delivered_l1h >Actueel</h1>
-	        <div class="chart-container" id="gauge"></div>
+    <div class=outer id="inner-dash" style="display:none">
+
+        <div class=card id=l1 style="display:block">
+            <h1 id=power_delivered_l1h class="mdi mdi-gauge">Actueel</h1>
+<!-- 	        <div class="chart-container" id="gauge"></div> -->
+	        <canvas class="chart-container" id="gauge3f"></canvas>
+	        <div id=legenda>
+				<div id=f1 class="lblVerbuik vandaag">1<span class="tooltiptext">fase 1</span></div>
+				<div id=f2 class="lblVerbuik gisteren" style="display:none">2<span class="tooltiptext">fase 2</span></div>
+				<div id=f3 class="lblVerbuik eergisteren" style="display:none">3<span class="tooltiptext">fase 3</span></div>
+			</div>
             <hr/>
             <div style="text-align:center">Actueel [kW]</div>
             <h2 id="power_delivered">0.0</h2>
             <h3>max: <span id="power_delivered_1max">0.0</span> kW</h3>
             <h3>min: <span id="power_delivered_1min">0.0</span> kW</h3>
         </div>
-        <div class=card id=l3 style="display:none">
+        <div class=card id=l3 style="display:block">
             <h1 id=Ph class="mdi mdi-lightning-bolt">Electra</h1>
             <canvas class="chart-container" id="container-3"></canvas>
 <!--             <div class="label">ELECTRA</div>         -->
@@ -555,8 +583,13 @@
             <h2 id="W">0.0</h2>
         </div>
         <div class=card id=l2 style="display:none">
-            <h1 id=power_delivered_l2h>Spanning</h1>
-            <div class="chart-container" id="gauge-v"></div>
+            <h1 id=power_delivered_l2h class="mdi mdi-sine-wave">Spanning</h1>
+	        <canvas class="chart-container" id="gauge-v"></canvas>
+	        <div id=legenda>
+				<div id=v1 class="lblVerbuik vandaag">1<span class="tooltiptext">fase 1</span></div>
+				<div id=v2 class="lblVerbuik gisteren" style="display:none">2<span class="tooltiptext">fase 2</span></div>
+				<div id=v3 class="lblVerbuik eergisteren" style="display:none">3<span class="tooltiptext">fase 3</span></div>
+			</div>
             <hr/>
             <div style="text-align:center">Aantal fases</div>
             <h2 id="fases">1</h2>
@@ -566,6 +599,7 @@
 
     </div> <!-- outer -->  
   </section>  <!-- END Dash Tab --> 
+  
   
   <div hidden id="loader"></div>
   <!-- REST -->

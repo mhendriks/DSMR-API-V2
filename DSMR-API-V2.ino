@@ -9,15 +9,9 @@
 *      
 TODO
 - Piekvermogen bijhouden Belgie
-- eenmalig doorgeven ipadres om het installeren makkelijk te maken (alleen op verzoek en voor maar 15 minuten)
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
-- Aanpassen front-end ivm no-history feaure
 - telnet update via windows ... invoeren lukt niet
 - Jos: zou je de dag totalen zoals op het dashboard ook via MQTT kunnen exporteren? Gas_dag, Water_dag, Afname_dag, Teruglevering_dag, Afname-Terug_dag
-
-!!! FIXES
-- FRONTEND typo Teruggeleverd
-√ mqtt : "electricity_tariff" toegevoegd aan de actuals
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
@@ -38,10 +32,9 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
     - Port: <select correct port>
 */
 /******************** compiler options  ********************************************/
-//#define HAS_NO_SLIMMEMETER        // define for testing only!
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
-#define V2_COMPATIBLE             // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
+//#define V2_COMPATIBLE             // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
 
 //----- EXTENSIONS
 //#define USE_WATER_SENSOR
@@ -140,9 +133,9 @@ void setup()
   FS.remove("/DSMRstatus.json"); //pre 3.1.1 
 #endif
 
-  CheckRingExists();
+  if (EnableHistory) CheckRingExists();
 
-#if !defined( HAS_NO_SLIMMEMETER ) && !defined( DEBUG_MODE )
+#ifndef DEBUG_MODE 
   DebugTln(F("Swapping serial port to Smart Meter, debug output will continue on telnet"));
   Debug(F("\nGebruik 'telnet "));  Debug (WiFi.localIP());  Debugln(F("' voor verdere debugging"));
   DebugFlush();
@@ -180,22 +173,16 @@ void delayms(unsigned long delay_ms)
 void doTaskTelegram()
 {
   if (Verbose1) DebugTln("doTaskTelegram");
-  #if defined(HAS_NO_SLIMMEMETER)
-    handleTestdata();
-  #else
-    slimmeMeter.loop(); //voorkomen dat de buffer nog vol zit met andere data
-    //-- enable DTR to read a telegram from the Slimme Meter
-    slimmeMeter.enable(true); 
-  #endif
+  slimmeMeter.loop(); //voorkomen dat de buffer nog vol zit met andere data
+  //-- enable DTR to read a telegram from the Slimme Meter
+  slimmeMeter.enable(true); 
 }
 
 //===[ Do System tasks ]=============================================================
 void doSystemTasks()
 {
-  #ifndef HAS_NO_SLIMMEMETER
-    slimmeMeter.loop();
-    handleSlimmemeter();
-  #endif
+  slimmeMeter.loop();
+  handleSlimmemeter();
   MQTTclient.loop();
   httpServer.handleClient();
   MDNS.update();

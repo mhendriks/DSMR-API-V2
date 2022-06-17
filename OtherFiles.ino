@@ -78,7 +78,9 @@ void writeSettings()
   doc["watermeter"] = WtrMtr;
   doc["waterfactor"] = WtrFactor;
 #endif
-  
+  doc["basic-auth"]["user"] = bAuthUser;
+  doc["basic-auth"]["pass"] = bAuthPW;
+
   writeToJsonFile(doc, SettingsFile);
   
 } // writeSettings()
@@ -143,7 +145,11 @@ void readSettings(bool show)
   if (doc.containsKey("watermeter")) WtrMtr = doc["watermeter"];
   if (doc.containsKey("waterfactor")) WtrFactor = doc["waterfactor"];
 #endif
-
+  const char* temp = doc["basic-auth"]["user"];
+  if (temp) strcpy(bAuthUser, temp);
+  
+  temp = doc["basic-auth"]["pass"];
+  if (temp) strcpy(bAuthPW, temp);
 
   SettingsFile.close();
   //end json

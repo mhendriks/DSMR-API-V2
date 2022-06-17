@@ -91,7 +91,7 @@ void PostMacIP() {
 //===========================================================================================
 void startWiFi(const char* hostname, int timeOut) 
 {
-  WiFi.setHostname(hostname);
+  WiFi.hostname(hostname);
   WiFiManager manageWiFi;
   uint32_t lTime = millis();
   
@@ -101,6 +101,10 @@ void startWiFi(const char* hostname, int timeOut)
   WiFi.onEvent(onWifiEvent);
   
   manageWiFi.setDebugOutput(false);
+  //add custom html at inside <head> for all pages -> show password function
+  manageWiFi.setCustomHeadElement("<script>function f() {var x = document.getElementById('p');x.type==='password'?x.type='text':x.type='password';}</script>");
+//  manageWiFi.setClass("invert"); //dark theme v1.x 
+  
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   manageWiFi.setAPCallback(configModeCallback);

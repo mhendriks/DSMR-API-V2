@@ -168,11 +168,6 @@ void handleKeyInput()
                     break;
       case 'E':     eraseFile();
                     break;
-#if defined(HAS_NO_SLIMMEMETER)
-      case 'O':     forceBuildRingFiles = true;
-                    runMode = SInit;
-                    break;
-#endif
       case 'f':
       case 'F':     listFS(false);
                     break;      
@@ -261,9 +256,6 @@ void handleKeyInput()
                     Debugln(F("   H - Display Hour table from FS\r"));
                     Debugln(F("   N - Display LogFile P1.log\r"));
                     Debugln(F("   M - Display Month table from FS\r"));
-                  #ifdef HAS_NO_SLIMMEMETER
-                    Debugln(F("  *O - Force build RING files\r"));
-                  #endif
                     Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
                     Debugln(F("  *R - Reboot\r"));

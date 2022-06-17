@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRgraphics.js, part of DSMRloggerAPI
-**  Version  : v3.0.0
+**  Version  : v4.3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -197,21 +197,26 @@ var myWaterChart;
     myElectrChart.update();
     
     //renderGasChart(gasData, actGasOptions);
-    renderGasChart(gasData, "dm3");
-    myGasChart.update();
+    if (HeeftGas) {
+		renderGasChart(gasData, "dm3");
+		myGasChart.update();
+		document.getElementById("gasChart").style.display   = "block";
+    }
 
     //renderWaterChart(gasData, actGasOptions);
-    renderWaterChart(waterData, "dm3");
-    myWaterChart.update();
-      
+    if (HeeftWater) {
+        renderWaterChart(waterData, "dm3");
+    	myWaterChart.update();
+		document.getElementById("waterChart").style.display = "block";
+     } 
     //--- hide table
     document.getElementById("lastHours").style.display  = "none";
     document.getElementById("lastDays").style.display   = "none";
     document.getElementById("lastMonths").style.display = "none";
     //--- show canvas
     document.getElementById("dataChart").style.display  = "block";
-    document.getElementById("gasChart").style.display   = "block";
-    if (HeeftWater) document.getElementById("waterChart").style.display   = "block";
+
+
   } // showHistGraph()
   
   
@@ -219,24 +224,27 @@ var myWaterChart;
   function showMonthsGraph(data, type)
   {
     //console.log("Now in showMonthsGraph()..");
-    copyMonthsToChart(data);
+    copyMonthsToChart(data, type);
     renderElectrChart(electrData, monthOptions);
     myElectrChart.update();
     //renderGasChart(gasData, actGasOptions);
-    renderGasChart(gasData, "m3");
-    myGasChart.update();
-  
-    renderWaterChart(gasData, "m3");
-    myWaterChart.update();
+    if (HeeftGas) {
+		renderGasChart(gasData, "m3");
+		myGasChart.update();
+		document.getElementById("gasChart").style.display = "block";
+    }  
+	if (HeeftWater) {
+		renderWaterChart(waterData, "m3");
+		myWaterChart.update();
+		document.getElementById("waterChart").style.display = "block";
+	}
   
     //--- hide table
     document.getElementById("lastHours").style.display  = "none";
     document.getElementById("lastDays").style.display   = "none";
     document.getElementById("lastMonths").style.display = "none";
     //--- show canvas
-    document.getElementById("dataChart").style.display  = "block";
-    document.getElementById("gasChart").style.display   = "block";
-    document.getElementById("WaterChart").style.display   = "block";
+    document.getElementById("dataChart").style.display  = "block";    
 
     document.getElementById('mCOST').checked   = false;
 
@@ -301,20 +309,19 @@ var myWaterChart;
   //      console.log("data.data.length "+data.data.length);
   
     var p = 0;                
-//     for (let y=data.data.length + data.actSlot; y > data.actSlot+1; y--)
-    for (let y=data.actSlot+2; y <= (data.data.length + data.actSlot); y++)
+    for (let y=data.data.length + data.actSlot; y > data.actSlot+1; y--)
     {	
       var i = y % data.data.length;
-	  var slotbefore = math.mod(i-1, data.data.length);
 
     //console.log("i: "+i);            
     //console.log("y: "+y);
     //console.log("slotbefore: "+slotbefore);
     
       //console.log("["+i+"] label["+data.data[i].date+"] => slotbefore["+slotbefore+"]");
-      electrData.labels.push(formatGraphDate(type, data.data[i].date)); // adds x axis labels (timestamp)
-      gasData.labels.push(formatGraphDate(type, data.data[i].date)); // adds x axis labels (timestamp)
-	  waterData.labels.push(formatGraphDate(type, data.data[i].date)); // adds x axis labels (timestamp)
+      // adds x axis labels (timestamp)
+      electrData.labels.push(formatGraphDate(type, data.data[i].date)); 
+      gasData.labels.push(formatGraphDate(type, data.data[i].date)); 
+	  waterData.labels.push(formatGraphDate(type, data.data[i].date));
       if (type == "Hours")
       {
         if (data.data[i].p_edw >= 0) electrData.datasets[0].data[p]  = (data.data[i].p_edw *  1.0);
@@ -325,9 +332,9 @@ var myWaterChart;
         if (data.data[i].p_ed >= 0) electrData.datasets[0].data[p]  = (data.data[i].p_ed *  1.0).toFixed(3);
         if (data.data[i].p_er >= 0) electrData.datasets[1].data[p]  = (data.data[i].p_er * -1.0).toFixed(3);
       }
-      if (data.data[i].p_gd  >= 0) gasData.datasets[0].data[p]     = (data.data[i].p_gd * 1000.0).toFixed(0);
-      if (data.data[i].water  >= 0) waterData.datasets[0].data[p]  = (data.data[i].water * 1000.0).toFixed(0);
-      p++;
+      if (data.data[i].p_gd  >= 0) gasData.datasets[0].data[p]      = (data.data[i].p_gd * 1000.0).toFixed(0);
+      if (data.data[i].water  >= 0) waterData.datasets[0].data[p]   = (data.data[i].water * 1000.0).toFixed(0);
+	p++;
     } // for i ..
 
   } // copyDataToChart()
@@ -336,7 +343,7 @@ var myWaterChart;
   //============================================================================  
   function copyMonthsToChart(data)
   {
-    //console.log("Now in copyMonthsToChart()..");
+    console.log("Now in copyMonthsToChart()..");
     
     electrData    = {};     // empty electrData
     electrData.labels   = [];     // empty .labels
@@ -348,13 +355,18 @@ var myWaterChart;
     gasData.stack       = [];     // empty .stack
     gasData.datasets    = [];     // empty .datasets
     
+	waterData       = {};     // empty gasData[]
+    waterData.labels      = [];     // empty .labels
+    waterData.stack       = [];     // empty .stack
+    waterData.datasets    = [];     // empty .datasets
+    
     // idx 0 => ED
     electrData.datasets.push({}); //create a new dataset
     electrData.datasets[0].fill            = 'false';
     electrData.datasets[0].borderColor     = "red";
     electrData.datasets[0].backgroundColor = "red";
     electrData.datasets[0].data            = []; //contains the 'Y; axis data
-    electrData.datasets[0].label           = "Afgenomen deze periode"; //"S"+s; //contains the 'Y; axis label
+    electrData.datasets[0].label           = "Gebruikt deze periode"; //"S"+s; //contains the 'Y; axis label
     electrData.datasets[0].stack           = "DP"
     // idx 1 => ER
     electrData.datasets.push({}); //create a new dataset
@@ -362,7 +374,7 @@ var myWaterChart;
     electrData.datasets[1].borderColor     = "green";
     electrData.datasets[1].backgroundColor = "green";
     electrData.datasets[1].data            = []; //contains the 'Y; axis data
-    electrData.datasets[1].label           = "Teruggeleverd deze Periode"; //"S"+s; //contains the 'Y; axis label
+    electrData.datasets[1].label           = "Opgewekt deze Periode"; //"S"+s; //contains the 'Y; axis label
     electrData.datasets[1].stack           = "DP"
     // idx 2 => ED -1
     electrData.datasets.push({}); //create a new dataset
@@ -370,7 +382,7 @@ var myWaterChart;
     electrData.datasets[2].borderColor     = "orange";
     electrData.datasets[2].backgroundColor = "orange";
     electrData.datasets[2].data            = []; //contains the 'Y; axis data
-    electrData.datasets[2].label           = "Afgenomen vorige periode"; //"S"+s; //contains the 'Y; axis label
+    electrData.datasets[2].label           = "Gebruikt vorige periode"; //"S"+s; //contains the 'Y; axis label
     electrData.datasets[2].stack           = "RP"
     // idx 3 => ER -1
     electrData.datasets.push({}); //create a new dataset
@@ -378,7 +390,7 @@ var myWaterChart;
     electrData.datasets[3].borderColor     = "lightgreen";
     electrData.datasets[3].backgroundColor = "lightgreen";
     electrData.datasets[3].data            = []; //contains the 'Y; axis data
-    electrData.datasets[3].label           = "Teruggeleverd vorige Periode"; //"S"+s; //contains the 'Y; axis label
+    electrData.datasets[3].label           = "Opgewekt vorige Periode"; //"S"+s; //contains the 'Y; axis label
     electrData.datasets[3].stack           = "RP"
     // idx 0 => GD
     gasData.datasets.push({}); //create a new dataset
@@ -401,6 +413,15 @@ var myWaterChart;
     waterData.datasets[0].backgroundColor = "blue";
     waterData.datasets[0].data            = []; //contains the 'Y; axis data
     waterData.datasets[0].label           = "Water deze Periode"; //"S"+s; //contains the 'Y; axis label
+    // idx 0 => WATER -1    
+	waterData.datasets.push({}); //create a new dataset
+    waterData.datasets[1].fill            = 'false';
+    waterData.datasets[1].borderColor     = "lightblue";
+    waterData.datasets[1].backgroundColor = "lightblue";
+    waterData.datasets[1].data            = []; //contains the 'Y; axis data
+    waterData.datasets[1].label           = "Water vorige Periode"; //"S"+s; //contains the 'Y; axis label
+    
+    
     //console.log("there are ["+data.data.length+"] rows");
   
 	var start = data.data.length + data.actSlot ; //  maar 1 jaar ivm berekening jaar verschil
@@ -410,26 +431,38 @@ var myWaterChart;
     var p        = 0;
   	for (let index=start; index>stop; index--)
     {  i = index % data.data.length;
-      	slotyearbefore = math.mod(i-12,24);
+      	slotyearbefore = math.mod(i-12,data.data.length);
 
       electrData.labels.push(formatGraphDate("Months", data.data[i].date)); // adds x axis labels (timestamp)
       gasData.labels.push(formatGraphDate("Months", data.data[i].date)); // adds x axis labels (timestamp)
+      waterData.labels.push(formatGraphDate("Months", data.data[i].date)); // adds x axis labels (timestamp)
       //electrData.labels.push(p); // adds x axis labels (timestamp)
-      if (data.data[i].p_ed >= 0) electrData.datasets[0].data[p]  = (data.data[i].p_ed *  1.0).toFixed(3);
-      if (data.data[i].p_er >= 0) electrData.datasets[1].data[p]  = (data.data[i].p_er * -1.0).toFixed(3);
-      if (data.data[y].p_ed >= 0) electrData.datasets[2].data[p]  = (data.data[slotyearbefore].p_ed *  1.0).toFixed(3);
-      if (data.data[y].p_er >= 0) electrData.datasets[3].data[p]  = (data.data[slotyearbefore].p_er * -1.0).toFixed(3);
-      if (data.data[i].p_gd >= 0) gasData.datasets[0].data[p]     = data.data[i].p_gd;
-      if (data.data[y].p_gd >= 0) gasData.datasets[1].data[p]     = data.data[slotyearbefore].p_gd;
-	  if (data.data[i].water >= 0) gasData.datasets[0].data[p]     = data.data[i].water;
+      if (data.data[i].p_ed >= 0) {
+      	electrData.datasets[0].data[p]  = (data.data[i].p_ed *  1.0).toFixed(3);
+		electrData.datasets[2].data[p]  = (data.data[slotyearbefore].p_ed *  1.0).toFixed(3);
+	  }
+      
+	  if (data.data[i].p_er >= 0) {
+	  	electrData.datasets[1].data[p]  = (data.data[i].p_er * -1.0).toFixed(3);
+      	electrData.datasets[3].data[p]  = (data.data[slotyearbefore].p_er * -1.0).toFixed(3);
+      }
+      
+      if (data.data[i].p_gd >= 0) {
+		  gasData.datasets[0].data[p]     = data.data[i].p_gd;
+		  gasData.datasets[1].data[p]     = data.data[slotyearbefore].p_gd;
+	  }
+	  if (data.data[i].water >= 0) {
+		  waterData.datasets[0].data[p]     = data.data[i].water;
+		  waterData.datasets[1].data[p]     = data.data[slotyearbefore].water;
+	  }
       p++;
     }
     //--- hide months Table
     document.getElementById("lastMonths").style.display = "none";
     //--- show canvas
     document.getElementById("dataChart").style.display  = "block";
-    document.getElementById("gasChart").style.display   = "block";
-	if (HeeftWater) document.getElementById("waterChart").style.display   = "block";
+//     document.getElementById("gasChart").style.display   = "block";
+// 	document.getElementById("waterChart").style.display   = "block";
 
 
   } // copyMonthsToChart()

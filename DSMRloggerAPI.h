@@ -200,6 +200,7 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   bool        EnableHistory = true;
   bool        FSmounted     = false; 
   char        BaseOTAurl[75] = "http://ota.smart-stuff.nl/";
+  char        bAuthUser[25]="", bAuthPW[25]="";
 
   char      cMsg[150];
   char      lastReset[30];
@@ -225,12 +226,6 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   float     settingENBK = 15.15, settingGNBK = 11.11;
   bool      UpdateRequested = false;
   char      UpdateVersion[25] = "";
-
-#if defined(HAS_NO_SLIMMEMETER)
-  bool        forceBuildRingFiles = false;
-  enum runStates { SInit, SMonth, SDay, SHour, SNormal };
-  enum runStates runMode = SNormal;
-#endif
 
 //===========================================================================================
 // setup timers 

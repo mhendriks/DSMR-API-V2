@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v3.0.0
+**  Version  : v4.3.0
 **
 **  Copyright (c) 2021 Martijn Hendriks / based on DSMR Api Willem Aandewiel
 **
@@ -40,7 +40,6 @@
   let settingFontColor 		= 'white'
                     
   var monthNames 			= [ "indxNul","Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December","\0"];
-  var FS_no_delete 			= [ "FSexplorer.html", "DSMRindex.html","DSMRsettings.json","DSMRindexEDGE.html","\0"];
   const spinner 			= document.getElementById("loader");
 
 //---- frontend settings
@@ -51,85 +50,57 @@
   var Phases				= 1		//aantal fases (1,2,3) voor de berekening van de totale maximale stroom Imax = fases * AMPS
   var HeeftGas				= false	//gasmeter aanwezig. default=false => door de slimme meter te bepalen -> true door Frontend.json = altijd aan
   var HeeftWater			= false	//watermeter aanwezig. default=false => door de slimme meter te bepalen -> true door Frontend.json = altijd aan
+  var EnableHist			= true  //weergave historische gegevens
+  var SettingsRead 			= false 
 // ---- DASH
-// var MaxAmps = 0.0;
 var TotalAmps=0.0,minKW = 0.0, maxKW = 0.0,minV = 0.0, maxV = 0.0, Pmax,Gmax, Wmax;
 var hist_arrW=[4], hist_arrG=[4], hist_arrPa=[4], hist_arrPi=[4], hist_arrP=[4]; //berekening verbruik
 var day = 0;
 
-let GaugeOptions = {
-		id: "gauge", // the id of the html element
-		value: 0,
-		min: 0,
-		max: 25,
-		decimals: 0,
-		gaugeWidthScale: 0.6,
-		pointer: true,
-		pointerOptions: {
-			toplength: -15,
-			bottomlength: 12,
-			bottomwidth: 12,
-			color: '#8e8e93',
-			stroke: '#ffffff',
-			stroke_width: 3,
-			stroke_linecap: 'round'
-		}, counter: true,
-		customSectors: {
-			percents: true, // lo and hi values are in %
-			ranges: [{
-				color : "#43bf58",
-				lo : 0,
-				hi : 33
-				},
-				{
-				color : "#fff130",
-				lo : 34,
-				hi : 75
-				},
-				{
-				color : "#ff3b30",
-				lo : 76,
-				hi : 100
-				}]
-		}, 
-		label: "Ampere" };
-
-let GaugeOptionsV = {
-		id: "gauge-v", // the id of the html element
-		value: 230,
-		min: 207,
-		max: 253,
-		decimals: 0,
-		gaugeWidthScale: 0.6,
-		pointer: true,
-		pointerOptions: {
-			toplength: -15,
-			bottomlength: 12,
-			bottomwidth: 12,
-			color: '#8e8e93',
-			stroke: '#ffffff',
-			stroke_width: 3,
-			stroke_linecap: 'round'
-		}, counter: true,
-		customSectors: {
-			percents: true, // lo and hi values are in %
-			ranges: [{
-				color : "#ff3b30",
-				lo : 0,
-				hi : 10
-				},
-				{
-				color : "#43bf58",
-				lo : 11,
-				hi : 90
-				},
-				{
-				color : "#ff3b30",
-				lo : 91,
-				hi : 100
-				}]
-		}, 
-		label: "Volt" };
+let TrendV = {
+    type: 'doughnut',
+    data: {
+      datasets: [
+        {
+          label: "l1",
+          backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "l2",
+          backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "l3",
+          backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
+        }
+      ]
+    },
+    options: {
+    events: [],
+    title: {
+            display: true,
+            text: 'Voltage',
+            position: "bottom",
+            padding: -18,
+            fontSize: 17,
+            fontColor: "#000",
+            fontFamily:"Dosis",
+        },
+      responsive:true,
+      circumference: Math.PI,
+	  rotation: -Math.PI,
+      plugins: {
+      	labels: {
+			render: function (args) {
+				return args.value + 207 + " V";
+			},//render
+        arc: true,
+        fontColor: ["#fff","rgba(0,0,0,0)"],
+      },//labels      
+    }, //plugins
+    legend: {display: false},
+    }, //options
+};
 
 let TrendG = {
     type: 'doughnut',
@@ -175,6 +146,54 @@ let TrendG = {
     legend: {display: false},
     }, //options
 };
+
+
+
+let Trend3f = {
+    type: 'doughnut',
+    data: {
+      labels: ["verbruik", "verschil met hoogste"],
+      datasets: [
+        {
+          label: "l1",
+          backgroundColor: ["#314b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "l2",
+          backgroundColor: ["#316b77", "rgba(0,0,0,0.1)"],
+        },
+        {
+          label: "l3",
+          backgroundColor: ["#318b77", "rgba(0,0,0,0.1)"],
+        }
+      ]
+    },
+    options: {
+    title: {
+            display: true,
+            text: 'Ampere',
+            position: "bottom",
+            padding: -18,
+            fontSize: 17,
+            fontColor: "#000",
+            fontFamily:"Dosis",
+        },
+      responsive:true,
+      circumference: Math.PI,
+			rotation: -Math.PI,
+      plugins: {
+      labels: {
+        render: function (args) {
+          return args.value + " A";
+        },//render
+        arc: true,
+        fontColor: ["#fff","rgba(0,0,0,0)"],
+      },//labels      
+    }, //plugins
+    legend: {display: false},
+    }, //options
+};
+
 
 let TrendW = {
     type: 'doughnut',
@@ -300,9 +319,10 @@ let dataPa = {
       ]
     };
 
-  window.onload=bootsTrapMain;
-  
-  // Handle page visibility change events
+window.onload=bootsTrapMain;
+
+//============================================================================  
+// Handle page visibility change events
 function visibilityListener() {
   switch(document.visibilityState) {
     case "hidden":
@@ -324,6 +344,67 @@ function visibilityListener() {
 }
 
 document.addEventListener("visibilitychange", visibilityListener);
+
+window.addEventListener('popstate', function (event) {
+	console.log("location: " + document.location + ", hash: " +location.hash);
+	activeTab = "b" + location.hash.slice(1, location.hash.length);
+	openTab();
+});
+
+//============================================================================  
+  
+function SetOnSettings(json){
+	/* 
+	eenmalig bepalen
+	- water aanwezig
+	- gas aanwezig
+	- aantal fases
+	- teruglevering
+	*/
+	//check of gasmeter beschikbaar is	(indien HeeftGas = true uit Frontend,json of eerdere meeting dan niet meer checken uit meterdata, bij false wel checken in meterdata)
+	if (!HeeftGas) HeeftGas = "gas_delivered" in json ? !isNaN(json.gas_delivered.value) : false ;
+	if (!HeeftWater) HeeftWater =  "water" in json ? !isNaN(json.water.value) : false ;
+	//check of teruglevering actief is 
+	if (!Injection) Injection = isNaN(json.energy_returned_tariff1.value)?false:json.energy_returned_tariff1.value;
+	if (!Phases) {
+		//bereken het aantal fases aan de hand van de slimme meter data
+		Phases = 1;
+		if (!isNaN(json.voltage_l2.value)) Phases++;
+		if (!isNaN(json.voltage_l3.value)) Phases++;
+	}
+	if(!EnableHist){
+		//hide menu elements + dashboard item
+		document.getElementById("bHoursTab").style.display = "none";
+		document.getElementById("bDaysTab").style.display = "none";
+		document.getElementById("bMonthsTab").style.display = "none";
+		document.getElementById("l3").style.display = "none";
+	}
+	
+	show_hide_column('lastHoursTable',  4,HeeftWater);
+	show_hide_column('lastDaysTable',   4,HeeftWater);
+	show_hide_column('lastMonthsTable',13,HeeftWater);
+	show_hide_column('lastMonthsTable',14,HeeftWater);
+	show_hide_column('lastMonthsTable',15,HeeftWater);
+	show_hide_column('lastMonthsTable',16,HeeftWater);
+
+	show_hide_column('lastHoursTable',  3,HeeftGas);
+	show_hide_column('lastDaysTable',   3,HeeftGas);
+	show_hide_column('lastMonthsTable', 9,HeeftGas);
+	show_hide_column('lastMonthsTable',10,HeeftGas);
+	show_hide_column('lastMonthsTable',11,HeeftGas);
+	show_hide_column('lastMonthsTable',12,HeeftGas);
+	
+	show_hide_column('lastMonthsTableCosts',  3,HeeftGas);
+	show_hide_column('lastMonthsTableCosts',  8,HeeftGas);
+
+	show_hide_column('lastHoursTable',  2,Injection);
+	show_hide_column('lastDaysTable',  	2,Injection);
+
+	show_hide_column('lastMonthsTable', 5,Injection);
+	show_hide_column('lastMonthsTable', 6,Injection);
+	show_hide_column('lastMonthsTable', 7,Injection);
+	show_hide_column('lastMonthsTable', 8,Injection);
+}
 
 //============================================================================  
   
@@ -352,98 +433,98 @@ function UpdateDash()
 	//check new day = refresh
 	var DayEpochTemp = Math.floor(new Date().getTime() / 86400000.0);
 	if (DayEpoch != DayEpochTemp || hist_arrP.length < 4 ) {
-		refreshDays(); //load data first visit
+		if ( EnableHist ) refreshDays(); //load data first visit
 		DayEpoch = DayEpochTemp;
 	}
 	Spinner(true);
 	fetch(APIGW+"v2/sm/fields", {"setTimeout": 5000})
 	  .then(response => response.json())
 	  .then(json => {
-//   	  json = JSON.parse('{"timestamp":{"value":"210417094333S"},"energy_delivered_tariff1":{"value":40,"unit":"kWh"},"energy_delivered_tariff2":{"value":40,"unit":"kWh"},"energy_returned_tariff1":{"value":48,"unit":"kWh"},"energy_returned_tariff2":{"value":0,"unit":"kWh"},"power_delivered":{"value":2.015,"unit":"kW"},"power_returned":{"value":1223,"unit":"kW"},"voltage_l1":{"value":227.7,"unit":"V"},"voltage_l2":{"value":224.2,"unit":"V"},"voltage_l3":{"value":226.8,"unit":"V"},"current_l1":{"value":2,"unit":"A"},"current_l2":{"value":6,"unit":"A"},"current_l3":{"value":1,"unit":"A"},"power_delivered_l1":{"value":0.388,"unit":"kW"},"power_delivered_l2":{"value":1.363,"unit":"kW"},"power_delivered_l3":{"value":0.258,"unit":"kW"},"power_returned_l1":{"value":1,"unit":"kW"},"power_returned_l2":{"value":0,"unit":"kW"},"power_returned_l3":{"value":0,"unit":"kW"},"gas_delivered":{"value":"5","unit":"m3"},"water":{"value":"125.123","unit":"m3"}}');
+// 	   	  json = JSON.parse('{"timestamp":{"value":"220606085610S"},"energy_delivered_tariff1":{"value":55.026,"unit":"kWh"},"energy_delivered_tariff2":{"value":53.923,"unit":"kWh"},"energy_returned_tariff1":{"value":0,"unit":"kWh"},"energy_returned_tariff2":{"value":0,"unit":"kWh"},"electricity_tariff":{"value":"0001"},"power_delivered":{"value":0.398,"unit":"kW"},"power_returned":{"value":0,"unit":"kW"},"voltage_l1":{"value":232.5,"unit":"V"},"voltage_l2":{"value":"-","unit":"V"},"voltage_l3":{"value":"-","unit":"V"},"current_l1":{"value":0,"unit":"A"},"current_l2":{"value":2,"unit":"A"},"current_l3":{"value":0,"unit":"A"},"power_delivered_l1":{"value":0.114,"unit":"kW"},"power_delivered_l2":{"value":0.284,"unit":"kW"},"power_delivered_l3":{"value":0,"unit":"kW"},"power_returned_l1":{"value":0,"unit":"kW"},"power_returned_l2":{"value":0,"unit":"kW"},"power_returned_l3":{"value":0,"unit":"kW"},"gas_delivered":{"value":5471.227,"unit":"m3"},"gas_delivered_timestamp":{"value":"220606085510S"},"water":{"value":379.782,"unit":"m3"}}');	   	  
+//  		json = JSON.parse('{"identification":{"value":"XMX5LGF0010444312018"},"p1_version":{"value":"50"},"p1_version_be":{"value":"-"},"timestamp":{"value":"220604080004S"},"equipment_id":{"value":"4530303532303034343331323031383138"},"energy_delivered_tariff1":{"value":27304.577,"unit":"kWh"},"energy_delivered_tariff2":{"value":20883.288,"unit":"kWh"},"energy_returned_tariff1":{"value":4445.384,"unit":"kWh"},"energy_returned_tariff2":{"value":10021.226,"unit":"kWh"},"electricity_tariff":{"value":"0001"},"power_delivered":{"value":0,"unit":"kW"},"power_returned":{"value":1.102,"unit":"kW"},"message_short":{"value":"-"},"message_long":{"value":""},"voltage_l1":{"value":234.6,"unit":"V"},"voltage_l2":{"value":234,"unit":"V"},"voltage_l3":{"value":234.3,"unit":"V"},"current_l1":{"value":1,"unit":"A"},"current_l2":{"value":2,"unit":"A"},"current_l3":{"value":2,"unit":"A"},"power_delivered_l1":{"value":0.01,"unit":"kW"},"power_delivered_l2":{"value":0,"unit":"kW"},"power_delivered_l3":{"value":0,"unit":"kW"},"power_returned_l1":{"value":0,"unit":"kW"},"power_returned_l2":{"value":0.499,"unit":"kW"},"power_returned_l3":{"value":0.613,"unit":"kW"},"mbus1_device_type":{"value":"-"},"mbus1_equipment_id_tc":{"value":"-"},"mbus1_equipment_id_ntc":{"value":"-"},"mbus1_valve_position":{"value":"-"},"mbus1_delivered":{"value":"-"},"mbus1_delivered_ntc":{"value":"-"},"mbus1_delivered_dbl":{"value":"-"},"mbus2_device_type":{"value":"-"},"mbus2_equipment_id_tc":{"value":"-"},"mbus2_equipment_id_ntc":{"value":"-"},"mbus2_valve_position":{"value":"-"},"mbus2_delivered":{"value":"-"},"mbus2_delivered_ntc":{"value":"-"},"mbus2_delivered_dbl":{"value":"-"},"mbus3_device_type":{"value":"-"},"mbus3_equipment_id_tc":{"value":"-"},"mbus3_equipment_id_ntc":{"value":"-"},"mbus3_valve_position":{"value":"-"},"mbus3_delivered":{"value":"-"},"mbus3_delivered_ntc":{"value":"-"},"mbus3_delivered_dbl":{"value":"-"},"mbus4_device_type":{"value":"-"},"mbus4_equipment_id_tc":{"value":"-"},"mbus4_equipment_id_ntc":{"value":"-"},"mbus4_valve_position":{"value":"-"},"mbus4_delivered":{"value":"-"},"mbus4_delivered_ntc":{"value":"-"},"mbus4_delivered_dbl":{"value":"-"},"water":{"value":517.916,"unit":"m3"}}');
+//  		json = JSON.parse('{"identification":{"value":"XMX5LGF0010444312018"},"p1_version":{"value":"50"},"p1_version_be":{"value":"-"},"timestamp":{"value":"220604080004S"},"equipment_id":{"value":"4530303532303034343331323031383138"},"energy_delivered_tariff1":{"value":27304.577,"unit":"kWh"},"energy_delivered_tariff2":{"value":20883.288,"unit":"kWh"},"energy_returned_tariff1":{"value":4445.384,"unit":"kWh"},"energy_returned_tariff2":{"value":10021.226,"unit":"kWh"},"electricity_tariff":{"value":"0001"},"power_delivered":{"value":1.123,"unit":"kW"},"power_returned":{"value":0,"unit":"kW"},"message_short":{"value":"-"},"message_long":{"value":""},"voltage_l1":{"value":234.6,"unit":"V"},"voltage_l2":{"value":234,"unit":"V"},"voltage_l3":{"value":234.3,"unit":"V"},"current_l1":{"value":1,"unit":"A"},"current_l2":{"value":2,"unit":"A"},"current_l3":{"value":2,"unit":"A"},"power_delivered_l1":{"value":0.01,"unit":"kW"},"power_delivered_l2":{"value":0,"unit":"kW"},"power_delivered_l3":{"value":0,"unit":"kW"},"power_returned_l1":{"value":0,"unit":"kW"},"power_returned_l2":{"value":0.499,"unit":"kW"},"power_returned_l3":{"value":0.613,"unit":"kW"},"mbus1_device_type":{"value":"-"},"mbus1_equipment_id_tc":{"value":"-"},"mbus1_equipment_id_ntc":{"value":"-"},"mbus1_valve_position":{"value":"-"},"mbus1_delivered":{"value":"-"},"mbus1_delivered_ntc":{"value":"-"},"mbus1_delivered_dbl":{"value":"-"},"mbus2_device_type":{"value":"-"},"mbus2_equipment_id_tc":{"value":"-"},"mbus2_equipment_id_ntc":{"value":"-"},"mbus2_valve_position":{"value":"-"},"mbus2_delivered":{"value":"-"},"mbus2_delivered_ntc":{"value":"-"},"mbus2_delivered_dbl":{"value":"-"},"mbus3_device_type":{"value":"-"},"mbus3_equipment_id_tc":{"value":"-"},"mbus3_equipment_id_ntc":{"value":"-"},"mbus3_valve_position":{"value":"-"},"mbus3_delivered":{"value":"-"},"mbus3_delivered_ntc":{"value":"-"},"mbus3_delivered_dbl":{"value":"-"},"mbus4_device_type":{"value":"-"},"mbus4_equipment_id_tc":{"value":"-"},"mbus4_equipment_id_ntc":{"value":"-"},"mbus4_valve_position":{"value":"-"},"mbus4_delivered":{"value":"-"},"mbus4_delivered_ntc":{"value":"-"},"mbus4_delivered_dbl":{"value":"-"},"water":{"value":517.916,"unit":"m3"}}');
+ 		//-------CHECKS
 
-		//-------CHECKS
-		//check of gasmeter beschikbaar is	(indien HeeftGas = true uit Frontend,json of eerdere meeting dan niet meer checken uit meterdata, bij false wel checken in meterdata)
-		if (!HeeftGas) HeeftGas = "gas_delivered" in json ? !isNaN(json.gas_delivered.value) : false ;
-		if (!HeeftWater) HeeftWater =  "water" in json ? !isNaN(json.water.value) : false ;
-		//todo check of slimme meter is gekoppeld of standalone watermeter
-		
+		SetOnSettings(json);
 		//check of p1 gegevens via api binnen komen
 		if (json.timestamp.value == "-") {
 			console.log("timestamp missing : p1 gegevens correct?");
-// 			if (!HeeftWater) return;
 			return;
 		}
 		
-		//check of teruglevering actief is 
-		var teruglevering = Injection;
-		if (!teruglevering) teruglevering = isNaN(json.energy_returned_tariff1.value)?false:json.energy_returned_tariff1.value;
-
 		//-------TOON METERS
 		document.getElementById("w8api").style.display = "none"; //hide wait message
-		document.getElementById("l1").style.display = "block";
-		document.getElementById("l3").style.display = "block";		
-		if (teruglevering) {		
+		document.getElementById("inner-dash").style.display = "flex"; //unhide dashboard
+		if (Injection) {		
 			document.getElementById("l5").style.display = "block";
 			document.getElementById("l6").style.display = "block";
 			document.getElementById("Ph").innerHTML = "Afname-Terug";
-		} else
-		{
-			if (ShowVoltage) document.getElementById("l2").style.display = "block";
 		}
-		if (HeeftGas) document.getElementById("l4").style.display = "block";
-		if (HeeftWater) { 
+		if (HeeftGas && EnableHist) document.getElementById("l4").style.display = "block";
+		if (HeeftWater && EnableHist) { 
 			document.getElementById("l7").style.display = "block";
 			document.getElementById("l2").style.display = "none";
 		}
+		
+		//-------SPANNING METER		
+		let v2 = 0,v3 = 0;
+		let v1 = json.voltage_l1.value;
+		if (!isNaN(json.voltage_l2.value)) v2 = json.voltage_l2.value;
+		if (!isNaN(json.voltage_l3.value)) v3 = json.voltage_l3.value;
 
-		//-------SPANNING METER				
-		if (!teruglevering || !ShowVoltage)
-		{
-			//aantal fases berekenen
-			var fases = 1;
-			if (Phases) fases = Phases;
-			else {
-				//bereken het aantal fases aan de hand van de slimme meter data
-				if (!isNaN(json.voltage_l2.value)) fases++;
-				if (!isNaN(json.voltage_l3.value)) fases++;
-				document.getElementById("fases").innerHTML = fases;
-			}
-			
-			let TotalU = 0 +(isNaN(json.voltage_l1.value)?0:json.voltage_l1.value) + 
-			(isNaN(json.voltage_l2.value)?0:json.voltage_l2.value) + 
-			(isNaN(json.voltage_l3.value)?0:json.voltage_l3.value);
-	
-			let Vgem=TotalU/fases;
+		// TODO
+		if (!Injection || ShowVoltage) {
+			document.getElementById("l2").style.display = "block"
+			document.getElementById("fases").innerHTML = Phases;
+				
+			let Vmin_now = math.min(v1, v2, v3);
+			let Vmax_now= math.max(v1, v2, v3);
 			
 			//min - max waarde
-			if (minV == 0.0 || Vgem < minV) { minV = Vgem; }
-			if (Vgem > maxV) { maxV = Vgem; }
-			document.getElementById(`power_delivered_2max`).innerHTML = Number(maxV.toFixed(0)).toLocaleString();
-			document.getElementById(`power_delivered_2min`).innerHTML = Number(minV.toFixed(0)).toLocaleString();   
+			if (minV == 0.0 || Vmin_now < minV) { minV = Vmin_now; }
+			if (Vmax_now > maxV) { maxV = Vmax_now; }
+			document.getElementById(`power_delivered_2max`).innerHTML = Number(maxV.toFixed(1)).toLocaleString();
+			document.getElementById(`power_delivered_2min`).innerHTML = Number(minV.toFixed(1)).toLocaleString();   
 
 			//update gauge
-			gauge_v.refresh(Vgem);
+			gaugeV.data.datasets[0].data=[v1-207,253-json.voltage_l1.value];
+			if (v2) gaugeV.data.datasets[1].data=[v2-207,253-json.voltage_l2.value];
+			if (v3) gaugeV.data.datasets[2].data=[v3-207,253-json.voltage_l3.value];
+			gaugeV.update();
 		}
-
 		//-------ACTUEEL METER		
 		//afname of teruglevering bepalen en signaleren
 		let TotalKW	= 0;
 		if (json.power_returned.value > 0) { 
-			TotalKW = json.power_returned.value;
+			TotalKW = -1.0 * json.power_returned.value;
 			document.getElementById("power_delivered_l1h").style.backgroundColor = "green";
-			document.getElementById("power_delivered_l1h").innerHTML = "Teruglevering";
+// 			document.getElementById("power_delivered_l1h").innerHTML = "Teruglevering";
 		} else
 		{
 			TotalKW = json.power_delivered.value;
-			document.getElementById("power_delivered_l1h").innerHTML = "Actueel";
-			document.getElementById("power_delivered_l1h").style.backgroundColor = "#314b77";
+// 			document.getElementById("power_delivered_l1h").innerHTML = "Actueel";
+			if (Injection) document.getElementById("power_delivered_l1h").style.backgroundColor = "red";
+			else document.getElementById("power_delivered_l1h").style.backgroundColor = "#314b77";
 		}
 		
 		//update gauge
 		TotalAmps = (isNaN(json.current_l1.value)?0:json.current_l1.value) + 
 			(isNaN(json.current_l2.value)?0:json.current_l2.value) + 
 			(isNaN(json.current_l3.value)?0:json.current_l3.value);
-		gauge.refresh(TotalAmps, AMPS * fases);
+
+		gauge3f.data.datasets[0].data=[json.current_l1.value,AMPS-json.current_l1.value];
+		if (v2) {
+			gauge3f.data.datasets[1].data=[json.current_l2.value,AMPS-json.current_l2.value];
+			document.getElementById("f2").style.display = "inline-block";
+			document.getElementById("v2").style.display = "inline-block";
+			}
+		if (v3) {
+			gauge3f.data.datasets[2].data=[json.current_l3.value,AMPS-json.current_l3.value];
+			document.getElementById("f3").style.display = "inline-block";
+			document.getElementById("v3").style.display = "inline-block";
+			}
+		gauge3f.options.title.text = TotalAmps + " A";
+		gauge3f.update();
 
 		//update actuele vermogen			
 		document.getElementById("power_delivered").innerHTML = TotalKW.toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3} );
@@ -454,9 +535,11 @@ function UpdateDash()
 		if (nvKW> maxKW){ maxKW = nvKW; }
 		document.getElementById(`power_delivered_1max`).innerHTML = Number(maxKW.toFixed(3)).toLocaleString();                    
 		document.getElementById(`power_delivered_1min`).innerHTML = Number(minKW.toFixed(3)).toLocaleString();                        
+
+		if (!EnableHist) {Spinner(false);return;}
 		
 		//-------VERBRUIK METER	
-				//bereken verschillen afname, teruglevering en totaal
+		//bereken verschillen afname, teruglevering en totaal
 		for(let i=0;i<3;i++){
 			if (i==0) {
 				Parra[0]=Number(json.energy_delivered_tariff1.value + json.energy_delivered_tariff2.value - hist_arrPa[1]).toFixed(3);
@@ -479,10 +562,8 @@ function UpdateDash()
 
 		//vermogen vandaag, min - max bepalen
 		document.getElementById("P").innerHTML = Number(Parr[0]).toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3} );
-// 		document.getElementById(`Pmax`).innerHTML = Number(Pmax).toLocaleString();
-// 		document.getElementById(`Pmin`).innerHTML = Math.min.apply(Math, Parr).toLocaleString();
 		
-		if (teruglevering) 
+		if (Injection) 
 		{
 			//-------INTJECTIE METER	
 			//data sets berekenen voor de gauges
@@ -493,8 +574,6 @@ function UpdateDash()
 			trend_pi.update();
 			//vermogen vandaag, min - max bepalen
 			document.getElementById("Pi").innerHTML = Number(Parri[0]).toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3} );
-// 			document.getElementById(`Pimax`).innerHTML = Number(Pmaxi).toLocaleString();
-// 			document.getElementById(`Pimin`).innerHTML = Math.min.apply(Math, Parri).toLocaleString();
 
 			//-------AFNAME METER	
 			//data sets berekenen voor de gauges
@@ -505,14 +584,12 @@ function UpdateDash()
 			trend_pa.update();
 			//vermogen vandaag, min - max bepalen
 			document.getElementById("Pa").innerHTML = Number(Parra[0]).toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3} );
-// 			document.getElementById(`Pamax`).innerHTML = Number(Pmaxa).toLocaleString();
-// 			document.getElementById(`Pamin`).innerHTML = Math.min.apply(Math, Parra).toLocaleString();
 		}
 		
 		//-------GAS METER	
 		if (HeeftGas) 
 		{
-					//bereken verschillen gas, afname, teruglevering en totaal
+			//bereken verschillen gas, afname, teruglevering en totaal
 			for(let i=0;i<3;i++){
 				if (i==0) Garr[0]=Number(json.gas_delivered.value - hist_arrG[1]).toFixed(3) ;
 				else Garr[i]=Number(hist_arrG[i] - hist_arrG[i+1]).toFixed(3);
@@ -520,9 +597,7 @@ function UpdateDash()
 			}
 
 			Gmax = math.max(Garr);
-			for(let i=0;i<3;i++){
-				trend_g.data.datasets[i].data=[Number(Garr[i]).toFixed(1),Number(Gmax-Garr[i]).toFixed(1)];
-			};
+			for(let i=0;i<3;i++) trend_g.data.datasets[i].data=[Number(Garr[i]).toFixed(1),Number(Gmax-Garr[i]).toFixed(1)];
 			trend_g.update();
 			document.getElementById("G").innerHTML = Number(Garr[0]).toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3} );
 		}
@@ -530,7 +605,7 @@ function UpdateDash()
 		//-------WATER METER	
 		if (HeeftWater) 
 		{
-					//bereken verschillen gas, afname, teruglevering en totaal
+			//bereken verschillen gas, afname, teruglevering en totaal
 			for(let i=0;i<3;i++){
 				if (i==0) Warr[0]=Number(json.water.value - hist_arrW[1])*1000 ;
 				else Warr[i]=Number(hist_arrW[i] - hist_arrW[i+1])*1000;
@@ -544,10 +619,9 @@ function UpdateDash()
 			trend_w.update();
 			document.getElementById("W").innerHTML = Number(Warr[0]).toLocaleString();
 		}
-		
 								
 		Spinner(false);
-		} ); //end fetch fields
+		}); //end fetch fields
 }
 	
   //============================================================================  
@@ -604,15 +678,19 @@ function handle_menu_click()
   
   function bootsTrapMain() {
     console.log("bootsTrapMain()");
+	getDevSettings(); //first of all ... get the device settings
 // 	console.log("hash:"+ location.hash);
-	gauge = new JustGage(GaugeOptions); // initialize gauge
-	gauge_v = new JustGage(GaugeOptionsV); // initialize gauge
+
+// 	gauge = new JustGage(GaugeOptions); // initialize gauge
+// 	gauge_v = new JustGage(GaugeOptionsV); // initialize gauge
 	trend_g = new Chart(document.getElementById("container-4"), TrendG);
 	trend_p = new Chart(document.getElementById("container-3"), {type: 'doughnut', data:dataP, options: optionsP});
 	trend_pi = new Chart(document.getElementById("container-5"), {type: 'doughnut', data:dataPi, options: optionsP});
 	trend_pa = new Chart(document.getElementById("container-6"), {type: 'doughnut', data:dataPa, options: optionsP} );
 	trend_w = new Chart(document.getElementById("container-7"), TrendW);
-	
+	gauge3f = new Chart(document.getElementById("gauge3f"), Trend3f);
+	gaugeV = new Chart(document.getElementById("gauge-v"), TrendV);
+            
 	handle_menu_click();
 	FrontendConfig();
     refreshDevTime();
@@ -620,7 +698,6 @@ function handle_menu_click()
     timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
 
     setMonthTableType();
-	getDevSettings();
     refreshDevInfo();
     openTab();
     initActualGraph();
@@ -686,7 +763,7 @@ function handle_menu_click()
   function openTab() {
 
     console.log("openTab : " + activeTab );
-   document.getElementById("myTopnav").className = "main-navigation"; //close dropdown menu 
+    document.getElementById("myTopnav").className = "main-navigation"; //close dropdown menu 
     clearInterval(tabTimer);  
     clearInterval(actualTimer);  
 
@@ -694,12 +771,9 @@ function handle_menu_click()
     document.getElementById("dataChart").style.display = "none";
     document.getElementById("gasChart").style.display  = "none";
 	document.getElementById("waterChart").style.display  = "none";
-	show_hide_column('lastHoursTable',4,HeeftWater);
-	show_hide_column('lastDaysTable',4,HeeftWater);
-	show_hide_column('lastMonthsTable',13,HeeftWater);
-	show_hide_column('lastMonthsTable',14,HeeftWater);
-	show_hide_column('lastMonthsTable',15,HeeftWater);
-	show_hide_column('lastMonthsTable',16,HeeftWater);
+
+	if (!EnableHist) {
+	}
     
     if (activeTab != "bActualTab") {
       actualTimer = setInterval(refreshSmActual, 60 * 1000);                  // repeat every 60s
@@ -777,8 +851,8 @@ function handle_menu_click()
     } 
   } // openTab()
   
-    //============================================================================  
 
+//============================================================================  
   function FSExplorer() {
 	 let span = document.querySelector('span');
 	 let main = document.querySelector('main');
@@ -801,15 +875,8 @@ function handle_menu_click()
 		 dir += `<td width=250px nowrap><a href ="${json[i].name}" target="_blank">${json[i].name}</a></td>`;
 		 dir += `<td width=100px nowrap><small>${json[i].size}</small></td>`;
 		 dir += `<td width=100px nowrap><a href ="${json[i].name}"download="${json[i].name}"> Download </a></td>`;
-		 if (  FS_no_delete.indexOf(json[i].name) < 0 ) {
-		   dir += `<td width=100px nowrap><a href ="${json[i].name}?delete=/${json[i].name}"> Delete </a></td>`;
-		   if (json[i].name == '!format') 
-		   {
-			 document.getElementById('FormatSPIFFS').disabled = false;
-		   }
-		 } else {
-		   dir += `<td width=100px nowrap> </td>`;
-		 }                 	 
+		 dir += `<td width=100px nowrap><a href ="${json[i].name}?delete=/${json[i].name}"> Delete </a></td>`;
+// 	     if (json[i].name == '!format') document.getElementById('FormatSPIFFS').disabled = false;
 		 dir += "</tr>";
 	   }	// for ..
 	   main.insertAdjacentHTML('beforeend', dir);
@@ -915,7 +982,6 @@ function handle_menu_click()
       .then(json => {
 		  data = json;
           //console.log("parsed frontend config: ["+ JSON.stringify(json)+"]");
-          //{"ShowVoltage":true,"Injection":false,"Phases":1,"Fuse":35,"cdn":true}
           AMPS=json.Fuse;
           ShowVoltage=json.ShowVoltage;
           UseCDN=json.cdn;
@@ -1078,9 +1144,9 @@ function handle_menu_click()
     var slotbefore;
     	
     //--- first check op volgordelijkheid ------    
-    if (activeTab == "bHoursTab") {  
-    
-    }
+//     if (activeTab == "bHoursTab") {  
+//     
+//     }
     for (let x=data.data.length + data.actSlot; x > data.actSlot; x--)
     {	i = x % data.data.length;
         slotbefore = math.mod(i-1, data.data.length);
@@ -1107,10 +1173,15 @@ function handle_menu_click()
         costs = costs - ( (data.data[i].values[3] - data.data[slotbefore].values[3]) * er_tariff2 );
         data.data[i].costs_e = costs;
         //-- add Gas Delivered costs
-        data.data[i].costs_g = ( (data.data[i].values[4]  - data.data[slotbefore].values[4])  * gd_tariff );
-        
+        data.data[i].costs_g = HeeftGas?( (data.data[i].values[4]  - data.data[slotbefore].values[4])  * gd_tariff ):0;
         //-- compute network costs
-        data.data[i].costs_nw = (electr_netw_costs + gas_netw_costs);
+        data.data[i].costs_nw = (electr_netw_costs + (HeeftGas?gas_netw_costs:0)) * 1.0;
+		
+// 		console.log("costs_nw: "+data.data[i].costs_nw); 
+// 		console.log("gas_netw_costs: "+gas_netw_costs); 
+// 		console.log("electr_netw_costs: "+electr_netw_costs); 
+// 		console.log("HeeftGas: "+HeeftGas?"yes":"no"); 
+		
         //-- compute total costs
         data.data[i].costs_tt = ( (data.data[i].costs_e + data.data[i].costs_g + data.data[i].costs_nw) * 1.0);
       }
@@ -1122,7 +1193,7 @@ function handle_menu_click()
         data.data[i].p_er      = (data.data[i].values[2] +data.data[i].values[3]).toFixed(3);
         data.data[i].p_erw     = (data.data[i].p_er * 1000).toFixed(0);
         data.data[i].p_gd      = (data.data[i].values[4]).toFixed(3);
-		data.data[i].water      = (data.data[i].values[5]).toFixed(3);
+		data.data[i].water     = (data.data[i].values[5]).toFixed(3);
         data.data[i].costs_e   = 0.0;
         data.data[i].costs_g   = 0.0;
         data.data[i].costs_nw  = 0.0;
@@ -1240,7 +1311,7 @@ function handle_menu_click()
                 showMonthsCosts(data);
           else  showMonthsHist(data);
         }
-        else  showMonthsGraph(data);
+        else  showMonthsGraph(data,"Days");
         Spinner(false);
       })
       .catch(function(error) {
@@ -1248,7 +1319,7 @@ function handle_menu_click()
         p.appendChild(
           document.createTextNode('Error: ' + error.message)
         );
-    	alert_message("Fout bij ophalen van de historische maandgegevens");
+    	alert_message("Fout bij ophalen van de historische maandgegevens [" + error.message +"]");
 
       });
   } // resfreshMonths()
@@ -1381,10 +1452,8 @@ function handle_menu_click()
       if (data.data[index].p_gd >= 0) tableCells[3].innerHTML = data.data[index].p_gd;
       if (data.data[index].water >= 0) tableCells[4].innerHTML = data.data[index].water;
 
-      if (type == "Days")
-      {
-        tableCells[5].innerHTML = ( (data.data[index].costs_e + data.data[index].costs_g) * 1.0).toFixed(2);
-      }
+      if (type == "Days") tableCells[5].innerHTML = ( (data.data[index].costs_e + data.data[index].costs_g) * 1.0).toFixed(2);
+      
     };
 
     //--- hide canvas
@@ -1408,7 +1477,7 @@ function handle_menu_click()
   
     for (let index=start; index>stop; index--)
     {  i = index % data.data.length;
-      	slotyearbefore = math.mod(i-12,25);
+      	slotyearbefore = math.mod(i-12,data.data.length);
       var tableRef = document.getElementById('lastMonthsTable').getElementsByTagName('tbody')[0];
       if( ( document.getElementById("lastMonthsTable_R"+i)) == null )
       {
@@ -1481,10 +1550,12 @@ function handle_menu_click()
       if (data.data[slotyearbefore].p_gd >= 0) tableCells[12].innerHTML = data.data[slotyearbefore].p_gd;                     // gas
       
 		tableCells[13].innerHTML = "20"+data.data[i].date.substring(0,2);          // jaar
-      if (data.data[i].water >= 0) tableCells[14].innerHTML = data.data[i].water;                        // water
+      if (data.data[i].water >= 0) tableCells[14].innerHTML = data.data[i].water;
+      else tableCells[14].innerHTML = "-";
       
       tableCells[15].innerHTML = "20"+data.data[slotyearbefore].date.substring(0,2);      // jaar
-      if (data.data[slotyearbefore].water >= 0) tableCells[16].innerHTML = data.data[slotyearbefore].water;                     // water
+      if (data.data[slotyearbefore].water >= 0) tableCells[16].innerHTML = data.data[slotyearbefore].water; 
+      else tableCells[16].innerHTML = "-";
       
     };
     
@@ -1510,7 +1581,7 @@ function handle_menu_click()
   
     for (let index=start; index>stop; index--)
     {  i = index % data.data.length;
-      	slotyearbefore = math.mod(i-12,25);
+      	slotyearbefore = math.mod(i-12,data.data.length);
       //console.log("showMonthsHist(): data["+i+"] => data["+i+"].name["+data[i].recid+"]");
       var tableRef = document.getElementById('lastMonthsTableCosts').getElementsByTagName('tbody')[0];
       if( ( document.getElementById("lastMonthsTableCosts_R"+i)) == null )
@@ -1646,8 +1717,10 @@ function handle_menu_click()
 
         electr_netw_costs = json.electr_netw_costs.value;
         gas_netw_costs = json.gas_netw_costs.value;
-        hostName = json.hostName.value;
+        hostName = json.hostname.value;
+        EnableHist =  "hist" in json ? json.hist : true;
         Spinner(false);
+        SettingsRead = true;
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -1716,6 +1789,8 @@ function handle_menu_click()
     {
       document.getElementById("lastMonthsTableCosts").style.display = "block";
       document.getElementById("lastMonthsTable").style.display      = "none";
+      refreshMonths();
+
     }
     else
     {
@@ -1723,7 +1798,6 @@ function handle_menu_click()
       document.getElementById("lastMonthsTableCosts").style.display = "none";
     }
     document.getElementById('lastMonthsTableCosts').getElementsByTagName('tbody').innerHTML = "";
-    refreshMonths();
       
   } // setMonthTableType()
     
@@ -1740,6 +1814,8 @@ function handle_menu_click()
         data = json;
         for( let i in data )
         {
+          if(i=="hist") next;
+          
           console.log("["+i+"]=>["+data[i].value+"]");
           var settings = document.getElementById('settings_table');
           if( ( document.getElementById("settingR_"+i)) == null )
@@ -1784,8 +1860,10 @@ function handle_menu_click()
                                 );
                   inputDiv.appendChild(sInput);
                   
-            rowDiv.appendChild(inputDiv);
-            settings.appendChild(rowDiv);
+          if( EnableHist || !( ["ed_tariff1","ed_tariff2", "er_tariff1","er_tariff2" ,"gd_tariff","electr_netw_costs","gas_netw_costs"].includes(i) ) ) {
+				rowDiv.appendChild(inputDiv);
+				settings.appendChild(rowDiv);
+			};
           }
           else
           {
@@ -2048,8 +2126,10 @@ function handle_menu_click()
   //============================================================================  
   function saveSettings() 
   {
+//     console.log("savesettings:" + data);
     for(var i in data)
     {
+      if (i=="hist") continue;
       var fldId  = i;
       var newVal = document.getElementById("setFld_"+fldId).value;
       if (data[i].value != newVal)

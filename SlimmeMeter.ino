@@ -27,7 +27,7 @@ struct showValues {
   }
 };
 
-#if !defined(HAS_NO_SLIMMEMETER)
+
 //==================================================================================
 void handleSlimmemeter()
 {
@@ -194,7 +194,6 @@ float modifyMbusDelivered()
     
 } //  modifyMbusDelivered()
 
-#endif
 
 /***************************************************************************
 *
