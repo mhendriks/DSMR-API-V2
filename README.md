@@ -63,7 +63,7 @@ Aanpassing (tot nu toe) ten opzichte van DSMR-API van Willem zijn:
 - Home Assistant MQTT auto detect 
 - Watermeter uitbreiding
 
-Instructie is te vinden in de [manual/dsmr-api](manual/dsmr-api/README.md) folder.
+Uitgebreide documentatie is te vinden op: [Gitbook](https://docs.smart-stuff.nl/v/p1-dongle-api/)
 
 ## ESPHome SOFTWARE
 Een hele eenvoudige manier om de dongle te koppelen aan Home Assistant is door middel van de ESPHome firmware + dsmr configuratie.
