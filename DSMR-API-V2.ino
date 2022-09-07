@@ -13,6 +13,8 @@ TODO
 - telnet update via windows ... invoeren lukt niet
 - Jos: zou je de dag totalen zoals op het dashboard ook via MQTT kunnen exporteren? Gas_dag, Water_dag, Afname_dag, Teruglevering_dag, Afname-Terug_dag
 
+- NO_HIST compiler optie (3.5.1_NO_HIST)
+
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json
@@ -34,7 +36,8 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 /******************** compiler options  ********************************************/
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
-//#define V2_COMPATIBLE             // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
+#define V2_COMPATIBLE             // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
+#define NO_HIST
 
 //----- EXTENSIONS
 //#define USE_WATER_SENSOR
@@ -133,7 +136,20 @@ void setup()
   FS.remove("/DSMRstatus.json"); //pre 3.1.1 
 #endif
 
-  if (EnableHistory) CheckRingExists();
+#ifdef NO_HIST
+  if ( EnableHistory ) {
+    EnableHistory = false;
+    FS.remove(RingFiles[0].filename);
+    FS.remove(RingFiles[1].filename);
+    FS.remove(RingFiles[2].filename);
+    FS.remove("/P1_log.old");
+    FS.remove("/Reboot.old");      //pre 3.1.1    
+    
+    writeSettings(); //write to settings file
+  }
+#endif
+
+ if (EnableHistory) CheckRingExists();
 
 #ifndef DEBUG_MODE 
   DebugTln(F("Swapping serial port to Smart Meter, debug output will continue on telnet"));
