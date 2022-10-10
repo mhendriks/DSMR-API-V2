@@ -10,26 +10,26 @@ Er zijn hiermee meerdere keuzes mogelijk met deze hardware, namelijk:
 2. ESPHome: voor naadloze integratie met Home Assistant. Zie [manual/epshome](manual/esphome/README.md)
 3. Tasmota: in ontwikkeling Zie [manual/tasmota](manual/tasmota/README.md)
 
-# Slimmemeter P1 Dongel - versie 3.4
+# Slimmemeter P1 Dongel - versie 3.7
 Eigenschappen
 - hardware design voor ESPhome + DSMR API
 - gebruikt secundaire seriale hardware interface (UART1) voor de beste performance
-- ESP-12S (4MB) als CPU Soc -> veel pull-up weerstanden zijn al aanwezig dat is heel prettig
+- ESP-12F (4MB) als CPU Soc
 - P1 signaal inversie via BJT transistor
 - 6P6C (RJ12) socket voor gemakkelijke aansluiting
-- usb micro connector voor externe voeding. Sommige DSMR 5.x en de DSMR 4.x/3.x/2.x leveren geen of te weinig vermogen
-- 2 diodes voor de USB/P1 switch
-- Primaire componenten op bovenkant van de pcb zodat deze in oven/hotplate gemaakt kan worden
-- nieuwe LDO met een nog lager verlies. Resultaat minder warmteafgifte en hogere betrouwbaarheid
-- jumper om te kiezen tussen P1 of USB voedingsbron
+- usb micro connector voor externe voeding bij SMR 4.x/3.x/2.x meters en soms bij 5.x meters
+- 2 diodes voor de USB/P1 return power beveiliging
+- Primaire componenten op bovenkant van de pcb makkelijk voor de smt
+-  LDO met een extreem laag verlies. Resultaat minder warmteafgifte en hogere betrouwbaarheid
 - DTR signaal is altijd hoog
-- watermeter sensor logica op basis van spannningsdeler
-- SMT model en daarom alle basis logica op bovenzijde
+- optie om er een watermeter dongle van te maken
+- optie om er een s0 dongle (pulsteller) van te maken
 
 ## SCHEMA
 Op het printje zitten de volgende modules:
-- voedingscircuit: een ultra low LDO spanningsregelaar zorgt er voor dat de 5Volt naar 3.3 omgezet wordt. En behoorlijk wat capaciteit voor het opvangen van de stroompieken tijden Wifi startup
-- CPU: - ESP-12S 4Mb
+- voedingscircuit: een ultra low LDO spanningsregelaar zorgt er voor dat de 5Volt naar 3.3 omgezet wordt. 
+- Dikke condensator voor het opvangen van de stroompieken tijden Wifi startup
+- CPU: - ESP-12F 4Mb
 - level shifter: om het P1 signaal te inverteren
 - USB Power: om de p1 te kunnen voeden als paracitaire voeding (uit de p1) niet kan. Bijvoorbeeld bij SMR 2/3/4 meters of sommige 5.0 meters die heel gevoelig afgesteld zijn
 - watermeter: klein circuit om watermeter sensor op aan te kunnen sluiten. Dit is een spanningsdeler. In de 3.5 versie komt hier een opto coupler voor in de plaats
@@ -60,7 +60,7 @@ Aanpassing (tot nu toe) ten opzichte van DSMR-API van Willem zijn:
 - nieuw dashboard gemaakt
 - Front-end settings worden van de dongel gelezen (een eerste aanzet)
 - LittleFS in plaats van SPIFFS als bestandssysteem
-- Home Assistant MQTT auto detect 
+- Home Assistant MQTT auto discovery 
 - Watermeter uitbreiding
 
 Uitgebreide documentatie is te vinden op: [Gitbook](https://docs.smart-stuff.nl/v/p1-dongle-api/)
