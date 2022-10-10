@@ -51,7 +51,7 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   httpServer.on("/update",            [](){ checkauth(); updateFirmware();  }); //  < v3.5.0
   httpServer.on("/updates",           [](){ checkauth(); updateFirmware();  }); // >= v3.5.0
   httpServer.on("/remote-update",     [](){ checkauth(); RemoteUpdate();    });
-  httpServer.on("/ResetWifi",         [](){ checkauth(); resetWifi;         });
+  httpServer.on("/ResetWifi",         [](){ checkauth(); resetWifi();       });
   httpServer.on("/api", HTTP_GET,     [](){ checkauth(); processAPI;        }); // all other api calls are catched in FSexplorer onNotFounD!
   httpServer.onNotFound([]() 
   {

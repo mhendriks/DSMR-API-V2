@@ -182,9 +182,6 @@ int n = MDNS.queryService("espserver", "tcp");
             AutoDiscoverHA();
 #endif            
             MQTTclient.subscribe(cMsg); //subscribe mqtt update
-            #ifdef USE_WATER_SENSOR  
-              if (P1Status.wtr_m3) sendMQTTWater();
-            #endif
 
             LogFile("MQTT connected",false);
             MQTTclient.loop();

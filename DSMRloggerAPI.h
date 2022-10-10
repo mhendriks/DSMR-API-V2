@@ -11,11 +11,14 @@
 #ifndef DSMRloggerAPI_h
 #define DSMRloggerAPI_h
 
-#define _DEFAULT_HOSTNAME   "DSMR-API/" 
+#define _DEFAULT_HOSTNAME   "P1-Dongle" 
+#define _DEFAULT_MQTT_TOPIC "P1-Dongle/" 
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
 #define DTR_ENABLE          14 //versie 3.1
 #define LED                 2
+#define HOST_DATA_FILES    "cdn.jsdelivr.net"
+#define PATH_DATA_FILES    "https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/data"
 
 static tm timeinfo;
 
@@ -28,12 +31,6 @@ static tm timeinfo;
 #include <EEPROM.h>
 WiFiClient  wifiClient;
 #include "Network.h"
-
-#ifdef USE_APP
-  #include <ArduinoIoTCloud.h>
-//  #include <Arduino_ConnectionHandler.h>
-  DECLARE_TIMER_SEC(APPtimer, 5);
-#endif
 
 #ifdef V2_COMPATIBLE
   #define FS SPIFFS
@@ -166,16 +163,6 @@ void delayms(unsigned long);
 #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
 static PubSubClient MQTTclient(wifiClient);
   
-#ifdef USE_WATER_SENSOR  
-  #define     PIN_WATER_SENSOR 5 //let op 5 voor de v3.4/3.3 en 2 voor 3.1
-  volatile byte        WtrFactor      = 1;
-  volatile time_t      WtrTimeBetween = 0;
-  volatile byte        debounces      = 0;
-  volatile time_t      WtrPrevReading = 0;
-#endif //USE_WATER_SENSOR
-#define       DEBOUNCETIMER 1700
-  bool        WtrMtr        = false;
-  
 struct Status {
    uint32_t reboots;
    uint32_t sloterrors;
@@ -183,7 +170,6 @@ struct Status {
    volatile uint32_t wtr_m3;
    volatile uint16_t wtr_l;
    char     check; //check if data is well formated (persistdata available or not)
-   //byte     P1config; //1e bit = water, 2e bit = NTP, 3e bit = Blynk etc
 };
 
 Status P1Status = {0,0,"010101010101X",0,0,'Y'};
@@ -215,13 +201,13 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   char      settingHostname[30]     = _DEFAULT_HOSTNAME;
 
   bool      StaticInfoSend = false;
-  char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_HOSTNAME;
+  char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21] = _DEFAULT_MQTT_TOPIC;
   int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
   float     gasDelivered;
   byte      mbusGas = 0;
   byte      RingCylce = 0;
   
-//specifiek voor dongle functies
+//specifiek voor P1 functies
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
   float     settingENBK = 15.15, settingGNBK = 11.11;
   bool      UpdateRequested = false;
@@ -233,10 +219,7 @@ DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
 DECLARE_TIMER_SEC(nextTelegram,        2);
 DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
-DECLARE_TIMER_MIN(antiWearRing,       25); 
-DECLARE_TIMER_SEC(StatusTimer,        10); //initial value 10 sec ... later on 10Min or at m3 change
-DECLARE_TIMER_MS(WaterTimer,         DEBOUNCETIMER);
-
+DECLARE_TIMER_SEC(StatusTimer,        10); //initial value 10 sec ... later on 20Min or at m3 change
 #endif
 /***************************************************************************
 *

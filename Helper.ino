@@ -9,6 +9,15 @@
 ***************************************************************************      
 */
 
+void CreateIndexHtml(){
+        char buffer[2100]; 
+        strcpy_P(buffer,IndexHTML);
+        File file = LittleFS.open("DSMRindexEDGE.html", "w"); // open for reading and writing
+        if (!file) DebugTln(F("open file FAILED!!!\r\n"));
+        else file.print(buffer); 
+        file.close();      
+}
+
 void P1Reboot(){
     sprintf(cMsg,"%sLWT",settingMQTTtopTopic);
     DebugT(F("Reboot in 3 seconds ... \r\n"));
@@ -16,6 +25,7 @@ void P1Reboot(){
     P1StatusWrite();
     delay(2000);
     DebugTln(F("now Rebooting!\r"));
+    DebugFlush();
     ESP.reset();
     delay(2000);  
 }

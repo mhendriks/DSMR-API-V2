@@ -27,7 +27,6 @@ struct showValues {
   }
 };
 
-
 //==================================================================================
 void handleSlimmemeter()
 {
@@ -105,6 +104,40 @@ void processSlimmemeter()
     }
   
 } // handleSlimmeMeter()
+
+//==================================================================================
+void processTelegram()
+{
+  DebugTf("Telegram[%d]=>DSMRdata.timestamp[%s]\r\n", telegramCount, DSMRdata.timestamp.c_str());  
+                                                    
+  strcpy(newTimestamp, DSMRdata.timestamp.c_str()); 
+
+  newT = epoch(newTimestamp, strlen(newTimestamp), true); // update system time
+  actT = epoch(actTimestamp, strlen(actTimestamp), false);
+  
+  // Skip first 3 telegrams .. just to settle down a bit ;-)
+  if ((int32_t)(telegramCount - telegramErrors) < 3) {
+    strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);
+    actT = epoch(actTimestamp, strlen(actTimestamp), false);   // update system time
+    return;
+  }
+  
+  if (Verbose1) DebugTf("actHour[%02d] -- newHour[%02d]\r\n", hour(actT), hour(newT));
+  
+  // has the hour changed (or the day or month)  
+  if (     (hour(actT) != hour(newT)  ) 
+//       ||   (day(actT) != day(newT)   ) 
+//       || (month(actT) != month(newT) ) 
+    )
+  {
+    writeRingFiles();
+  }
+  yield();
+  if ( DUE(publishMQTTtimer) ) sendMQTTData();  
+  
+  strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp); //nu pas updaten na het schrijven van de data anders in tijdslot - 1
+  actT = epoch(actTimestamp, strlen(actTimestamp), true);   // update system time
+} // processTelegram()
 
 //==================================================================================
 void modifySmFaseInfo()

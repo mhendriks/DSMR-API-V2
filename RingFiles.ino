@@ -236,22 +236,29 @@ void writeRingFile(E_ringfiletype ringfiletype,const char *JsonRec)
   else RingFile.print("\n"); // no comma at last record
   
   RingFile.close();
+//  String log_temp = "Ringfile " + String(RingFiles[ringfiletype].filename) + " writen. actT:[" + String(actT) + "] newT:[" + String(newT) +"] ActSlot:[" + String(slot) + "]";
+//    LogFile(log_temp.c_str(),true);
 } // writeRingFile()
 
 //===========================================================================================
 void writeRingFiles() 
 {
   if (!EnableHistory) return; //do nothing
-  switch(RingCylce){
-    case 0: writeRingFile(RINGHOURS, "");
-            break;
-    case 1: writeRingFile(RINGDAYS, "");
-            break;
-    case 2: writeRingFile(RINGMONTHS, "");
-            break;
-  }
-  RingCylce++;
-  if (RingCylce > 2) RingCylce = 0;
+  writeRingFile(RINGHOURS, "");
+  writeRingFile(RINGDAYS, "");
+  writeRingFile(RINGMONTHS, "");
+  
+    
+//  switch(RingCylce){
+//    case 0: writeRingFile(RINGHOURS, "");
+//            break;
+//    case 1: writeRingFile(RINGDAYS, "");
+//            break;
+//    case 2: writeRingFile(RINGMONTHS, "");
+//            break;
+//  }
+//  RingCylce++;
+//  if (RingCylce > 2) RingCylce = 0;
 
 } // writeRingFiles()
 

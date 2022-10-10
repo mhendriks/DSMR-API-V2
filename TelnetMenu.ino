@@ -9,19 +9,16 @@
 ***************************************************************************      
 */
 
-void DisplayLogFile(char *fname) {   
+void DisplayLogFile(const char *fname) { 
   if (bailout() || !FSmounted) return; //exit when heapsize is too small
-  if (!FS.exists(fname))
-  {
-    DebugT(F("LogFile doesn't exist: "));
-    return;
-    }
-  File RingFile = FS.open(fname, "r"); // open for reading
-  DebugTln(F("Ringfile output: "));
-  //read the content and output to serial interface
-  while (RingFile.available()) TelnetStream.println(RingFile.readStringUntil('\n'));
-  Debugln();    
-  RingFile.close();
+  File file = FS.open(fname, "r"); // open for reading
+  if (file)  {
+    DebugTln(F("Ringfile output (telnet only): "));
+    //read the content and output to serial interface
+    while (file.available()) TelnetStream.println(file.readStringUntil('\n'));
+    Debugln();    
+  } else DebugT(F("LogFile doesn't exist: "));
+  file.close();
 } //displaylogfile
 
 //--------------------------------
@@ -195,6 +192,8 @@ void handleKeyInput()
       case 'P':     showRaw = !showRaw;
                     break;
       case 'Q':     ResetDataFiles();
+                    P1StatusClear();
+                    resetWifi();  
                     break;              
       case 'R':     DebugFlush();
                     P1Reboot();
@@ -233,22 +232,12 @@ void handleKeyInput()
       case 'Y':     
                     CHANGE_INTERVAL_MS(StatusTimer, 10);
                     break;
-      case 'Z':     
-                    P1Status.sloterrors = 0;
-                    P1Status.reboots    = 0;
-                    P1Status.wtr_m3     = 0;
-                    P1Status.wtr_l      = 0;
-                    telegramCount       = 0;
-                    telegramErrors      = 0;
-                    P1StatusWrite();
+      case 'Z':     P1StatusClear();
                     break;
       default:      Debugf("Dongle version %s | mac address %s\n\r",_VERSION, WiFi.macAddress().c_str());
                     Debugln(F("\r\nCommands are:"));
                     Debugln(F("   A - P1 Status info a=available|r=read|w=write|p=print|z=erase\r"));
                     Debugln(F("   B - Board Info\r"));
-                    #ifdef USE_WATER_SENSOR
-                    Debugln(F("   c - debounce Info watermeter\r"));
-                    #endif
                     Debugln(F("  *E - erase file from File System\r"));
                     Debugln(F("   F - File info on SPIFFS\r"));
                     Debugln(F("   L - list Settings\r"));
@@ -258,6 +247,7 @@ void handleKeyInput()
                     Debugln(F("   M - Display Month table from FS\r"));
                     Debugln(F("   P - No Parsing (show RAW data - only 1 Telegram)\r"));
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
+                    Debugln(F("  *Q - Factory Reset\r"));
                     Debugln(F("  *R - Reboot\r"));
                     Debugln(F("   S - Update File Remote\r"));
                     Debugln(F("   U - Update Sketch Remote\r"));

@@ -75,25 +75,85 @@ h1{text-align:center}
 #x{position:relative; float:right;background:none;border:none;top:-10px;right:-10px;text-decoration:none;
 </style>)";
 
-/***************************************************************************
-*
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, sublicense, and/or sell copies of the Software, and to permit
-* persons to whom the Software is furnished to do so, subject to the
-* following conditions:
-*
-* The above copyright notice and this permission notice shall be included
-* in all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-* OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-* THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-* 
-***************************************************************************/
+
+//********************* INDEX.HTML
+
+static const char IndexHTML[] PROGMEM =
+R"(<!DOCTYPE html>
+<html lang=nl>
+<head>
+<title>P1 Dongle - DSMR-API</title>
+<meta charset=UTF-8>
+<meta name=viewport content='width=device-width, initial-scale=1'>
+<meta name=msapplication-TileImage content=https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/favicon/ms-icon-310x310.png>
+<link rel=stylesheet type=text/css href=https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/DSMRindex.min.css>
+<link rel=stylesheet type=text/css href=https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css>
+<link rel=icon type=image/png href=https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/favicon/favicon-32x32.png sizes=32x32 />
+<link rel=apple-touch-icon sizes=180x180 href=https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/favicon/apple-icon-180x180.png>
+<link href='https://fonts.googleapis.com/css?family=Dosis:400,700' rel=stylesheet>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js></script>
+<script type=text/javascript src=https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/chartjs-plugin-labels.min.js></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/7.0.0/math.min.js type=text/javascript></script>
+</head>
+<body><noscript><strong>Please enable JavaScript to continue.</strong></noscript>
+<script src=https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/DSMRgraphics.min.js></script>
+<script src=https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/DSMRindex.min.js></script>
+<script>window.onload=function(){console.log('window.onload .. ');readPageBody();}
+function readPageBody()
+{console.log('readPageBody() ..');fetch('https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/DSMRindex_body.html').then(r=>{if(r.ok){return r.text();}else{console.log('Something went wrong');return'';}}).then(text=>{document.body.innerHTML=text+document.body.innerHTML;bootsTrapMain();}).catch(function(e){console.log('readPageBody: '+e);});}</script>
+</body>
+</html>)";
+
+
+/*
+ * 
+ * 
+ * 
+
+ <!DOCTYPE html>
+<html lang=nl>
+  <head>
+  <title>P1 Dongle - DSMR-API</title>
+  <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <meta name='msapplication-TileImage' content='https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/favicon/ms-icon-310x310.png'>
+  <link rel='stylesheet' type='text/css' href='https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/DSMRindex.min.css'>
+    <link rel='stylesheet' type='text/css' href='https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css'>
+    <link rel='icon' type='image/png' href='https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/favicon/favicon-32x32.png' sizes='32x32' />
+    <link rel='apple-touch-icon' sizes='180x180' href='https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/favicon/apple-icon-180x180.png'>
+  <link href='https://fonts.googleapis.com/css?family=Dosis:400,700' rel='stylesheet'>  
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js'></script>
+  <script type='text/javascript' src='https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/chartjs-plugin-labels.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjs/7.0.0/math.min.js' type='text/javascript'></script>
+  </head>
+  <body><noscript><strong>Please enable JavaScript to continue.</strong></noscript>
+  <script src='https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/DSMRgraphics.min.js'></script>
+  <script src='https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/DSMRindex.min.js'></script>
+  <script>
+      window.onload= function() {
+        console.log('window.onload .. ');
+        readPageBody();
+      }
+  function readPageBody()
+  {
+    console.log('readPageBody() ..');
+    fetch('https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/edge/DSMRindex_body.html')
+      .then(r => {
+        if (r.ok) {
+          return r.text();
+        } else {
+          console.log('Something went wrong');
+          return '';
+        }
+      })
+      .then(text => {
+        document.body.innerHTML = text + document.body.innerHTML;
+        bootsTrapMain();
+      })
+      .catch(function(e) {
+        console.log('readPageBody: '+e);
+      });}
+  </script>
+  </body>
+</html>
+ */

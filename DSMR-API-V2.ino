@@ -12,8 +12,8 @@ TODO
 - Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
 - telnet update via windows ... invoeren lukt niet
 - Jos: zou je de dag totalen zoals op het dashboard ook via MQTT kunnen exporteren? Gas_dag, Water_dag, Afname_dag, Teruglevering_dag, Afname-Terug_dag
-
-- NO_HIST compiler optie (3.5.1_NO_HIST)
+- data voor dag tabel eens per dag
+- data voor maand tabel eens per maand
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
@@ -36,19 +36,12 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 /******************** compiler options  ********************************************/
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 //#define DEBUG_MODE
-#define V2_COMPATIBLE             // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
-#define NO_HIST
+//#define V2_COMPATIBLE             // Spiffs version firmware 2.x compatible ESP-M(2/3) HARDWARE
+//#define NO_HIST
 
 //----- EXTENSIONS
-//#define USE_WATER_SENSOR
-//#define USE_APP           // define if the Arduino IOT app could be used
 #define HA_DISCOVER
-
-#ifdef USE_WATER_SENSOR
-  #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS][HA DISCOVERY][WATER]"
-#else if
-  #define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS][HA DISCOVERY]"
-#endif
+#define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS][HA DISCOVERY]"
 
 #include "DSMRloggerAPI.h"
 
@@ -85,7 +78,10 @@ void setup()
   {
     DebugTln(F("File System Mount succesful"));
     FSmounted = true;   
-  } else DebugTln(F("/!\\File System Mount failed/!\\"));   // Serious problem with FS 
+  } else {
+    DebugTln(F("/!\\File System Mount failed/!\\"));   // Serious problem with FS 
+
+  }
 
   // set the time to actTimestamp!
   actT = epoch(actTimestamp, strlen(actTimestamp), true);
@@ -107,26 +103,20 @@ void setup()
 
 //================ Start HTTP Server ================================
 
+  if (!DSMRfileExist(settingIndexPage, false) ) CreateIndexHtml();
+
   if (DSMRfileExist(settingIndexPage, false) ) {
     DebugTln(F("File System correct populated -> normal operation!\r"));
     httpServer.serveStatic("/",                 FS, settingIndexPage);
     httpServer.serveStatic("/DSMRindex.html",   FS, settingIndexPage);
     httpServer.serveStatic(_DEFAULT_HOMEPAGE,   FS, settingIndexPage);
   } else DebugTln(F("Oeps! not all files found on File System -> present FSexplorer!\r"));
-    
+
   setupFSexplorer();
 //  delay(500);  
 //  DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
 
 //================ Start Slimme Meter ===============================
-
-#ifdef USE_APP
-  APPsetup();
-#endif
-
-#ifdef USE_WATER_SENSOR  
-  setupWater();
-#endif //USE_WATER_SENSOR
 
 #ifndef V2_COMPATIBLE  
   ConvRing3_2_0(); //only new modules
@@ -217,30 +207,13 @@ void loop ()
   //--- do the tasks that has to be done as often as possible
   doSystemTasks(); 
 
-  //--- update statusfile + ringfiles
-  if ( DUE(antiWearRing) || RingCylce ) writeRingFiles(); //eens per 25min + elk uur overgang
-
-  if (DUE(StatusTimer)) { //eens per 10min
+  if ( DUE(StatusTimer) && (telegramCount > 2) ) { 
     P1StatusWrite();
     MQTTSentStaticInfo();
-    #ifdef USE_WATER_SENSOR  
-      sendMQTTWater();
-    #endif
-    CHANGE_INTERVAL_MIN(StatusTimer, 10);
+    CHANGE_INTERVAL_MIN(StatusTimer, 23);
   }
 
   if (UpdateRequested) RemoteUpdate(UpdateVersion, true);
-
-#ifdef USE_WATER_SENSOR    
-  if ( WtrTimeBetween )  {
-    DebugTf("Wtr delta readings: %d | debounces: %d | waterstand: %i.%i\n",WtrTimeBetween,debounces, P1Status.wtr_m3, P1Status.wtr_l);
-    WtrTimeBetween = 0;
-  }
-#endif
-
-#ifdef USE_APP
-  if DUE(APPtimer) APPUpdate();
-#endif
 
   yield();
 

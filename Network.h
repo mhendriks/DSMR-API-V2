@@ -16,7 +16,7 @@
 #include <ESP8266mDNS.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
 #include <WiFiUdp.h>            // part of ESP8266 Core https://github.com/esp8266/Arduino
 #include "ModUpdateServer.h"  // https://github.com/mrWheel/ModUpdateServer
-#include "UpdateServerHtml.h"
+#include "Html.h"
 #include <WiFiManager.h>        // version 0.16.0 - https://github.com/tzapu/WiFiManager
 
 ESP8266WebServer        httpServer (80);
