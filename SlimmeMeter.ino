@@ -50,9 +50,6 @@ void handleSlimmemeter()
 //==================================================================================
 void processSlimmemeter()
 {
-//  if (slimmeMeter.available()) 
-//  {
-
     telegramCount++;
     
     // Voorbeeld: [21:00:11][   9880/  8960] loop        ( 997): read telegram [28] => [140307210001S]
@@ -95,12 +92,7 @@ void processSlimmemeter()
     {
       telegramErrors++;
       DebugTf("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
-      //--- set DTR to get a new telegram as soon as possible
-        slimmeMeter.disable(); //empty buffer
-        slimmeMeter.clear(); //empty buffer
-//        slimmeMeter.enable(true);
-//        slimmeMeter.loop();
-        
+      slimmeMeter.loop(); //empty buffer
     }
   
 } // handleSlimmeMeter()

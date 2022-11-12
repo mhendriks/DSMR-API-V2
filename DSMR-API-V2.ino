@@ -9,7 +9,6 @@
 *      
 TODO
 - Piekvermogen bijhouden Belgie
-- Opties in de config (bv water/blynk/NTP) obv deze config juiste updates ophalen
 - telnet update via windows ... invoeren lukt niet
 - Jos: zou je de dag totalen zoals op het dashboard ook via MQTT kunnen exporteren? Gas_dag, Water_dag, Afname_dag, Teruglevering_dag, Afname-Terug_dag
 - data voor dag tabel eens per dag
@@ -41,7 +40,7 @@ Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
 //----- EXTENSIONS
 #define HA_DISCOVER
-#define ALL_OPTIONS "[MQTT][UPDATE_SERVER][LITTLEFS][HA DISCOVERY]"
+#define ALL_OPTIONS "[CORE]"
 
 #include "DSMRloggerAPI.h"
 
@@ -149,7 +148,7 @@ void setup()
   Serial.swap();
   delay(200);
   DebugTln(F("Enable slimmeMeter...\n"));
-  slimmeMeter.enable(true);
+  slimmeMeter.enable(false);
 #else
   Debug(F("\n!!! DEBUG MODE AAN !!!\n\n"));
 #endif
@@ -175,14 +174,6 @@ void delayms(unsigned long delay_ms)
   }   
 } // delayms()
 
-//==[ Do Telegram Processing ]===============================================================
-void doTaskTelegram()
-{
-  if (Verbose1) DebugTln("doTaskTelegram");
-  slimmeMeter.loop(); //voorkomen dat de buffer nog vol zit met andere data
-  //-- enable DTR to read a telegram from the Slimme Meter
-  slimmeMeter.enable(true); 
-}
 
 //===[ Do System tasks ]=============================================================
 void doSystemTasks()
@@ -198,8 +189,6 @@ void doSystemTasks()
 
 void loop () 
 {  
-  //--- verwerk volgend telegram
-  if DUE(nextTelegram) doTaskTelegram();
 
   //--- update upTime counter
   if DUE(updateSeconds) upTimeSeconds++;

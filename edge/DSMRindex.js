@@ -8,7 +8,8 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-  const APIGW='http://'+window.location.host+'/api/';
+  const APIGW=window.location.protocol+'//'+window.location.host+'/api/';
+
 
   "use strict";
 
@@ -2668,7 +2669,7 @@ function handle_menu_click()
           ,[ "freeheap",                  "Free Heap Space" ]
           ,[ "maxfreeblock",              "Max. Free Heap Blok" ]
           ,[ "chipid",                    "Chip ID" ]
-          ,[ "coreversion",               "ESP8266 Core Versie" ]
+          ,[ "coreversion",               "Core Versie" ]
           ,[ "sdkversion",                "SDK versie" ]
           ,[ "cpufreq",                   "CPU Frequency" ]
           ,[ "sketchsize",                "Sketch Size" ]

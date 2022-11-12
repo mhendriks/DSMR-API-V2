@@ -15,7 +15,7 @@
 #define _DEFAULT_MQTT_TOPIC "P1-Dongle/" 
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
-#define DTR_ENABLE          14 //versie 3.1
+#define DTR_ENABLE          -1
 #define LED                 2
 #define HOST_DATA_FILES    "cdn.jsdelivr.net"
 #define PATH_DATA_FILES    "https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/data"
@@ -195,7 +195,6 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
   uint64_t  upTimeSeconds;
   IPAddress ipDNS, ipGateWay, ipSubnet;
-  uint8_t   settingTelegramInterval = 2; //seconden 10 pre v3.1 ... 1 second v3.1
   uint8_t   settingSmHasFaseInfo    = 1;
   char      settingIndexPage[50]    = _DEFAULT_HOMEPAGE;
   char      settingHostname[30]     = _DEFAULT_HOSTNAME;
@@ -205,7 +204,6 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   int32_t   settingMQTTinterval = 0, settingMQTTbrokerPort = 1883;
   float     gasDelivered;
   byte      mbusGas = 0;
-  byte      RingCylce = 0;
   
 //specifiek voor P1 functies
   float     settingEDT1 = 0.1, settingEDT2 = 0.2, settingERT1 = 0.3, settingERT2 = 0.4, settingGDT = 0.5;
@@ -216,7 +214,7 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
 //===========================================================================================
 // setup timers 
 DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
-DECLARE_TIMER_SEC(nextTelegram,        2);
+//DECLARE_TIMER_SEC(nextTelegram,        2);
 DECLARE_TIMER_SEC(reconnectMQTTtimer,  5); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_SEC(StatusTimer,        10); //initial value 10 sec ... later on 20Min or at m3 change

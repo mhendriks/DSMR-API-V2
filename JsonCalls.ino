@@ -98,7 +98,7 @@ void processAPI() {
                                   , httpServer.client().remoteIP().toString().c_str()
                                         , URI); 
 
-  if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
+  if (ESP.getFreeHeap() < 5000) // to prevent firmware from crashing!
   {
     DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
     httpServer.send(500, "text/plain", "500: internal server error (low heap)\r\n"); 
@@ -224,7 +224,11 @@ void sendDeviceInfo()
   doc["wifirssi"] = WiFi.RSSI();
   doc["uptime"] = upTime();
   doc["smhasfaseinfo"] = (int)settingSmHasFaseInfo;
-  doc["telegraminterval"] = (int)settingTelegramInterval; 
+
+  if ( DSMRdata.p1_version == "50" || !DSMR_NL ) doc["telegraminterval"] = 1; 
+  else doc["telegraminterval"] = 10; 
+  
+  
   doc["telegramcount"] = (int)telegramCount;
   doc["telegramerrors"] = (int)telegramErrors;
 
@@ -291,11 +295,6 @@ void sendDeviceSettings()
   doc["sm_has_fase_info"]["type"] = "i";
   doc["sm_has_fase_info"]["min"] = 0;
   doc["sm_has_fase_info"]["max"] = 1;
-  
-  doc["tlgrm_interval"]["value"] = settingTelegramInterval;
-  doc["tlgrm_interval"]["type"] = "i";
-  doc["tlgrm_interval"]["min"] = 1;
-  doc["tlgrm_interval"]["max"] = 60;
   
   doc["IndexPage"]["value"] = settingIndexPage;
   doc["IndexPage"]["type"] = "s";

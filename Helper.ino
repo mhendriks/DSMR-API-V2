@@ -32,7 +32,7 @@ void P1Reboot(){
 
 bool bailout () // to prevent firmware from crashing!
 {
-  if (ESP.getFreeHeap() < 5500) // to prevent firmware from crashing!
+  if (ESP.getFreeHeap() < 5000) // to prevent firmware from crashing!
   {
     DebugT(F("Bailout due to low heap --> reboot in 3 seconds")); Debugln(ESP.getFreeHeap());
     P1Reboot();
