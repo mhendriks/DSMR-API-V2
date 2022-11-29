@@ -53,6 +53,9 @@
   var HeeftWater			= false	//watermeter aanwezig. default=false => door de slimme meter te bepalen -> true door Frontend.json = altijd aan
   var EnableHist			= true  //weergave historische gegevens
   var SettingsRead 			= false 
+  var Act_Watt				= false  //display actual in Watt instead of kW
+  var AvoidSpikes			= false 
+  
 // ---- DASH
 var TotalAmps=0.0,minKW = 0.0, maxKW = 0.0,minV = 0.0, maxV = 0.0, Pmax,Gmax, Wmax;
 var hist_arrW=[4], hist_arrG=[4], hist_arrPa=[4], hist_arrPi=[4], hist_arrP=[4]; //berekening verbruik
@@ -501,14 +504,15 @@ function UpdateDash()
 		}
 		//-------ACTUEEL METER		
 		//afname of teruglevering bepalen en signaleren
-		let TotalKW	= 0;
-		if (json.power_returned.value > 0) { 
-			TotalKW = -1.0 * json.power_returned.value;
+		let TotalKW	= json.power_delivered.value - json.power_returned.value;
+		
+		if ( !TotalKW ) { 
+// 			TotalKW = -1.0 * json.power_returned.value;
 			document.getElementById("power_delivered_l1h").style.backgroundColor = "green";
 // 			document.getElementById("power_delivered_l1h").innerHTML = "Teruglevering";
 		} else
 		{
-			TotalKW = json.power_delivered.value;
+// 			TotalKW = json.power_delivered.value;
 // 			document.getElementById("power_delivered_l1h").innerHTML = "Actueel";
 			if (Injection) document.getElementById("power_delivered_l1h").style.backgroundColor = "red";
 			else document.getElementById("power_delivered_l1h").style.backgroundColor = "#314b77";
@@ -534,7 +538,7 @@ function UpdateDash()
 			document.getElementById("f3").style.display = "inline-block";
 			document.getElementById("v3").style.display = "inline-block";
 			}
-		gauge3f.options.title.text = TotalAmps + " A";
+		gauge3f.options.title.text = TotalAmps.toFixed(2) + " A";
 		gauge3f.update();
 
 		//update actuele vermogen			
@@ -999,6 +1003,9 @@ function handle_menu_click()
           Injection=json.Injection;
           Phases=json.Phases;   
           HeeftGas=json.GasAvailable;
+          "Act_Watt" in json ? Act_Watt = json.Act_Watt : Act_Watt = false;
+		  "AvoidSpikes" in json ? AvoidSpikes = json.AvoidSpikes : AvoidSpikes = false;
+ 
           
           for (var item in data) 
           {
@@ -1169,7 +1176,8 @@ function handle_menu_click()
       var     costs     = 0;
       if (x != data.actSlot 	)
       { 
-        data.data[i].p_ed  = ((data.data[i].values[0] + data.data[i].values[1])-(data.data[slotbefore].values[0] +data.data[slotbefore].values[1])).toFixed(3);
+		if ( AvoidSpikes && ( data.data[slotbefore].values[0] == 0 ) ) data.data[slotbefore].values = data.data[i].values;//avoid gaps and spikes
+		data.data[i].p_ed  = ((data.data[i].values[0] + data.data[i].values[1])-(data.data[slotbefore].values[0] +data.data[slotbefore].values[1])).toFixed(3);
         data.data[i].p_edw = (data.data[i].p_ed * 1000).toFixed(0);
         data.data[i].p_er  = ((data.data[i].values[2] + data.data[i].values[3])-(data.data[slotbefore].values[2] +data.data[slotbefore].values[3])).toFixed(3);
         data.data[i].p_erw = (data.data[i].p_er * 1000).toFixed(0);
