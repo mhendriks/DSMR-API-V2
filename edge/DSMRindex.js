@@ -538,7 +538,7 @@ function UpdateDash()
 			document.getElementById("f3").style.display = "inline-block";
 			document.getElementById("v3").style.display = "inline-block";
 			}
-		gauge3f.options.title.text = TotalAmps.toFixed(2) + " A";
+		gauge3f.options.title.text = Number(TotalAmps).toFixed(2) + " A";
 		gauge3f.update();
 
 		//update actuele vermogen			
@@ -2147,7 +2147,7 @@ function handle_menu_click()
   {
     for(var i in data)
     {
-      if (i=="hist") continue;
+      if ( (i=="hist") || ( document.getElementById("setFld_"+i) == null) ) continue;
 	  var fldId  = i;
       var newVal = document.getElementById("setFld_"+fldId).value;
       if (data[i].value != newVal)
@@ -2703,7 +2703,14 @@ function handle_menu_click()
           ,[ "Fuse",                      "Wat is de waarde van de hoofdzekering(en)" ]
           ,[ "cdn",               		  "Frontend html/css uit de cloud" ]
           ,[ "GasAvailable",			  "Gasmeter beschikbaar? <br>[True = geen check op basis van meterdata]<br>[False = wel checken]"]
-          ,[ "water",				  	  "Watermeter"]
+          ,[ "water",				  	  "Watersensor aanwezig"]
+          ,[ "water_enabl",				  "Watersensor aanwezig"]
+          ,[ "led",				  		  "LED aan"]
+          ,[ "ha_disc_enabl",			  "HA Auto discovery"]
+          ,[ "ota_url",				  	  "Update url (zonder http://)"]
+  	 	  ,[ "hist",				  	  "Metergegevens lokaal opslaan"]
+		  ,[ "auto_update",				  "Automatisch updaten"]
+		  ,[ "pre40",				  	  "SMR 2 & 3 support"]          
 ];
 
 /*
