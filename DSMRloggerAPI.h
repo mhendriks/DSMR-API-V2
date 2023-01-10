@@ -15,7 +15,13 @@
 #define _DEFAULT_MQTT_TOPIC "P1-Dongle/" 
 #define _DEFAULT_HOMEPAGE   "/DSMRindexEDGE.html"
 #define SETTINGS_FILE       "/DSMRsettings.json"
-#define DTR_ENABLE          -1
+
+#ifdef V2_COMPATIBLE
+  #define DTR_ENABLE          14 //needed for hardware 3.1 and older
+#else 
+  #define DTR_ENABLE          -1 //disable
+#endif
+
 #define LED                 2
 #define HOST_DATA_FILES    "cdn.jsdelivr.net"
 #define PATH_DATA_FILES    "https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/data"
@@ -89,6 +95,9 @@ using MyData = ParsedData<
   /* String */                 identification
   /* String */                ,p1_version
   /* String */                ,p1_version_be
+  /* FixedValue */            ,peak_pwr_last_q
+  /* TimestampedFixedValue */ ,highest_peak_pwr
+  /* String */                ,highest_peak_pwr_13mnd
   /* String */                ,timestamp
   /* String */                ,equipment_id
   /* FixedValue */            ,energy_delivered_tariff1
