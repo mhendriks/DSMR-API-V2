@@ -8,11 +8,13 @@
 ***************************************************************************      
 *      
 TODO
-- Piekvermogen bijhouden Belgie
 - telnet update via windows ... invoeren lukt niet
 - Jos: zou je de dag totalen zoals op het dashboard ook via MQTT kunnen exporteren? Gas_dag, Water_dag, Afname_dag, Teruglevering_dag, Afname-Terug_dag
 - data voor dag tabel eens per dag
 - data voor maand tabel eens per maand
+
+Wip
+
 
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
