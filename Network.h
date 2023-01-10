@@ -35,35 +35,31 @@ void P1Reboot();
 void LogFile(const char*, bool);
 void startWiFi(const char* , int );
 
+WiFiEventHandler stationConnectedHandler, stationDisconnectedHandler, stationGotIPHandler;
 
-// naar setup van https://github.com/gmag11/ESPNtpClient/blob/main/examples/advancedExample/advancedExample.ino
-void onWifiEvent (WiFiEvent_t event) {
-    switch (event) {
-    case WIFI_EVENT_STAMODE_CONNECTED:
-        DebugTf ("Connected to %s. Asking for IP address.\r\n", WiFi.BSSIDstr().c_str());
-        break;
-    case WIFI_EVENT_STAMODE_GOT_IP:
-        LogFile("Wifi Connected",true);
-        digitalWrite(LED, LOW); //ON
-        Debug (F("\nConnected to " )); Debugln (WiFi.SSID());
-        Debug (F("IP address: " ));  Debug (WiFi.localIP());
-        Debug (F(" ( gateway: " ));  Debug (WiFi.gatewayIP());Debug(" )\n\n");
-        WiFiReconnectCount = 0;
-        WifiBoot = false;
-        WifiConnected = true;
-        break;
-    case WIFI_EVENT_STAMODE_DISCONNECTED:
-        if (DUE(WifiReconnect)) {
-          if ( WifiConnected ) LogFile("Wifi connection lost",true); //log only once 
-          WifiConnected = false;                 
-          WiFi.reconnect();
-          if ( (WiFiReconnectCount++ > MaxWifiReconnect)  && !WifiBoot ) P1Reboot();
-        }
-        break;
-    default:
-        DebugTf ("[WiFi-event] event: %d\n", event);
-        break;
-    }
+void onStationConnected(const WiFiEventSoftAPModeStationConnected& evt) {
+  DebugT(F("Station connected: "));
+  Debugln( WiFi.BSSIDstr().c_str());
+}
+
+void onStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& evt) {
+  if (DUE(WifiReconnect)) {
+    if ( WifiConnected ) LogFile("Wifi connection lost",true); //log only once 
+    WifiConnected = false;                 
+    WiFi.reconnect();
+    if ( (WiFiReconnectCount++ > MaxWifiReconnect)  && !WifiBoot ) P1Reboot();
+  }
+}
+
+void onStationGotIP(const WiFiEventStationModeGotIP& evt) {
+  LogFile("Wifi Connected",true);
+  digitalWrite(LED, LOW); //ON
+  Debug (F("\nConnected to " )); Debugln (WiFi.SSID());
+  Debug (F("IP address: " ));  Debug (WiFi.localIP());
+  Debug (F(" ( gateway: " ));  Debug (WiFi.gatewayIP());Debug(" )\n\n");
+  WiFiReconnectCount = 0;
+  WifiBoot = false;
+  WifiConnected = true;
 }
 
 //gets called when WiFiManager enters configuration mode
@@ -98,8 +94,11 @@ void startWiFi(const char* hostname, int timeOut)
   Debugln(F("Wifi Starting"));
   digitalWrite(LED, HIGH); //OFF
   WifiBoot = true;
-  WiFi.onEvent(onWifiEvent);
   
+  stationConnectedHandler = WiFi.onSoftAPModeStationConnected(&onStationConnected);
+  stationDisconnectedHandler = WiFi.onSoftAPModeStationDisconnected(&onStationDisconnected);
+  stationGotIPHandler = WiFi.onStationModeGotIP (&onStationGotIP);
+    
   manageWiFi.setDebugOutput(false);
   //add custom html at inside <head> for all pages -> show password function
   manageWiFi.setCustomHeadElement("<script>function f() {var x = document.getElementById('p');x.type==='password'?x.type='text':x.type='password';}</script>");
