@@ -9,7 +9,7 @@
 ***************************************************************************      
 */
 
-#define ACTUALELEMENTS  20
+#define ACTUALELEMENTS  22
 #define INFOELEMENTS     3
 #define FIELDELEMENTS    1
 
@@ -18,7 +18,7 @@ char Onefield[25];
 bool onlyIfPresent = false;
 
 const static PROGMEM char infoArray[][25]   = { "identification","p1_version","equipment_id" };
-const static PROGMEM char actualArray[][25] = { "timestamp","electricity_tariff","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3"};
+const static PROGMEM char actualArray[][25] = { "timestamp","electricity_tariff","energy_delivered_tariff1","energy_delivered_tariff2","energy_returned_tariff1","energy_returned_tariff2","power_delivered","power_returned","voltage_l1","voltage_l2","voltage_l3","current_l1","current_l2","current_l3","power_delivered_l1","power_delivered_l2","power_delivered_l3","power_returned_l1","power_returned_l2","power_returned_l3","peak_pwr_last_q", "highest_peak_pwr"};
 
 DynamicJsonDocument jsonDoc(4100);  // generic doc to return, clear() before use!
 
@@ -250,7 +250,7 @@ void sendDeviceInfo()
 void sendDeviceSettings() 
 {
   DebugTln(F("sending device settings ...\r"));
-  DynamicJsonDocument doc(1600);
+  DynamicJsonDocument doc(2100);
   
   doc["hostname"]["value"] = settingHostname;
   doc["hostname"]["type"] = "s";
@@ -326,7 +326,29 @@ void sendDeviceSettings()
   doc["mqtt_interval"]["min"] = 0;
   doc["mqtt_interval"]["max"] = 600;  
 
+  if ( strncmp(BaseOTAurl, "http://", 7) == 0 ){
+    char ota_url[sizeof(BaseOTAurl)];
+    strncpy( ota_url, BaseOTAurl + 7, strlen(BaseOTAurl) );
+    doc["ota_url"]["value"] = ota_url;
+    doc["ota_url"]["maxlen"] = sizeof(ota_url) - 1;  
+  } else {
+    doc["ota_url"]["value"] = BaseOTAurl;
+    doc["ota_url"]["maxlen"] = sizeof(BaseOTAurl) -1;  
+  }
+  doc["ota_url"]["type"] = "s";
+  
+  doc["b_auth_user"]["value"] = bAuthUser;
+  doc["b_auth_user"]["type"] = "s";
+  doc["b_auth_user"]["maxlen"] = sizeof(bAuthUser) -1;
+  
+  doc["b_auth_pw"]["value"] = bAuthPW;
+  doc["b_auth_pw"]["type"] = "s";
+  doc["b_auth_pw"]["maxlen"] = sizeof(bAuthPW) -1;
+
+  //booleans
   doc["hist"] = EnableHistory;
+  doc["led"] = LEDenabled;
+//  doc["ha_disc_enabl"] = EnableHAdiscovery;
 
   sendJson(doc);
 
@@ -386,17 +408,8 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
     sendJson(jsonDoc);
   break;  
   case 't': //telegramm 
-  {  
-//    byte i = 0;
-//    if (!slimmeMeter.available()){
-//      slimmeMeter.enable(true);
-      JsonRaw = true;
-      //while (!slimmeMeter.loop() && (i < 12)){ delay(100); i++;}
-//    }
-//    String buff = slimmeMeter.raw();
-//    if (buff.length() > 50) sendJsonBuffer(&buff[0]);
-//    else httpServer.send(200, "application/plain", F("Empty telegram buffer, try again"));
-    break;  }
+    JsonRaw = true;
+    break; 
   default:
     sendApiNotFound(URI);
   }
