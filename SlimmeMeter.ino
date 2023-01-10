@@ -37,8 +37,8 @@ void handleSlimmemeter()
 
     if (showRaw || JsonRaw) {
       //-- process telegrams in raw mode
-      Debugf("Telegram Raw (%d)\n%s\n" , slimmeMeter.raw().length(),slimmeMeter.raw().c_str()); 
-      if (JsonRaw) sendJsonBuffer(slimmeMeter.raw().c_str());
+      Debugf("Telegram Raw (%d)\n/%s!%x\n", slimmeMeter.raw().length(), slimmeMeter.raw().c_str(), slimmeMeter.GetCRC() ); 
+      if (JsonRaw) sendJsonBuffer(String("/" + slimmeMeter.raw() + "!" + String(slimmeMeter.GetCRC(),HEX)).c_str());
       showRaw = false; //only 1 reading
       JsonRaw = false;
     } 
