@@ -12,7 +12,7 @@
 void CreateIndexHtml(){
         char buffer[2100]; 
         strcpy_P(buffer,IndexHTML);
-        File file = LittleFS.open("DSMRindexEDGE.html", "w"); // open for reading and writing
+        File file = FS.open("DSMRindexEDGE.html", "w"); // open for reading and writing
         if (!file) DebugTln(F("open file FAILED!!!\r\n"));
         else file.print(buffer); 
         file.close();      
