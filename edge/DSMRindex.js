@@ -1833,8 +1833,7 @@ function handle_menu_click()
         data = json;
         for( let i in data )
         {
-          if(i=="hist") next;
-          
+          if ( i == "conf") continue;
           console.log("["+i+"]=>["+data[i].value+"]");
           var settings = document.getElementById('settings_table');
           if( ( document.getElementById("settingR_"+i)) == null )
@@ -1852,7 +1851,12 @@ function handle_menu_click()
 
                     var sInput = document.createElement("INPUT");
                     sInput.setAttribute("id", "setFld_"+i);
-
+					if ( data[i].type === undefined ) {
+						sInput.setAttribute("type", "checkbox");
+						sInput.checked = data[i];
+						sInput.style.width = "auto";
+					}
+					else {
 					switch(data[i].type){
 					case "s":
 						sInput.setAttribute("type", "text");
@@ -1873,6 +1877,7 @@ function handle_menu_click()
 						break;
 					}
                     sInput.setAttribute("value", data[i].value);
+                    }
                     sInput.addEventListener('change',
                                 function() { setBackGround("setFld_"+i, "lightgray"); },
                                             false
@@ -2147,10 +2152,17 @@ function handle_menu_click()
   {
     for(var i in data)
     {
-      if ( (i=="hist") || ( document.getElementById("setFld_"+i) == null) ) continue;
+      if ( document.getElementById("setFld_"+i) == null ) continue;
 	  var fldId  = i;
       var newVal = document.getElementById("setFld_"+fldId).value;
-      if (data[i].value != newVal)
+	  if ( data[i].value === undefined ) {
+	     newVal = document.getElementById("setFld_"+fldId).checked;
+	     if (data[i] != newVal) {
+	     console.log("save data ["+i+"] => from["+data[i]+"] to["+newVal+"]");
+	     sendPostSetting(fldId, newVal);
+	    }
+	  }
+	  else if (data[i].value != newVal)
       {
         console.log("save data ["+i+"] => from["+data[i].value+"] to["+newVal+"]");
         sendPostSetting(fldId, newVal);
@@ -2705,12 +2717,14 @@ function handle_menu_click()
           ,[ "GasAvailable",			  "Gasmeter beschikbaar? <br>[True = geen check op basis van meterdata]<br>[False = wel checken]"]
           ,[ "water",				  	  "Watersensor aanwezig"]
           ,[ "water_enabl",				  "Watersensor aanwezig"]
+          ,[ "b_auth_user",				  "Basic Auth. Gebruiker"]
+          ,[ "b_auth_pw",				  "Basic Auth. Wachtwoord"]
           ,[ "led",				  		  "LED aan"]
           ,[ "ha_disc_enabl",			  "HA Auto discovery"]
           ,[ "ota_url",				  	  "Update url (zonder http://)"]
   	 	  ,[ "hist",				  	  "Metergegevens lokaal opslaan"]
 		  ,[ "auto_update",				  "Automatisch updaten"]
-		  ,[ "pre40",				  	  "SMR 2 & 3 support"]          
+		  ,[ "pre40",				  	  "SMR 2 & 3 support"]
 ];
 
 /*

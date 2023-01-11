@@ -49,11 +49,12 @@ void onStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& evt) {
     WiFi.reconnect();
     if ( (WiFiReconnectCount++ > MaxWifiReconnect)  && !WifiBoot ) P1Reboot();
   }
+  digitalWrite(LED, HIGH); //off
 }
 
 void onStationGotIP(const WiFiEventStationModeGotIP& evt) {
   LogFile("Wifi Connected",true);
-  digitalWrite(LED, LOW); //ON
+  digitalWrite(LED, !LEDenabled); //follow settings
   Debug (F("\nConnected to " )); Debugln (WiFi.SSID());
   Debug (F("IP address: " ));  Debug (WiFi.localIP());
   Debug (F(" ( gateway: " ));  Debug (WiFi.gatewayIP());Debug(" )\n\n");

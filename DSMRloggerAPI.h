@@ -27,6 +27,7 @@
 #define PATH_DATA_FILES    "https://cdn.jsdelivr.net/gh/mhendriks/DSMR-API-V2@latest/data"
 
 static tm timeinfo;
+bool        LEDenabled    = true;
 
 #include "version.h"
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time
@@ -190,7 +191,6 @@ Status P1Status = {0,0,"010101010101X",0,0,'Y'};
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw       = false;
   bool        JsonRaw       = false;
-  bool        LEDenabled    = true;
   bool        DSMR_NL       = true;
   bool        EnableHistory = true;
   bool        FSmounted     = false; 

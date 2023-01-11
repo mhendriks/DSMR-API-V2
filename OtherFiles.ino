@@ -135,6 +135,8 @@ void readSettings(bool show)
   CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
   CHANGE_INTERVAL_MIN(reconnectMQTTtimer, 1);
   LEDenabled = doc["LED"];
+  digitalWrite(LED, !LEDenabled);
+  
   if (doc.containsKey("ota")) strcpy(BaseOTAurl, doc["ota"]);
   if (doc.containsKey("enableHistory")) EnableHistory = doc["enableHistory"];
   const char* temp = doc["basic-auth"]["user"];
@@ -271,12 +273,22 @@ void updateSetting(const char *field, const char *newValue)
     CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
   }
   if (!stricmp(field, "mqtt_toptopic"))     strCopy(settingMQTTtopTopic, 20, newValue);  
+  
   if (!stricmp(field, "ota")){
     //curl -i -H "Content-Type: application/json" -d "name":"ota","value":"ota.smart-stuff.nl/" -v http://dsmr-api.local/api/v2/dev/settings
     strcpy(BaseOTAurl, "http://");  
     strncat(BaseOTAurl,newValue,sizeof(BaseOTAurl) -1);
   }
 
+  if (!stricmp(field, "b_auth_user")) strCopy(bAuthUser,25, newValue);  
+  if (!stricmp(field, "b_auth_pw")) strCopy(bAuthPW,25, newValue); 
+
+  //booleans
+  if (!stricmp(field, "led")) LEDenabled = (stricmp(newValue, "true") == 0?true:false); 
+  digitalWrite(LED, !LEDenabled);
+  if (!stricmp(field, "hist")) EnableHistory = (stricmp(newValue, "true") == 0?true:false); 
+//  if (!stricmp(field, "ha_disc_enabl")) EnableHAdiscovery = (stricmp(newValue, "true") == 0?true:false);  
+  
   writeSettings();
   
 } // updateSetting()
