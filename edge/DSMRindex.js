@@ -483,7 +483,7 @@ function UpdateDash()
 
 
 		// TODO
-		if (v1 && (!Injection || ShowVoltage) ) {
+		if ( v1 && !Injection && ShowVoltage ) {
 			document.getElementById("l2").style.display = "block"
 			document.getElementById("fases").innerHTML = Phases;
 				
