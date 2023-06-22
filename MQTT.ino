@@ -3,7 +3,7 @@
 **  Program  : MQTT, part of DSMRloggerAPI
 **  Version  : v3.0.0
 **
-**  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks
+**  Copyright (c) 2021 Willem Aandewiel / Martijn Hendriks  
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -39,7 +39,6 @@ void SendAutoDiscoverHA(const char* dev_name, const char* dev_class, const char*
 
 void AutoDiscoverHA(){
 //mosquitto_pub -h 192.168.2.250 -p 1883 -t "homeassistant/sensor/power_delivered/config" -m '{"dev_cla": "gas", "name": "Power Delivered", "stat_t": "DSMR-API/power_delivered", "unit_of_meas": "Wh", "val_tpl": "{{ value_json.power_delivered[0].value | round(3) }}" }'
-  MQTTclient.setBufferSize(400);
 
   SendAutoDiscoverHA("timestamp", "", "DSMR Last Update", "", "{{ strptime(value_json.timestamp[0].value[0:12], \'%y%m%d%H%M%S\') }}","measurement", ",\"icon\": \"mdi:clock\"");
   
@@ -68,10 +67,7 @@ void AutoDiscoverHA(){
   SendAutoDiscoverHA("current_l3", "current", "Current l3", "A", "{{ value_json.current_l3[0].value | round(0) }}","measurement","");
 
   SendAutoDiscoverHA("gas_delivered", "gas", "Gas Delivered", "m³", "{{ value_json.gas_delivered[0].value | round(2) }}","total_increasing","");
-  
-//  SendAutoDiscoverHA("water", "water", "Waterverbruik", "m³", "{{ value_json.water[0].value | round(0) }}","total_increasing",",\"icon\": \"mdi:water\"");
-  
-  MQTTclient.setBufferSize(256); //reset to default
+    
 }
 #endif
 
@@ -178,6 +174,7 @@ int n = MDNS.queryService("espserver", "tcp");
             Debugf(" .. connected -> MQTT status, rc=%d\r\n", MQTTclient.state());
             MQTTclient.publish(cMsg,"Online", true);
             sprintf(cMsg,"%supdate",settingMQTTtopTopic);
+            MQTTclient.setBufferSize(400);
 #ifdef HA_DISCOVER
             AutoDiscoverHA();
 #endif            
@@ -246,21 +243,24 @@ struct buildJsonMQTT {
  *  msg = "\"{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+"}]}\""
  *  
  */
-    String msg;
-    
+//    String msg;
+     char msg[256];  
     template<typename Item>
     void apply(Item &i) {
-      String Name = String(Item::name);
-      if (!isInFieldsArray(Name.c_str()) ) {
-        if (i.present()) 
-        {
+      char Name[25];
+      strncpy(Name,String(Item::name).c_str(),sizeof(Name));
+//      String Name = String(Item::name);
+      if ( !isInFieldsArray(Name) && i.present() ) {
 //          if (Name == "mbus1_delivered") Name = "gas_delivered";    
-          sprintf(cMsg,"%s%s",settingMQTTtopTopic,Name.c_str());
-          if (strlen(Item::unit()) > 0) msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
-          else msg = "{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
-          if (Verbose2) DebugTln("mqtt bericht: "+msg);
-          if (!MQTTclient.publish(cMsg, msg.c_str()) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg.c_str(), (strlen(cMsg) + msg.length()));
-        } // if i.present
+          snprintf(cMsg, 150, "%s%s",settingMQTTtopTopic,Name);
+          if (strlen(Item::unit()) > 0) snprintf(msg, sizeof(msg), "{\"%s\":[{\"value\":%s,\"unit\":\"%s\"}]}", Name, String(value_to_json(i.val())).c_str(), Item::unit() );
+          else snprintf(msg, sizeof(msg), "{\"%s\":[{\"value\":%s}]}", Name, String(value_to_json(i.val())).c_str() ); 
+          
+//          if (strlen(Item::unit()) > 0) msg = "{\""+String(Name)+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
+//          else msg = "{\""+String(Name)+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
+//          if (Verbose2) DebugTln("mqtt bericht: "+msg);
+            MQTTclient.publish( cMsg, msg );
+//          if ( !MQTTclient.publish( cMsg, msg ) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg, strlen(cMsg) + strlen(msg) );
       } // if isInFieldsArray
   } //apply
   
@@ -269,16 +269,16 @@ struct buildJsonMQTT {
     return i;
   }
 
-  String value_to_json( String i){
-    return "\"" + i+ "\"";
+  String value_to_json( String i ){
+    return i;
   }
   
-  String value_to_json(FixedValue i) {
-    return String(i.val(), 3);
+  double value_to_json(FixedValue i) {
+    return i.int_val()/1000.0;
   }
 
-  String value_to_json(TimestampedFixedValue i) {
-    return String(i.val(), 3);
+  double value_to_json(TimestampedFixedValue i) {
+    return i;
   }
 
 }; // buildJsonMQTT
@@ -313,6 +313,8 @@ void MQTTSentStaticInfo(){
   MQTTSend( "wifi_rssi",WiFi.RSSI() );
   if (DSMRdata.mbus1_device_type_present){ MQTTSend("gas_device_type", (uint32_t)DSMRdata.mbus1_device_type ); }
   if (DSMRdata.mbus1_equipment_id_tc_present){ MQTTSend("gas_equipment_id",DSMRdata.mbus1_equipment_id_tc); }
+  MQTTSend( "highest_peak_pwr", String(DSMRdata.highest_peak_pwr.val(), 3) );
+  MQTTSend( "highest_peak_pwr_13mnd", DSMRdata.highest_peak_pwr_13mnd );
   
 }
 //===========================================================================================

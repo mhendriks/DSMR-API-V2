@@ -12,6 +12,8 @@ TODO
 - Jos: zou je de dag totalen zoals op het dashboard ook via MQTT kunnen exporteren? Gas_dag, Water_dag, Afname_dag, Teruglevering_dag, Afname-Terug_dag
 - data voor dag tabel eens per dag
 - data voor maand tabel eens per maand
+- bugje : 3.5.7 spanning in dash werkt niet meer (ben)
+- actueel display teruglevering kleuren (ben)
 
 Wip
 
@@ -150,7 +152,7 @@ void setup()
   Serial.swap();
   delay(200);
   DebugTln(F("Enable slimmeMeter...\n"));
-  slimmeMeter.enable(false);
+  slimmeMeter.enable(true);
 #else
   Debug(F("\n!!! DEBUG MODE AAN !!!\n\n"));
 #endif
@@ -176,6 +178,14 @@ void delayms(unsigned long delay_ms)
   }   
 } // delayms()
 
+//==[ Do Telegram Processing ]===============================================================
+void doTaskTelegram()
+{
+  if (Verbose1) DebugTln("doTaskTelegram");
+  slimmeMeter.loop(); //voorkomen dat de buffer nog vol zit met andere data
+  //-- enable DTR to read a telegram from the Slimme Meter
+  slimmeMeter.enable(true); 
+}
 
 //===[ Do System tasks ]=============================================================
 void doSystemTasks()
@@ -191,6 +201,8 @@ void doSystemTasks()
 
 void loop () 
 {  
+  //--- verwerk volgend telegram
+  if DUE(nextTelegram) doTaskTelegram();
 
   //--- update upTime counter
   if DUE(updateSeconds) upTimeSeconds++;

@@ -9,6 +9,67 @@
 ***************************************************************************      
 */  
 
+void PushDSMRValues(){
+//BE
+DSMRdata.identification = "FLU5=769484_A";
+DSMRdata.p1_version_be = "50217";
+//DSMRdata.peak_pwr_last_q_value = 0;
+//DSMRdata.peak_pwr_last_q_value_unit = "kW";
+//DSMRdata.highest_peak_pwr_value = 0.93*1000;
+//DSMRdata.highest_peak_pwr_unit = "kW";
+//DSMRdata.highest_peak_pwr_13mnd = "(3)(1-0:1.6.0)(1-0:1.6.0)(230101000000W)(221222134500W)(04.963*kW)(230201000000W)(230113004500W)(02.923*kW)(230301000000W)(230219183000W)(02.322*kW)";
+DSMRdata.timestamp = "230310180022W";
+DSMRdata.equipment_id = "3153414733313035303734323233";
+DSMRdata.energy_delivered_tariff1._value = 355812;
+DSMRdata.energy_delivered_tariff1::unit() = "kWh";
+DSMRdata.energy_delivered_tariff2._value = 475691;
+//DSMRdata.energy_delivered_tariff2_unit = "kWh";
+DSMRdata.energy_returned_tariff1._value = 1621923;
+//DSMRdata.energy_returned_tariff1_unit = "kWh";
+DSMRdata.energy_returned_tariff2._value = 515293;
+//DSMRdata.energy_returned_tariff2_unit = "kWh";
+DSMRdata.electricity_tariff = "0001";
+//DSMRdata.power_delivered_value = 0;
+//DSMRdata.power_delivered_unit = "kW";
+//DSMRdata.power_returned_value = 0.023 *1000;
+//DSMRdata.power_returned_unit = "kW";
+//DSMRdata.electricity_threshold = 999.9;
+//DSMRdata.electricity_threshold_unit = "kW";
+//DSMRdata.electricity_switch_position = 1;
+//DSMRdata.message_long = "";
+//DSMRdata.voltage_l1_value = 236.5*1000;
+//DSMRdata.voltage_l1_unit = "V";
+//DSMRdata.voltage_l2_value = 237*1000;
+//DSMRdata.voltage_l2_unit = "V";
+//DSMRdata.voltage_l3_value = 237.2*1000;
+//DSMRdata.voltage_l3_unit = "V";
+//DSMRdata.current_l1_value = 1000*1.15;
+//DSMRdata.current_l1_unit = "A";
+//DSMRdata.current_l2_value = 1000*0.37;
+//DSMRdata.current_l2_unit = "A";
+//DSMRdata.current_l3_value = 0.37 * 1000;
+//DSMRdata.current_l3_unit = "A";
+//DSMRdata.power_delivered_l1._value = 0.083*1000;
+//DSMRdata.power_delivered_l1_unit = "kW";
+//DSMRdata.power_delivered_l2._value = 0;
+//DSMRdata.power_delivered_l2_unit = "kW";
+//DSMRdata.power_delivered_l3._value = 0;
+//DSMRdata.power_delivered_l3_unit = "kW";
+//DSMRdata.power_returned_l1._value = 0;
+//DSMRdata.power_returned_l1_unit = "kW";
+//DSMRdata.power_returned_l2._value = (int)0.052*1000;
+//DSMRdata.power_returned_l2_unit = "kW";
+//DSMRdata.power_returned_l3._value = 0.053*1000;
+//DSMRdata.power_returned_l3_unit = "kW";
+//DSMRdata.mbus1_device_type = 3;
+//DSMRdata.mbus1_equipment_id_ntc = "374D495432323030303531323138";
+//DSMRdata.mbus1_valve_position = 1;
+//DSMRdata.mbus1_delivered_ntc = "728.47";
+//DSMRdata.mbus1_delivered_ntc_unit = "m3";
+
+
+}
+
 struct showValues {
   template<typename Item>
   void apply(Item &i) {
@@ -71,6 +132,7 @@ void processSlimmemeter()
           yield();
         }
       }
+      PushDSMRValues();
 
       if (DSMRdata.p1_version_be_present)
       {
