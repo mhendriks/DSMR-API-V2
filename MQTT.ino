@@ -25,6 +25,8 @@
   String            MQTTclientId;
 
 #ifdef HA_DISCOVER
+/*
+
 void SendAutoDiscoverHA(const char* dev_name, const char* dev_class, const char* dev_title, const char* dev_unit, const char* dev_payload, const char* state_class, const char* extrapl ){
   char msg_topic[75];
   char msg_payload[500];
@@ -68,6 +70,67 @@ void AutoDiscoverHA(){
 
   SendAutoDiscoverHA("gas_delivered", "gas", "Gas Delivered", "m³", "{{ value_json.gas_delivered[0].value | round(2) }}","total_increasing","");
     
+}
+*/
+
+
+//--- NEW
+String AddPayload(const char* key, const char* value ){
+  if ( strlen(value) == 0 ) return "";
+  return "\"" + String(key) + "\":\"" + String(value) + "\",";
+}
+
+void SendAutoDiscoverHA(const char* dev_name, const char* dev_class, const char* dev_title, const char* dev_unit, const char* dev_payload, const char* state_class, const char* extrapl ){
+  char msg_topic[80];
+  String msg_payload = "{";
+  sprintf(msg_topic,"homeassistant/sensor/p1-dongle/%s/config",dev_name);
+//    Debugln(msg_topic);
+  msg_payload += AddPayload( "uniq_id"        , dev_name);
+  msg_payload += AddPayload( "dev_cla"        , dev_class);
+  msg_payload += AddPayload( "name"           , dev_title);
+  msg_payload += AddPayload( "stat_t"         , String((String)settingMQTTtopTopic + (String)dev_name).c_str() );
+  msg_payload += AddPayload( "unit_of_meas"   , dev_unit);
+  msg_payload += AddPayload( "val_tpl"        , dev_payload);
+  msg_payload += AddPayload( "stat_cla"       , state_class);
+  msg_payload += extrapl;
+  msg_payload += "\"dev\":{";
+  msg_payload += AddPayload("ids"             , String(WIFI_getChipId()).c_str() );
+  msg_payload += AddPayload("name"            , settingHostname);
+  msg_payload += "\"mdl\":\"P1 Dongle\",\"mf\":\"Smartstuff\"}}";
+//  Debugln(msg_payload);
+  if (!MQTTclient.publish(msg_topic, msg_payload.c_str(), true) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", msg_topic, msg_payload, ( strlen(msg_topic) + msg_payload.length() ));
+}
+
+void AutoDiscoverHA(){
+//mosquitto_pub -h 192.168.2.250 -p 1883 -t "homeassistant/sensor/power_delivered/config" -m '{"dev_cla": "gas", "name": "Power Delivered", "stat_t": "DSMR-API/power_delivered", "unit_of_meas": "Wh", "val_tpl": "{{ value_json.power_delivered[0].value | round(3) }}" }'
+
+  SendAutoDiscoverHA("timestamp", "timestamp", "DSMR Last Update", "", "{{ strptime(value_json.timestamp[0].value[:-1] + '-+0200' if value_json.timestamp[0].value[12] == 'S' else value_json.timestamp[0].value[:-1] + '-+0100', '%y%m%d%H%M%S-%z') }}","", "\"icon\": \"mdi:clock\",");
+  SendAutoDiscoverHA("power_delivered", "power", "Power Delivered", "W", "{{ value_json.power_delivered[0].value | round(3) * 1000 }}","measurement","");
+  SendAutoDiscoverHA("power_returned" , "power", "Power Returned" , "W", "{{ value_json.power_returned[0].value | round(3) * 1000 }}","measurement","");  
+  
+  SendAutoDiscoverHA("energy_delivered_tariff1", "energy", "Energy Delivered T1", "kWh", "{{ value_json.energy_delivered_tariff1[0].value | round(3) }}","total_increasing","");
+  SendAutoDiscoverHA("energy_delivered_tariff2", "energy", "Energy Delivered T2", "kWh", "{{ value_json.energy_delivered_tariff2[0].value | round(3) }}","total_increasing","");
+  SendAutoDiscoverHA("energy_returned_tariff1", "energy", "Energy Returned T1", "kWh", "{{ value_json.energy_returned_tariff1[0].value | round(3) }}","total_increasing","");
+  SendAutoDiscoverHA("energy_returned_tariff2", "energy", "Energy Returned T2", "kWh", "{{ value_json.energy_returned_tariff2[0].value | round(3) }}","total_increasing","");
+  
+  SendAutoDiscoverHA("power_delivered_l1", "power", "Power Delivered l1", "W", "{{ value_json.power_delivered_l1[0].value | round(3) * 1000 }}","measurement","");
+  SendAutoDiscoverHA("power_delivered_l2", "power", "Power Delivered l2", "W", "{{ value_json.power_delivered_l2[0].value | round(3) * 1000 }}","measurement","");
+  SendAutoDiscoverHA("power_delivered_l3", "power", "Power Delivered l3", "W", "{{ value_json.power_delivered_l3[0].value | round(3) * 1000 }}","measurement","");
+
+  SendAutoDiscoverHA("power_returned_l1", "power", "Power Returned l1", "W", "{{ value_json.power_returned_l1[0].value | round(3) * 1000 }}","measurement","");
+  SendAutoDiscoverHA("power_returned_l2", "power", "Power Returned l2", "W", "{{ value_json.power_returned_l2[0].value | round(3) * 1000 }}","measurement","");
+  SendAutoDiscoverHA("power_returned_l3", "power", "Power Returned l3", "W", "{{ value_json.power_returned_l3[0].value | round(3) * 1000 }}","measurement","");
+
+  SendAutoDiscoverHA("voltage_l1", "voltage", "Voltage l1", "V", "{{ value_json.voltage_l1[0].value | round(0) }}","measurement","");
+  SendAutoDiscoverHA("voltage_l2", "voltage", "Voltage l2", "V", "{{ value_json.voltage_l2[0].value | round(0) }}","measurement","");
+  SendAutoDiscoverHA("voltage_l3", "voltage", "Voltage l3", "V", "{{ value_json.voltage_l3[0].value | round(0) }}","measurement","");
+  
+  SendAutoDiscoverHA("current_l1", "current", "Current l1", "A", "{{ value_json.current_l1[0].value | round(0) }}","measurement","");
+  SendAutoDiscoverHA("current_l2", "current", "Current l2", "A", "{{ value_json.current_l2[0].value | round(0) }}","measurement","");
+  SendAutoDiscoverHA("current_l3", "current", "Current l3", "A", "{{ value_json.current_l3[0].value | round(0) }}","measurement","");
+
+  SendAutoDiscoverHA("gas_delivered", "gas", "Gas Delivered", "m³", "{{ value_json.gas_delivered[0].value | round(2) }}","total_increasing","");
+  
 }
 #endif
 
@@ -174,7 +237,7 @@ int n = MDNS.queryService("espserver", "tcp");
             Debugf(" .. connected -> MQTT status, rc=%d\r\n", MQTTclient.state());
             MQTTclient.publish(cMsg,"Online", true);
             sprintf(cMsg,"%supdate",settingMQTTtopTopic);
-            MQTTclient.setBufferSize(400);
+            MQTTclient.setBufferSize(650);
 #ifdef HA_DISCOVER
             AutoDiscoverHA();
 #endif            
@@ -243,24 +306,41 @@ struct buildJsonMQTT {
  *  msg = "\"{\""+Name+"\":[{\"value\":"+value_to_json(i.val())+"}]}\""
  *  
  */
-//    String msg;
      char msg[256];  
     template<typename Item>
     void apply(Item &i) {
       char Name[25];
       strncpy(Name,String(Item::name).c_str(),sizeof(Name));
-//      String Name = String(Item::name);
-      if ( !isInFieldsArray(Name) && i.present() ) {
+      if ( !isInFieldsArray(Name) ) {
+      if ( i.present() ) {
 //          if (Name == "mbus1_delivered") Name = "gas_delivered";    
           snprintf(cMsg, 150, "%s%s",settingMQTTtopTopic,Name);
           if (strlen(Item::unit()) > 0) snprintf(msg, sizeof(msg), "{\"%s\":[{\"value\":%s,\"unit\":\"%s\"}]}", Name, String(value_to_json(i.val())).c_str(), Item::unit() );
           else snprintf(msg, sizeof(msg), "{\"%s\":[{\"value\":%s}]}", Name, String(value_to_json(i.val())).c_str() ); 
-          
+//          if (Verbose2) DebugTln("mqtt bericht: "+msg);
+            MQTTclient.publish( cMsg, msg );
+//          if ( !MQTTclient.publish( cMsg, msg ) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg, strlen(cMsg) + strlen(msg) );          
 //          if (strlen(Item::unit()) > 0) msg = "{\""+String(Name)+"\":[{\"value\":"+value_to_json(i.val())+",\"unit\":\""+Item::unit()+"\"}]}";
 //          else msg = "{\""+String(Name)+"\":[{\"value\":"+value_to_json(i.val())+"}]}";
+      } else {
+        //not present
+#ifdef NO_HIST        
+          if ( strcmp(Name,"current_l2") == 0 or strcmp(Name,"current_l3") == 0 
+               or strcmp(Name,"power_delivered_l2") == 0 or strcmp(Name,"power_delivered_l3") == 0 
+               or strcmp(Name,"power_returned_l2") == 0 or strcmp(Name,"power_returned_l3") == 0 
+               or strcmp(Name,"voltage_l2") == 0 or strcmp(Name,"voltage_l3") == 0
+             ) {
+            snprintf(cMsg, 150, "%s%s",settingMQTTtopTopic,Name);
+            if (strlen(Item::unit()) > 0) snprintf(msg, sizeof(msg), "{\"%s\":[{\"value\":%s,\"unit\":\"%s\"}]}", Name, String(value_to_json(i.val())).c_str(), Item::unit() );
+            else snprintf(msg, sizeof(msg), "{\"%s\":[{\"value\":%s}]}", Name, String(value_to_json(i.val())).c_str() ); 
 //          if (Verbose2) DebugTln("mqtt bericht: "+msg);
             MQTTclient.publish( cMsg, msg );
 //          if ( !MQTTclient.publish( cMsg, msg ) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg, strlen(cMsg) + strlen(msg) );
+
+          }
+#endif        
+        }// else i.present() 
+
       } // if isInFieldsArray
   } //apply
   
@@ -270,7 +350,7 @@ struct buildJsonMQTT {
   }
 
   String value_to_json( String i ){
-    return i;
+    return "\"" + i + "\"";
   }
   
   double value_to_json(FixedValue i) {
@@ -358,7 +438,8 @@ void sendMQTTData()
     MQTTSentStaticInfo();
   }
   fieldsElements = INFOELEMENTS;
-  DSMRdata.applyEach(buildJsonMQTT());
+  DSMRdata.applyEach(buildJsonMQTT()); 
+  
   MQTTsendGas();
 
 } // sendMQTTData()

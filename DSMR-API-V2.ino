@@ -15,9 +15,6 @@ TODO
 - bugje : 3.5.7 spanning in dash werkt niet meer (ben)
 - actueel display teruglevering kleuren (ben)
 
-Wip
-
-
 Arduino-IDE settings for DSMR-logger hardware ESP12S module:
 
     - Board: "Generic ESP8266 Module" //https://arduino.esp8266.com/stable/package_esp8266com_index.json

@@ -21,7 +21,7 @@ DSMRdata.p1_version_be = "50217";
 DSMRdata.timestamp = "230310180022W";
 DSMRdata.equipment_id = "3153414733313035303734323233";
 DSMRdata.energy_delivered_tariff1._value = 355812;
-DSMRdata.energy_delivered_tariff1::unit() = "kWh";
+//DSMRdata.energy_delivered_tariff1_unit = "kWh";
 DSMRdata.energy_delivered_tariff2._value = 475691;
 //DSMRdata.energy_delivered_tariff2_unit = "kWh";
 DSMRdata.energy_returned_tariff1._value = 1621923;
@@ -66,7 +66,6 @@ DSMRdata.electricity_tariff = "0001";
 //DSMRdata.mbus1_valve_position = 1;
 //DSMRdata.mbus1_delivered_ntc = "728.47";
 //DSMRdata.mbus1_delivered_ntc_unit = "m3";
-
 
 }
 
@@ -132,8 +131,9 @@ void processSlimmemeter()
           yield();
         }
       }
+#ifdef DEBUG_MODE      
       PushDSMRValues();
-
+#endif
       if (DSMRdata.p1_version_be_present)
       {
         DSMRdata.p1_version = DSMRdata.p1_version_be;
