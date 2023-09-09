@@ -296,6 +296,16 @@ void MQTTsendGas(){
 }
 
 //=======================================================================
+void MQTTsendWater(){
+
+  if (waterDelivered){
+    sprintf(cMsg,"%s%s",settingMQTTtopTopic,"water_delivered");
+    char msg[60];
+    sprintf(msg,"{\"water_delivered\":[{\"value\":%.3f,\"unit\":\"m3\"}]}",waterDelivered);
+    if (!MQTTclient.publish(cMsg, msg) ) DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", cMsg, msg, (strlen(cMsg) + strlen(msg)));
+  }
+}
+//=======================================================================
 
 struct buildJsonMQTT {
 /* twee types
@@ -441,6 +451,7 @@ void sendMQTTData()
   DSMRdata.applyEach(buildJsonMQTT()); 
   
   MQTTsendGas();
+  MQTTsendWater();
 
 } // sendMQTTData()
 
